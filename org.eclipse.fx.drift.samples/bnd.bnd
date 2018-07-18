@@ -1,0 +1,17 @@
+Bundle-Version:${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${osgi.qualifier}
+-snapshot: ${osgi.qualifier}
+-exportcontents: \
+ org.eclipse.fx.drift.samples
+Import-Package: \
+ !javafx.*, \
+ *
+ 
+ Include-Resource: \
+ native/samples.dll=native/samples.dll, \
+ native/libsamples.so=native/libsamples.so, \
+ native/libsamples.dylib=native/libsamples.dylib
+ 
+ Bundle-NativeCode: \
+ native/samples.dll;osname=Windows;processor=x86-64, \
+ native/libsamples.so;osname=Linux;processor=x86-64, \
+ native/libsamples.dylib;osname=MacOSX;processor=x86-64
