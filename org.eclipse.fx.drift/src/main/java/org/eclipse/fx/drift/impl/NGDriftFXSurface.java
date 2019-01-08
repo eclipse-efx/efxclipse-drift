@@ -150,6 +150,10 @@ public class NGDriftFXSurface extends NGNode {
 		int width = getWidth();
 		int height = getHeight();
 	
+		// flip it vertically
+		g.scale(1, -1);
+		g.translate(0, -height);
+		
 		// TODO add signal & check it here!
 		if (currentFrameData != null && currentFrameData.width != 0 && currentFrameData.height != 0) {
 			int hash = currentFrameData.hashCode();
