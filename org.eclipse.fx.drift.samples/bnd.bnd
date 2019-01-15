@@ -12,6 +12,6 @@ Import-Package: \
  native/libsamples.dylib=native/libsamples.dylib
  
  Bundle-NativeCode: \
- native/samples.dll;osname=Windows;processor=x86-64, \
+ native/samples.dll;osname=Win32;processor=x86-64, \
  native/libsamples.so;osname=Linux;processor=x86-64, \
  native/libsamples.dylib;osname=MacOSX;processor=x86-64
