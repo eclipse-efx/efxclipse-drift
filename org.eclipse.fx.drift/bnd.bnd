@@ -13,6 +13,6 @@ Import-Package: \
  native/libdriftfx.dylib=native/libdriftfx.dylib
  
  Bundle-NativeCode: \
- native/driftfx.dll;osname=Windows;processor=x86-64, \
+ native/driftfx.dll;osname=Win32;processor=x86-64, \
  native/libdriftfx.so;osname=Linux;processor=x86-64, \
  native/libdriftfx.dylib;osname=MacOSX;processor=x86-64
