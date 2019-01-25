@@ -1,0 +1,18 @@
+Bundle-Version:${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${osgi.qualifier}
+-snapshot: ${osgi.qualifier}
+-exportcontents: \
+ org.eclipse.fx.drift
+Import-Package: \
+ !javafx.*, \
+ !com.sun.javafx.* \
+ *
+ 
+ Include-Resource: \
+ native/driftfx.dll=native/driftfx.dll, \
+ native/libdriftfx.so=native/libdriftfx.so, \
+ native/libdriftfx.dylib=native/libdriftfx.dylib
+ 
+ Bundle-NativeCode: \
+ native/driftfx.dll;osname=Win32;processor=x86-64, \
+ native/libdriftfx.so;osname=Linux;processor=x86-64, \
+ native/libdriftfx.dylib;osname=MacOSX;processor=x86-64
