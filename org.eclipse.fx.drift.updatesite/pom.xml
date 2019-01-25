@@ -11,7 +11,7 @@
 	<packaging>pom</packaging>
 	
 	<properties>
-		<download-publish-path>/home/data/httpd/download.eclipse.org/efxclipse/runtime-fxtest-nightly</download-publish-path>
+		<download-publish-path>/home/data/httpd/download.eclipse.org/efxclipse/runtime-driftfx-nightly</download-publish-path>
 	</properties>
 
 	<build>
