@@ -9,6 +9,10 @@
 	</parent>
 	<artifactId>org.eclipse.fx.drift.updatesite</artifactId>
 	<packaging>pom</packaging>
+	
+	<properties>
+		<download-publish-path>/home/data/httpd/download.eclipse.org/efxclipse/runtime-fxtest-nightly</download-publish-path>
+	</properties>
 
 	<build>
 		<plugins>
@@ -124,4 +128,45 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<profiles>
+		<profile>
+			<id>build-server</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>deploy</id>
+								<phase>install</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<tasks>
+										<delete includeemptydirs="false">
+											<fileset dir="${download-publish-path}">
+												<include name="**" />
+											</fileset>
+										</delete>
+										<copy includeemptydirs="false" todir="${download-publish-path}">
+											<fileset dir="target/repository">
+												<include name="**" />
+											</fileset>
+										</copy>
+										<copy includeemptydirs="false" todir="${download-publish-path}">
+											<fileset dir="target">
+												<include name="org.eclipse.fx.drift.updatesite-*-SNAPSHOT.zip" />
+											</fileset>
+										</copy>
+									</tasks>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
