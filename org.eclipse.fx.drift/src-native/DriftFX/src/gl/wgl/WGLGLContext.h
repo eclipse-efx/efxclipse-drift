@@ -33,6 +33,7 @@ public:
 	virtual ~WGLGLContext();
 	virtual void SetCurrent();
 	virtual void UnsetCurrent();
+	virtual bool IsCurrent();
 
 	virtual HGLRC GetHandle();
 

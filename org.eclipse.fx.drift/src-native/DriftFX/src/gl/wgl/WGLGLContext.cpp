@@ -267,3 +267,7 @@ void WGLGLContext::UnsetCurrent() {
 	wglMakeCurrent(NULL, NULL);
 }
 
+bool WGLGLContext::IsCurrent() {
+	return hGLRC == wglGetCurrentContext();
+}
+

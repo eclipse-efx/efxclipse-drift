@@ -79,6 +79,10 @@ void CGLGLContext::SetCurrent() {
 void CGLGLContext::UnsetCurrent() {
 	checkErr(CGLSetCurrentContext( NULL ), "CGLSetCurrentContext");
 }
+bool CGLGLContext::IsCurrent() {
+	return CGLGetCurrentContext() == contextObj;
+}
+
 void* CGLGLContext::GetHandle() {
 	return (void*) contextObj;
 }

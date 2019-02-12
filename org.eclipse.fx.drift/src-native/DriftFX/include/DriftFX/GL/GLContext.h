@@ -22,6 +22,8 @@ public:
 	virtual void SetCurrent() = 0;
 	virtual void UnsetCurrent() = 0;
 
+	virtual bool IsCurrent() = 0;
+
 	virtual GLContext* CreateSharedContext() = 0;
 
 	virtual Texture* CreateTexture(int width, int height);

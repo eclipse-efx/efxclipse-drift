@@ -105,6 +105,9 @@ GLContext* GLXGLContext::CreateSharedContext() {
 void GLXGLContext::SetCurrent() {
 	glXMakeContextCurrent(display, pBuffer, pBuffer, glxContext);
 }
+bool GLXGLContext::IsCurrent() {
+	return glXGetCurrentContext() == glxContext;
+}
 
 GLXContext GLXGLContext::GetHandle() {
 	return glxContext;

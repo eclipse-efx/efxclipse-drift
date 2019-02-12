@@ -34,6 +34,7 @@ public:
 
 	virtual void SetCurrent();
 	virtual void UnsetCurrent();
+	virtual bool IsCurrent();
 
 	virtual GLContext* CreateSharedContext();
 
