@@ -9,34 +9,30 @@ jobs:
       name: "Windows MSVC Natives"
       os: windows
       language: shell
+      before_install:
+        - shopt -s expand_aliases
       install:
         - choco install awscli
-          #        - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-          #        - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
-          #        - travis_retry wget --no-check-certificate https://cmake.org/files/v3.13/cmake-3.13.0-win64-x64.zip 2>>wgeterr.log
-          #        - unzip cmake-3.13.0-win64-x64.zip > /dev/null
-          #        - mv cmake-3.13.0-win64-x64 cmake-install
-          #        - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
-          #        - cd ${TRAVIS_BUILD_DIR}
+        - alias aws="/c/Program\ Files/Amazon/AWSCLI/bin/aws.exe "
+        - aws --version
         - choco install cmake --version 3.13.0
+        - cmake -version
         - choco install jdk8
         - choco install visualstudio2017buildtools
         - choco install visualstudio2017-workload-vctools
         - choco install visualstudio2017-workload-nativedesktop
-      before_script:  
-        - AWSPATH="/c/Program Files/Amazon/AWSCLI"
-        - MSBUILDPATH="/c/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin"
-        - PATH=$MSBUILDPATH:$AWSPATH:$PATH
+        - alias msbuild="/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/MSBuild/15.0/Bin/MSBuild.exe "
+        - msbuild -version
       script:
         - echo "Building Windows MSVC Natives"
         - mkdir build
         - cd build
         - cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
-        - MSBuild.exe -verbosity:minimal releng.sln
+        - msbuild -verbosity:minimal releng.sln
       after_success:
-        - aws.exe s3 cp DriftFX/Debug/driftfx.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.dll
-        - aws.exe s3 cp DriftFX/Debug/driftfx.lib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.lib
-        - aws.exe s3 cp samples/Debug/samples.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/samples.dll
+        - aws s3 cp DriftFX/Debug/driftfx.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.dll
+        - aws s3 cp DriftFX/Debug/driftfx.lib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.lib
+        - aws s3 cp samples/Debug/samples.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/samples.dll
     - name: "MacOS GCC Natives"
       os: osx
       language: cpp
@@ -120,5 +116,9 @@ jobs:
         - ls -al org.eclipse.fx.drift.updatesite/target
       after_success:
         - aws s3 cp org.eclipse.fx.drift.updatesite/target/org.eclipse.fx.drift.updatesite-0.1.0-SNAPSHOT.zip s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/updatesite.zip
+      deploy:
+        provider: script
+        on:
+          branch: master
+        script:
         - wget -nv --http-user=$P2_FETCHER_USER --http-password=$P2_FETCHER_PASSWORD $P2_FETCHER_URL?travisbuild=$TRAVIS_BUILD_NUMBER
-
