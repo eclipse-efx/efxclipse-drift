@@ -9,6 +9,7 @@ Import-Package: \
  
  Include-Resource: \
  native/driftfx.dll=native/driftfx.dll, \
+ native/driftfx.lib=native/driftfx.lib, \
  native/libdriftfx.so=native/libdriftfx.so, \
  native/libdriftfx.dylib=native/libdriftfx.dylib
  
