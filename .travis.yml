@@ -125,7 +125,7 @@ jobs:
         - cp org.eclipse.fx.drift/native/* dist/libs/
         - cp org.eclipse.fx.drift.updatesite/target/org.eclipse.fx.drift.updatesite-0.1.0-SNAPSHOT.zip dist/updatesite.zip
         - cp git_commit dist/git_commit
-        - zip dist/sources.zip native org.eclipse.fx.drift org.eclipse.fx.drift.feature org.eclipse.fx.drift.samples org.eclipse.fx.drift.samples.feature org.eclipse.fx.drift.updatesite
-        - zip dist.zip dist/*
+        - zip -r dist/sources.zip native org.eclipse.fx.drift org.eclipse.fx.drift.feature org.eclipse.fx.drift.samples org.eclipse.fx.drift.samples.feature org.eclipse.fx.drift.updatesite
+        - zip -r dist.zip dist/*
         - aws s3 cp dist.zip s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/dist.zip
         - wget "$WEBHOOK_URL?token=$WEBHOOK_TOKEN&token0=$AWS_ACCESS_KEY_ID&token1=$AWS_SECRET_ACCESS_KEY&travisBuildNumber=$TRAVIS_BUILD_NUMBER"
