@@ -116,6 +116,8 @@ jobs:
         - ls -al org.eclipse.fx.drift.updatesite/target
       after_success:
         - aws s3 cp org.eclipse.fx.drift.updatesite/target/org.eclipse.fx.drift.updatesite-0.1.0-SNAPSHOT.zip s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/updatesite.zip
+        - echo "$TRAVIS_COMMIT" > git_commit
+        - aws s3 cp git_commit s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/git_commit
       deploy:
         provider: script
         on:
