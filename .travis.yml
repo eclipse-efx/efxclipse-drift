@@ -121,4 +121,4 @@ jobs:
         on:
           branch: master
         script:
-        - wget -sS "$WEBHOOK_URL?token=$WEBHOOK_TOKEN&token0=$AWS_ACCESS_KEY_ID&token1=$AWS_SECRET_ACCESS_KEY&travisBuildNumber=$TRAVIS_BUILD_NUMBER
+        - wget -sS "$WEBHOOK_URL?token=$WEBHOOK_TOKEN&token0=$AWS_ACCESS_KEY_ID&token1=$AWS_SECRET_ACCESS_KEY&travisBuildNumber=$TRAVIS_BUILD_NUMBER"
