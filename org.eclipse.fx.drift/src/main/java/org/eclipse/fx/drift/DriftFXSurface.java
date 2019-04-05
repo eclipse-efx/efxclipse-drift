@@ -42,10 +42,9 @@ public class DriftFXSurface extends Node {
 	
 	public DriftFXSurface() {
 		JNINativeSurface jni = new JNINativeSurface((frame) -> {
+			NGDriftFXSurface ngSurface = impl_getPeer();
+			ngSurface.present(frame);
 			Platform.runLater(() -> {
-				NGDriftFXSurface ngSurface = impl_getPeer();
-				ngSurface.present(frame);
-				
 				impl_markDirty(DirtyBits.NODE_CONTENTS);
 			});
 		});
