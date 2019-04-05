@@ -25,6 +25,7 @@ import com.sun.javafx.scene.DirtyBits;
 import com.sun.javafx.sg.prism.NGNode;
 import com.sun.javafx.tk.Toolkit;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.scene.Node;
@@ -41,11 +42,12 @@ public class DriftFXSurface extends Node {
 	
 	public DriftFXSurface() {
 		JNINativeSurface jni = new JNINativeSurface((frame) -> {
-			
-			NGDriftFXSurface ngSurface = impl_getPeer();
-			ngSurface.present(frame);
-			
-			impl_markDirty(DirtyBits.NODE_CONTENTS);
+			Platform.runLater(() -> {
+				NGDriftFXSurface ngSurface = impl_getPeer();
+				ngSurface.present(frame);
+				
+				impl_markDirty(DirtyBits.NODE_CONTENTS);
+			});
 		});
 		nativeSurfaceId = NativeAPI.createNativeSurface(jni);
 		
