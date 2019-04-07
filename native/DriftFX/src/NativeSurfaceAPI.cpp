@@ -23,6 +23,8 @@
 
 #include "SharedTexture.h"
 
+#include "Configuration.h"
+
 #include <iostream>
 using namespace std;
 
@@ -37,6 +39,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_n
 	JavaVM* jvm;
 	env->GetJavaVM(&jvm);
 	JNIHelper::Initialize(jvm);
+	Configuration::Initialize();
 	JNINativeSurface::Initialize();
 }
 

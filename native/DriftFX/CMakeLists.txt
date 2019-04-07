@@ -43,6 +43,9 @@ set(DriftFX-Sources
     
     src/gl/InternalGLContext.h
     src/gl/InternalGLContext.cpp
+    
+    src/Configuration.h
+    src/Configuration.cpp
 )
 
 if (WIN32)

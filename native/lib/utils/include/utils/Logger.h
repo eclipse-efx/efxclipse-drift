@@ -21,6 +21,8 @@ enum LogLevel { Debug, Error, Info };
 std::ostream& operator<<(std::ostream& ostr, const LogLevel& level);
 std::ostream& Log(LogLevel level, std::string file, int line, std::string func);
 
+void LogSetEnabled(LogLevel level, bool enable);
+
 #define WITH_LOGGING 0
 
 #ifndef __PRETTY_FUNCTION__
