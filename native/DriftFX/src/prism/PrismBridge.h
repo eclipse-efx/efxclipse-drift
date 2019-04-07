@@ -34,6 +34,8 @@ public:
 
 	virtual GLContext* GetDefaultContext();
 
+	virtual GLContext* CreateSurfaceContext();
+
 	virtual Context* GetFxContext();
 
 	virtual NativeSurface* CreateNativeSurface(JNINativeSurface* api) = 0;

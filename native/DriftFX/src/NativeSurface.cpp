@@ -40,7 +40,7 @@ NativeSurface::~NativeSurface() {
 
 void NativeSurface::Initialize() {
 	LogDebug("init GLContext");
-	context = PrismBridge::Get()->GetDefaultContext()->CreateSharedContext();
+	context = PrismBridge::Get()->CreateSurfaceContext();
 }
 
 void NativeSurface::Cleanup() {

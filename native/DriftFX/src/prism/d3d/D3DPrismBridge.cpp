@@ -21,6 +21,7 @@
 #include "win32/Error.h"
 
 #include <iostream>
+
 using namespace std;
 
 using namespace driftfx::gl;
@@ -54,6 +55,8 @@ D3DPrismBridge::D3DPrismBridge(jlong pContext) :
 }
 
 int D3DPrismBridge::RecreateFXTexture(void* fxTexture, HANDLE shareHandle) {
+	LogDebug("RecreateFXTexture(" << shareHandle << ")");
+
 	java8::D3DResource* d3dResource = (java8::D3DResource*) fxTexture;
 
 	d3dResource->pSurface->Release();
@@ -74,7 +77,6 @@ int D3DPrismBridge::RecreateFXTexture(void* fxTexture, HANDLE shareHandle) {
 
 	WERR(;);
 
-	LogDebug("CreateTexture( " << w << ", " << h << ", 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, " << pTexture << ", " << sh << " )")
 	HRESULT res = jfxContext->Device()->CreateTexture(
 			w, h,
 			0, 0,
@@ -107,6 +109,10 @@ D3DPrismBridge::~D3DPrismBridge() {
 
 D3D9ExContext* D3DPrismBridge::GetJfxContext() {
 	return jfxContext;
+}
+
+GLContext* D3DPrismBridge::CreateSurfaceContext() {
+	return new WGLGLContext();
 }
 
 GLContext* D3DPrismBridge::CreateSharedContext() {

@@ -34,6 +34,8 @@ public:
 
 	virtual D3D9ExContext* GetJfxContext();
 
+	virtual GLContext * CreateSurfaceContext();
+
 	virtual NativeSurface* CreateNativeSurface(JNINativeSurface* api);
 
 	virtual int RecreateFXTexture(void* fxTexture, HANDLE shareHandle);
