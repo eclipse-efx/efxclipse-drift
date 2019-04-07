@@ -19,6 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.fx.drift.DriftFXSurface;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
+import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.JNINativeSurface.FrameData;
 import org.eclipse.fx.drift.internal.NativeAPI;
 
@@ -61,8 +62,7 @@ public class NGDriftFXSurface extends NGNode {
 	public NGDriftFXSurface(DriftFXSurface node, long nativeSurfaceId) {
 		this.node = node;
 		this.nativeSurfaceHandle = nativeSurfaceId;
-		System.out.println("[J] NGNativeSurface got handle: " + this.nativeSurfaceHandle);
-		
+		Log.debug("NGNativeSurface got handle: " + this.nativeSurfaceHandle);
 		this.resourceFactory = GraphicsPipelineUtil.getResourceFactory();
 	}
 	
@@ -226,7 +226,7 @@ public class NGDriftFXSurface extends NGNode {
 				x = Math.round((width - finalWidth) / 2f);
 				y = Math.round((height - finalHeight) / 2f);
 		
-			System.out.println("[J] [Info ] Surface# "+nativeSurfaceHandle+": Drawing texture " + Long.toHexString(GraphicsPipelineUtil.getTextureHandle(currentTexture)));
+				Log.debug("Surface# "+nativeSurfaceHandle+": Drawing texture " + Long.toHexString(GraphicsPipelineUtil.getTextureHandle(currentTexture)));
 				
 			//System.err.println("## " + textureWidth + "x" + textureHeight + " -> " + x + ", " + y + " @ " + finalWidth + "x" + finalHeight);
 			g.drawTexture(currentTexture, x, y, x + finalWidth, y + finalHeight, 0, 0, textureWidth, textureHeight);
@@ -234,14 +234,14 @@ public class NGDriftFXSurface extends NGNode {
 			
 		}
 		else {
-			System.err.println("[J][Info ] current Texture == null");
+			Log.debug("current Texture == null");
 		}
 		
 		
 	}
 	
 	public void updateSize(float width, float height)  {
-		//System.out.println("[J] NativeSurface updateSize " + width + " " + height);
+		//Log.debug("[J] NativeSurface updateSize " + width + " " + height);
 		if (width != -1) this.width = width;
 		if (height != -1) this.height = height;
 		CompletableFuture.runAsync(() ->

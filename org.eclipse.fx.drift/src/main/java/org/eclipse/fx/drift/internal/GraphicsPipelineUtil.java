@@ -293,7 +293,7 @@ public class GraphicsPipelineUtil {
 			return NativeAPI.d3dRecreateTextureAsShared(texture, currentFrameData.d3dShareHandle);
 		}
 		else if (isES2()) {
-			System.out.println("[J] [Info ] Connecting texture to " + currentFrameData.textureName);
+			Log.debug("Connecting texture to " + currentFrameData.textureName);
 			if (ES2.isMac) {
 				int textureName = ES2.getTextureName(texture);
 				return NativeAPI.es2ConnectTextureToIOSurface(textureName, currentFrameData.width, currentFrameData.height, currentFrameData.ioSurfaceHandle);
