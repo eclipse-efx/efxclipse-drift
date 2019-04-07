@@ -47,7 +47,15 @@ public class NGDriftFXSurface extends NGNode {
 	private Texture currentTexture;
 	
 	public void present(FrameData frame) {
+		FrameData oldData = currentFrameData;
 		currentFrameData = frame;
+		if (oldData != null) {
+			dispose(oldData);
+		}
+	}
+	
+	private void dispose(FrameData frame) {
+		NativeAPI.disposeFrameData(nativeSurfaceHandle, frame);
 	}
 	
 	public NGDriftFXSurface(DriftFXSurface node, long nativeSurfaceId) {
