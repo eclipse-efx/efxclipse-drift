@@ -17,6 +17,9 @@
 #include <DriftFX/DriftFXSurface.h>
 #include <DriftFX/GL/GLContext.h>
 
+#include <vector>
+#include <mutex>
+
 #include "JNINativeSurface.h"
 
 namespace driftfx {
@@ -79,6 +82,8 @@ public:
 	 */
 	virtual void UpdateSize(int width, int height);
 
+	virtual void DisposeSharedTexture(long long id);
+
 	static NativeSurface* Create(JNINativeSurface* api);
 
 	virtual Context* GetFxContext();
@@ -93,10 +98,14 @@ protected:
 	volatile unsigned int width;
 	volatile unsigned int height;
 
+
+
 private:
 
-	SharedTexture* lastPresented;
-	SharedTexture* toDispose;
+	std::mutex toDisposeMutex;
+	std::vector<SharedTexture*> toDispose;
+
+	void DisposeSharedTextures();
 };
 
 }

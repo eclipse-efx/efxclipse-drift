@@ -24,6 +24,7 @@ set(DriftFX-Headers
 set(DriftFX-Sources
     src/Context.cpp
     src/JNINativeSurface.cpp
+    src/NativeSurface.h
     src/NativeSurface.cpp
     src/NativeSurfaceAPI.cpp
     src/NativeSurfaceRegistry.cpp

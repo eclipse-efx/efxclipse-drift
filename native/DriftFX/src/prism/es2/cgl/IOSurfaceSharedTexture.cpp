@@ -160,6 +160,7 @@ bool IOSurfaceSharedTexture::Unlock() {
 FrameData* IOSurfaceSharedTexture::CreateFrameData() {
 
 	FrameData* data = new FrameData();
+	data->id = (long long) this;
 	data->width = GetWidth();
 	data->height = GetHeight();
 	data->glTextureName = fxTexture->Name();

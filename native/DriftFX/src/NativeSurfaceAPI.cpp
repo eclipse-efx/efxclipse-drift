@@ -57,3 +57,10 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_n
 }
 
 
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nDisposeFrameData(JNIEnv* env, jclass cls, jlong surfaceId, jlong frameDataId) {
+	LogDebug("dispose frame data " << surfaceId << ": " << frameDataId);
+	NativeSurface* surface = NativeSurfaceRegistry::Get()->Get((long) surfaceId);
+	surface->DisposeSharedTexture((long long) frameDataId);
+}
+
+

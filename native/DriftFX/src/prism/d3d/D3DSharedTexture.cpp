@@ -161,7 +161,8 @@ bool D3DSharedTexture::Unlock() {
 
 FrameData* D3DSharedTexture::CreateFrameData() {
 	FrameData* data = new FrameData();
-	data->d3dSharedHandle = (long) (long long) d3dTexture->GetShareHandle();
+	data->id = (long long) this;
+	data->d3dSharedHandle = (long long) d3dTexture->GetShareHandle();
 	data->height = GetHeight();
 	data->width = GetWidth();
 	return data;

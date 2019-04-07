@@ -69,6 +69,7 @@ FrameData* GLXSharedTexture::CreateFrameData() {
 
 
 	FrameData* data = new FrameData();
+	data->id = (long long) this;
 	data->width = GetWidth();
 	data->height = GetHeight();
 	data->glTextureName = glTexture->Name();

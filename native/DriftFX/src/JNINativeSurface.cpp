@@ -66,7 +66,7 @@ void JNINativeSurface::Initialize() {
 
 	jFrameDataClass = ResolveClass(env, "org/eclipse/fx/drift/internal/JNINativeSurface$FrameData");
 	jNativeSurface_Present2Method = ResolveMethod(env, jNativeSurfaceClass, "present", "(Lorg/eclipse/fx/drift/internal/JNINativeSurface$FrameData;)V");
-	jNativeSurface_Present3Method = ResolveMethod(env, jNativeSurfaceClass, "present", "(JJIII)V");
+	jNativeSurface_Present3Method = ResolveMethod(env, jNativeSurfaceClass, "present", "(JJJIII)V");
 
 	jFrameData_d3dShareHandleField = ResolveField(env, jFrameDataClass, "d3dShareHandle", "J");
 	jFrameData_widthField = ResolveField(env, jFrameDataClass, "width", "I");
@@ -95,7 +95,7 @@ void JNINativeSurface::Present(FrameData frameData) {
 	LogDebug("going to call present")
 	JNIEnv *env = JNIHelper::GetJNIEnv(true);
 
-	env->CallVoidMethod(jNativeSurfaceInstance, jNativeSurface_Present3Method, frameData.d3dSharedHandle, frameData.ioSurfaceHandle, frameData.glTextureName, frameData.width, frameData.height);
+	env->CallVoidMethod(jNativeSurfaceInstance, jNativeSurface_Present3Method, frameData.id, frameData.d3dSharedHandle, frameData.ioSurfaceHandle, frameData.glTextureName, frameData.width, frameData.height);
 //	LogDebug("got jni env: " << env)
 //
 //	jobject instance = env->NewObject(jFrameDataClass, jFrameData_constructor);

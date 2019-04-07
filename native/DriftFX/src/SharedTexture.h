@@ -25,8 +25,9 @@ using namespace gl;
 namespace internal {
 
 struct FrameData {
-	long d3dSharedHandle;
-	long ioSurfaceHandle;
+	long long id;
+	long long d3dSharedHandle;
+	long long ioSurfaceHandle;
 	int glTextureName;
 	int width;
 	int height;

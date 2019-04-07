@@ -15,6 +15,8 @@ import java.util.function.Consumer;
 public class JNINativeSurface {
 
 	public static class FrameData {
+		public long frameId;
+		
 		public long d3dShareHandle;
 		public long ioSurfaceHandle;
 		public int width;
@@ -69,8 +71,9 @@ public class JNINativeSurface {
 		this.presentFrame = presentFrame;
 	}
 
-	public void present(long handle, long ioSurfaceHandle, int textureName, int width, int height) {
+	public void present(long id, long handle, long ioSurfaceHandle, int textureName, int width, int height) {
 		FrameData dat = new FrameData();
+		dat.frameId = id;
 		dat.d3dShareHandle = handle;
 		dat.ioSurfaceHandle = ioSurfaceHandle;
 		dat.textureName = textureName;

@@ -27,9 +27,7 @@ using namespace driftfx::internal::prism;
 
 NativeSurface::NativeSurface(JNINativeSurface* api) :
 	api(api),
-	context(nullptr),
-	lastPresented(nullptr),
-	toDispose(nullptr) {
+	context(nullptr) {
 	LogDebug("NativeSurface constructor")
 
 }
@@ -43,14 +41,30 @@ void NativeSurface::Initialize() {
 	context = PrismBridge::Get()->GetDefaultContext()->CreateSharedContext();
 }
 
-void NativeSurface::Cleanup() {
+void NativeSurface::DisposeSharedTexture(long long id) {
+	toDisposeMutex.lock();
 
+	SharedTexture* texture = (SharedTexture*) id;
+	toDispose.push_back(texture);
 
-	LogDebug("clean textures");
-	if (toDispose != nullptr) {
-		delete toDispose;
-		toDispose = nullptr;
+	toDisposeMutex.unlock();
+}
+
+void NativeSurface::DisposeSharedTextures() {
+	LogDebug("Disposing shared textures");
+	toDisposeMutex.lock();
+	for (std::vector<SharedTexture*>::iterator it = toDispose.begin(); it != toDispose.end(); ++it) {
+		SharedTexture* tex = (*it);
+		LogDebug(" - " << tex);
+		delete tex;
 	}
+	toDispose.clear();
+	toDisposeMutex.unlock();
+}
+
+void NativeSurface::Cleanup() {
+	LogDebug("clean textures");
+	DisposeSharedTextures();
 
 //	// TODO send some kind of signal to tell FX we are going to dispose our textures
 	FrameData* frameData = new FrameData();
@@ -65,11 +79,6 @@ void NativeSurface::Cleanup() {
 //
 	// NOTE: since textures know their context and set it current upon deletion
 	// we must ensure that all textures from a context are deleted before the context is deleted!
-
-	if (lastPresented != nullptr) {
-		delete lastPresented;
-		lastPresented = nullptr;
-	}
 
 	LogDebug("clean GLContext");
 	delete context;
@@ -100,10 +109,7 @@ RenderTarget* NativeSurface::Acquire() {
 
 RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
 	LogDebug("acquire0");
-	if (toDispose != nullptr) {
-		delete toDispose;
-		toDispose = nullptr;
-	}
+	DisposeSharedTextures();
 
 	PrismBridge* bridge = PrismBridge::Get();
 	// in case the system was destroyed
@@ -139,9 +145,6 @@ void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 	api->Present(*frameData);
 
 	delete frameData;
-
-	toDispose = lastPresented;
-	lastPresented = texture;
 }
 
 Context* NativeSurface::GetFxContext() {

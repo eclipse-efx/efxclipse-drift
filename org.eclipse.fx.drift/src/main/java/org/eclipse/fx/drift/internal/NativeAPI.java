@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.fx.drift.internal;
 
+import org.eclipse.fx.drift.internal.JNINativeSurface.FrameData;
+
 import com.sun.prism.Texture;
 
 //Note: this implementation is against internal JavafX API
@@ -79,6 +81,11 @@ public class NativeAPI {
 	private static native void nDestroy();
 	public static void Destroy() {
 		nDestroy();
+	}
+	
+	private static native void nDisposeFrameData(long nativeSurfaceHandle, long frameDataId);
+	public static void disposeFrameData(long nativeSurfaceHandle, FrameData frameData) {
+		nDisposeFrameData(nativeSurfaceHandle, frameData.frameId);
 	}
 	
 	private static native long nCreateNativeSurface(JNINativeSurface surface);
