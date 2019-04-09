@@ -22,6 +22,8 @@
 
 #include "../NativeSurface.h"
 
+#include "ShareManager.h"
+
 namespace driftfx {
 using namespace driftfx::gl;
 namespace internal {
@@ -38,6 +40,8 @@ public:
 
 	virtual NativeSurface* CreateNativeSurface(JNINativeSurface* api) = 0;
 
+	virtual ShareManager* GetShareManager();
+
 	static void Destroy();
 
 protected:
@@ -50,6 +54,7 @@ protected:
 
 	Context* fxContext;
 
+	ShareManager* shareManager;
 };
 
 }

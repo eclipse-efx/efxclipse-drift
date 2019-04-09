@@ -49,42 +49,52 @@ HANDLE D3DSharedTexture::OpenSharedDevice(D3D9ExContext* d3dContext, GLContext* 
 		LogError("OpenSharedDevice called with wrong current gl context; This is FATAL!");
 	}
 
-	sharedDevicesMutex.lock();
+	LogInfo("NV_DX_interop: Opening Device " << d3dDevice << " key=" << d3dDevice << "/" << glContxtHandle);
+	HANDLE nh;
+	WERR(nh = wglDXOpenDeviceNV(d3dDevice);)
+	LogInfo("               -> " << nh);
+	return nh;
 
-	pair<IDirect3DDevice9Ex*, HGLRC> key = make_pair(d3dDevice, glContxtHandle);
+	//sharedDevicesMutex.lock();
 
-	if (sharedDevices.count( key ) != 1) {
-		LogDebug("NV_DX_interop: Opening Device " << d3dDevice);
-		HANDLE nh;
-		WERR(nh = wglDXOpenDeviceNV(d3dDevice);)
-		sharedDevices[key] = nh;
-		LogDebug("               -> " << nh);
-	}
+	//pair<IDirect3DDevice9Ex*, HGLRC> key = make_pair(d3dDevice, glContxtHandle);
 
-	HANDLE h = sharedDevices[key];
+	//if (sharedDevices.count( key ) != 1) {
+	//	LogInfo("NV_DX_interop: Opening Device " << d3dDevice << " key=" << d3dDevice << "/" << glContxtHandle);
+	//	HANDLE nh;
+	//	WERR(nh = wglDXOpenDeviceNV(d3dDevice);)
+	//	sharedDevices[key] = nh;
+	//	LogInfo("               -> " << nh);
+	//}
 
-	if (sharedDevicesUsageCount.count( h ) == 0) {
-		sharedDevicesUsageCount[h] = 0;
-	}
+	//HANDLE h = sharedDevices[key];
 
-	sharedDevicesUsageCount[h] = sharedDevicesUsageCount[h] + 1;
+	//if (sharedDevicesUsageCount.count( h ) == 0) {
+	//	sharedDevicesUsageCount[h] = 0;
+	//}
 
-	sharedDevicesMutex.unlock();
-	LogDebug("OpenSharedDevice returns " << h);
-	return h;
+	//sharedDevicesUsageCount[h] = sharedDevicesUsageCount[h] + 1;
+
+	//sharedDevicesMutex.unlock();
+	//LogDebug("OpenSharedDevice returns " << h);
+	//return h;
 }
 
-void D3DSharedTexture::CloseSharedDevice(D3D9ExContext* d3dContext, GLContext* glContext) {
+void D3DSharedTexture::CloseSharedDevice(HANDLE h, D3D9ExContext* d3dContext, GLContext* glContext) {
 	IDirect3DDevice9Ex* d3dDevice = d3dContext->Device();
 	HGLRC glContxtHandle = dynamic_cast<WGLGLContext*>(glContext)->GetHandle();
 
 	HGLRC curContext;
 	WERR(curContext = wglGetCurrentContext(););
 	if (glContxtHandle != curContext) {
-		LogError("CloseSharedDevice called with wrong current gl context; This is FATAL!");
+		LogError("CloseSharedDevice called with wrong current gl context; This is FATAL!  " << curContext << " vs " << glContxtHandle);
 	}
 
-	sharedDevicesMutex.lock();
+	LogInfo("NV_DX_interop: Closing Device: " << h << " key=" << d3dDevice << "/" << glContxtHandle);
+	WERR(wglDXCloseDeviceNV(h););
+	LogInfo("               -> closed.");
+
+	/*sharedDevicesMutex.lock();
 
 	pair<IDirect3DDevice9Ex*, HGLRC> key = make_pair(d3dDevice, glContxtHandle);
 
@@ -94,11 +104,11 @@ void D3DSharedTexture::CloseSharedDevice(D3D9ExContext* d3dContext, GLContext* g
 		usages -= 1;
 
 		if (usages == 0) {
-			LogDebug("NV_DX_interop: Closing Device: " << d3dDevice);
+			LogInfo("NV_DX_interop: Closing Device: " << h << " key=" << d3dDevice << "/" << glContxtHandle);
 			WERR(wglDXCloseDeviceNV(h););
 			sharedDevices.erase(key);
 			sharedDevicesUsageCount.erase(h);
-			LogDebug("               -> closed.");
+			LogInfo("               -> closed.");
 		}
 		else {
 			sharedDevicesUsageCount[h] = usages;
@@ -109,41 +119,44 @@ void D3DSharedTexture::CloseSharedDevice(D3D9ExContext* d3dContext, GLContext* g
 		LogError("NV_DX_interop: No open device found!");
 	}
 
-	sharedDevicesMutex.unlock();
+	sharedDevicesMutex.unlock();*/
 }
 
-D3DSharedTexture::D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, unsigned int width, unsigned int height) :
-	SharedTexture(glContext, width, height),
+D3DSharedTexture::D3DSharedTexture(DriftFXSurface* surface, GLContext* glContext, D3D9ExContext* d3dContext, unsigned int width, unsigned int height) :
+	SharedTexture(surface, glContext, width, height),
 	d3dContext(d3dContext),
 	d3dTexture(nullptr),
 	hDevice(nullptr),
 	hObject(nullptr) {
 
-
+	
 	d3dTexture = new D3D9Texture(d3dContext, width, height);
-
+	
 }
 
 D3DSharedTexture::~D3DSharedTexture() {
 	LogDebug("destroy tex");
 
 	delete d3dTexture;
-
+	
+	
 }
 
 bool D3DSharedTexture::Connect() {
-	if (glTexture != nullptr) return false;
 	glTexture = new GLTexture(glContext, GetWidth(), GetHeight());
 	hDevice = OpenSharedDevice(d3dContext, glContext);
 	WERR( wglDXSetResourceShareHandleNV(d3dTexture->GetTexture(), d3dTexture->GetShareHandle()); );
 	WERR( hObject = wglDXRegisterObjectNV(hDevice, d3dTexture->GetTexture(), glTexture->Name(), GL_TEXTURE_2D, WGL_ACCESS_READ_WRITE_NV); );
+	LogInfo("wglDXRegisterObjectNV(" << hDevice << ", " << d3dTexture->GetTexture() << ", " << glTexture->Name() << ") returns " << hObject);
 	return hObject != 0;
 }
 
 bool D3DSharedTexture::Disconnect() {
-	WERR( wglDXUnregisterObjectNV( hDevice, hObject ); );
-	delete glTexture; glTexture = nullptr;
-	CloseSharedDevice(d3dContext, glContext);
+	WERR( bool result = wglDXUnregisterObjectNV( hDevice, hObject ); );
+	LogInfo("wglDXUnregisterObjectNV(" << hDevice << ", " << hObject << ") returns " << result);
+
+	CloseSharedDevice(hDevice, d3dContext, glContext);
+	delete glTexture;
 	return true;
 }
 
@@ -168,8 +181,8 @@ FrameData* D3DSharedTexture::CreateFrameData() {
 	return data;
 }
 
-SharedTexture* SharedTexture::Create(GLContext* glContext, Context* fxContext, unsigned int width, unsigned int height) {
+SharedTexture* SharedTexture::Create(DriftFXSurface* surface, GLContext* glContext, Context* fxContext, unsigned int width, unsigned int height) {
 	D3D9ExContext* d3dContext = dynamic_cast<D3D9ExContext*>(fxContext);
-	return new D3DSharedTexture(glContext, d3dContext, width, height);
+	return new D3DSharedTexture(surface, glContext, d3dContext, width, height);
 }
 

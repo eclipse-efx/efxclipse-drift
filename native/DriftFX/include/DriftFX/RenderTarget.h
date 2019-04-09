@@ -13,19 +13,27 @@
 
 #include <DriftFX/Common.h>
 
+// cycle include
+namespace driftfx {
+	class DRIFT_API RenderTarget;
+}
+
+#include <DriftFX/DriftFXSurface.h>
+
 namespace driftfx {
 
-class DRIFT_API RenderTarget {
+	class DRIFT_API RenderTarget {
 
-public:
-	virtual unsigned int GetWidth() = 0;
-	virtual unsigned int GetHeight() = 0;
-	virtual unsigned int GetGLTexture() = 0;
+	public:
+		virtual DriftFXSurface* GetSurface() = 0;
+		virtual unsigned int GetWidth() = 0;
+		virtual unsigned int GetHeight() = 0;
+		virtual unsigned int GetGLTexture() = 0;
 
-protected:
-	virtual ~RenderTarget();
+	protected:
+		virtual ~RenderTarget();
 
-};
+	};
 
 }
 

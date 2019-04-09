@@ -88,6 +88,8 @@ public:
 
 	virtual Context* GetFxContext();
 
+	JNINativeSurface* GetAPI();
+
 protected:
 	NativeSurface(JNINativeSurface* api);
 
@@ -97,8 +99,6 @@ protected:
 
 	volatile unsigned int width;
 	volatile unsigned int height;
-
-
 
 private:
 

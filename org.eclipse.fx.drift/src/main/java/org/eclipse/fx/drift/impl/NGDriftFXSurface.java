@@ -55,7 +55,7 @@ public class NGDriftFXSurface extends NGNode {
 	}
 	
 	private void dispose(FrameData frame) {
-		NativeAPI.disposeFrameData(nativeSurfaceHandle, frame);
+		//NativeAPI.disposeFrameData(nativeSurfaceHandle, frame);
 	}
 	
 	public NGDriftFXSurface(DriftFXSurface node, long nativeSurfaceId) {

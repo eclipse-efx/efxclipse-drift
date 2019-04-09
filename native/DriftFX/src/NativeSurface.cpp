@@ -16,6 +16,8 @@
 
 #include <utils/Logger.h>
 
+#include "GLRenderTarget.h"
+
 #include <iostream>
 using namespace std;
 
@@ -108,22 +110,29 @@ RenderTarget* NativeSurface::Acquire() {
 }
 
 RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
-	LogDebug("acquire0");
-	DisposeSharedTextures();
+	
+	GLRenderTarget* target = new GLRenderTarget(this, width, height);
+	
+	return target;
+	
+	//LogDebug("acquire0");
+	//DisposeSharedTextures();
 
-	PrismBridge* bridge = PrismBridge::Get();
-	// in case the system was destroyed
-	if (bridge == nullptr) {
-		LogDebug("Could not acquire RenderTarget. Was the system destroyed?");
-		return nullptr;
-	}
 
-	SharedTexture* tex = SharedTexture::Create(GetContext(), GetFxContext(), width, height);
 
-	tex->Connect();
-	tex->Lock();
+	//PrismBridge* bridge = PrismBridge::Get();
+	//// in case the system was destroyed
+	//if (bridge == nullptr) {
+	//	LogDebug("Could not acquire RenderTarget. Was the system destroyed?");
+	//	return nullptr;
+	//}
 
-	return tex;
+	//SharedTexture* tex = SharedTexture::Create(this, GetContext(), GetFxContext(), width, height);
+
+	//tex->Connect();
+	//tex->Lock();
+
+	//return tex;
 }
 
 void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
@@ -131,7 +140,11 @@ void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 		LogDebug("Cannot present nullptr; doing nothing.");
 		return;
 	}
-	SharedTexture* texture = dynamic_cast<SharedTexture*>(target);
+
+	PrismBridge::Get()->GetShareManager()->Present(target);
+
+
+	/*SharedTexture* texture = dynamic_cast<SharedTexture*>(target);
 
 	texture->Unlock();
 	texture->Disconnect();
@@ -144,10 +157,15 @@ void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 
 	api->Present(*frameData);
 
-	delete frameData;
+	delete frameData;*/
 }
 
 Context* NativeSurface::GetFxContext() {
 	return PrismBridge::Get()->GetFxContext();
+}
+
+JNINativeSurface* NativeSurface::GetAPI()
+{
+	return api;
 }
 

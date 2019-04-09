@@ -29,6 +29,7 @@ set(DriftFX-Sources
     src/NativeSurfaceAPI.cpp
     src/NativeSurfaceRegistry.cpp
     src/RenderTarget.cpp
+    src/SharedTexture.h
     src/SharedTexture.cpp
     src/Texture.cpp
     
@@ -36,21 +37,34 @@ set(DriftFX-Sources
     src/gl/GLContext.cpp
     src/gl/GLTexture.cpp
     
+    src/prism/PrismBridge.h
     src/prism/PrismBridge.cpp
     
     src/DriftFXSurface.cpp
     src/InternalDriftFX.cpp
     
     src/gl/InternalGLContext
+    
+    src/ShareManager.h
+    src/ShareManager.cpp
+    
+    src/GLRenderTarget.h
+    src/GLRenderTarget.cpp
 )
 
 if (WIN32)
 	list(APPEND DriftFX-Sources src/gl/wgl/WGLGLContext)
 	
-	list(APPEND DriftFX-Sources src/prism/d3d/D3DPrismBridge)
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DPrismBridge.h)
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DPrismBridge.cpp)
+	
 	list(APPEND DriftFX-Sources src/prism/d3d/D3DNativeSurface)
 	list(APPEND DriftFX-Sources src/prism/d3d/D3DSharedTexture)
 	list(APPEND DriftFX-Sources src/prism/d3d/NativeAPI)
+	
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DShareManager.h)
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DShareManager.cpp)
+	
 	
 	list(APPEND DriftFX-Sources src/win32/D3D9ExContext)
 	list(APPEND DriftFX-Sources src/win32/D3D9Texture)

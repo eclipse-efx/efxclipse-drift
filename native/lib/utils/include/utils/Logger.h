@@ -15,6 +15,9 @@
 #include <iostream>
 #include <ostream>
 #include <string>
+#include <mutex>
+
+extern std::mutex loggerMutex;
 
 enum LogLevel { Debug, Error, Info };
 
@@ -29,9 +32,12 @@ std::ostream& Log(LogLevel level, std::string file, int line, std::string func);
 
 #ifdef WITH_LOGGING
 
-#define LogDebug(msg) Log(Debug, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
-#define LogError(msg) Log(Error, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
-#define LogInfo(msg) Log(Info, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
+#define LOGGER_SYNC(code) code
+//loggerMutex.lock(); { code; } loggerMutex.unlock();
+
+#define LogDebug(msg) LOGGER_SYNC( Log(Debug, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl; )
+#define LogError(msg) LOGGER_SYNC( Log(Error, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl; )
+#define LogInfo(msg) LOGGER_SYNC( Log(Info, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl; )
 #else
 #define LogDebug(msg)
 #define LogError(msg)

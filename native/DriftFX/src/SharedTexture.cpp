@@ -10,19 +10,27 @@
  */
 
 #include "SharedTexture.h"
+#include <DriftFX/DriftFXSurface.h>
 
 #include "Common.h"
 
+using namespace driftfx;
 using namespace driftfx::gl;
 using namespace driftfx::internal;
 
-SharedTexture::SharedTexture(GLContext* glContext, unsigned int width, unsigned int height) :
+
+SharedTexture::SharedTexture(DriftFXSurface* surface, GLContext* glContext, unsigned int width, unsigned int height) :
+		surface(surface),
 		width(width), height(height),
 		glContext(glContext),
 		glTexture(nullptr) {
 }
 
 SharedTexture::~SharedTexture() {
+}
+
+DriftFXSurface* SharedTexture::GetSurface() {
+	return surface;
 }
 
 GLTexture* SharedTexture::GetTexture() {

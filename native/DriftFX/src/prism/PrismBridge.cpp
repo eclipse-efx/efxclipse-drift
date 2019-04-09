@@ -16,6 +16,7 @@
 using namespace driftfx;
 using namespace driftfx::gl;
 
+using namespace driftfx::internal;
 using namespace driftfx::internal::prism;
 
 PrismBridge* PrismBridge::bridge = nullptr;
@@ -25,13 +26,19 @@ PrismBridge* PrismBridge::Get() {
 }
 
 PrismBridge::PrismBridge(Context* fxContext) :
-		defaultContext(nullptr),
-		fxContext(fxContext) {
+	defaultContext(nullptr),
+	fxContext(fxContext),
+	shareManager(nullptr) {
 
 }
 
 PrismBridge::~PrismBridge() {
 
+}
+
+ShareManager * PrismBridge::GetShareManager()
+{
+	return shareManager;
 }
 
 void PrismBridge::Destroy() {

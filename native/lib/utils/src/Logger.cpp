@@ -14,6 +14,8 @@
 #include <string.h>
 #include <algorithm>
 #include <sstream>
+#include <thread>
+#include <mutex>
 
 #include <utils/Logger.h>
 
@@ -57,6 +59,6 @@ std::ostream& Log(LogLevel level, std::string file, int line, std::string func) 
 	std::string fname = filename(file);
 
 	std::ostringstream os;
-	os << "[C] [" << std::setw(5) << level << "] " << std::setw(40) << std::right << cut(fname, 40) << ":" << std::dec << std::setw(3) << line << " - " << std::setw(100) << std::left << cut(func, 100) << " ";
+	os << "[C] [" << std::setw(5) << level << "] " << "[" << std::this_thread::get_id() << "] " << std::setw(40) << std::right << cut(fname, 40) << ":" << std::dec << std::setw(3) << line << " - " << std::setw(100) << std::left << cut(func, 100) << " ";
 	return std::cout << os.str();
 }

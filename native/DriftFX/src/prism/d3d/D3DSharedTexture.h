@@ -35,7 +35,7 @@ using namespace win32;
 class D3DSharedTexture : public SharedTexture {
 
 public:
-	D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, unsigned int width, unsigned int height);
+	D3DSharedTexture(DriftFXSurface* surface, GLContext* glContext, D3D9ExContext* d3dContext, unsigned int width, unsigned int height);
 	virtual ~D3DSharedTexture();
 
 
@@ -49,7 +49,7 @@ public:
 
 
 	static HANDLE OpenSharedDevice(D3D9ExContext* d3dContext, GLContext* glContext);
-	static void CloseSharedDevice(D3D9ExContext* d3dContext, GLContext* glContext);
+	static void CloseSharedDevice(HANDLE h, D3D9ExContext* d3dContext, GLContext* glContext);
 protected:
 	D3D9ExContext* d3dContext;
 	D3D9Texture* d3dTexture;

@@ -15,6 +15,7 @@
 #include "D3DPrismBridge.h"
 #include "D3DSharedTexture.h"
 #include "D3DNativeSurface.h"
+#include "D3DShareManager.h"
 
 #include "NativeSurfaceRegistry.h"
 #include "gl/wgl/WGLGLContext.h"
@@ -51,6 +52,12 @@ D3DPrismBridge::D3DPrismBridge(jlong pContext) :
 	LogDebug("test1 = " << test1)
 //	WGLContext* test2 = new WGLContext(test1);
 //	LogDebug("test2 = " << test2)
+
+	WGLGLContext* shareManagerGlContext = new WGLGLContext(def);
+
+	shareManager = new D3DShareManager(jfxContext, shareManagerGlContext);
+	shareManager->Start();
+
 }
 
 int D3DPrismBridge::RecreateFXTexture(void* fxTexture, HANDLE shareHandle) {
@@ -103,6 +110,8 @@ D3DPrismBridge::~D3DPrismBridge() {
 	LogDebug("~D3DPrismBridge()")
 	delete jfxContext;
 	delete defaultContext;
+	shareManager->Stop();
+	delete shareManager;
 }
 
 D3D9ExContext* D3DPrismBridge::GetJfxContext() {

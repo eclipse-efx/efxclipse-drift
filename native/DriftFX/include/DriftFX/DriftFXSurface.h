@@ -13,6 +13,11 @@
 
 #include <DriftFX/Common.h>
 
+
+ // cycle include
+namespace driftfx {
+	class DRIFT_API DriftFXSurface;
+}
 #include <DriftFX/RenderTarget.h>
 
 #include <DriftFX/Context.h>

@@ -41,7 +41,7 @@ public:
 
 	virtual GLTexture* GetTexture();
 
-
+	virtual DriftFXSurface* GetSurface();
 
 	virtual bool Connect() = 0;
 	virtual bool Disconnect() = 0;
@@ -52,7 +52,7 @@ public:
 	virtual FrameData* CreateFrameData() = 0;
 
 
-	static SharedTexture* Create(GLContext* context, Context* fxContext, unsigned int width, unsigned int height);
+	static SharedTexture* Create(DriftFXSurface* surface, GLContext* context, Context* fxContext, unsigned int width, unsigned int height);
 
 	// RenderTarget
 	virtual unsigned int GetGLTexture();
@@ -60,13 +60,15 @@ public:
 	virtual unsigned int GetHeight();
 
 protected:
-	SharedTexture(GLContext* glContext, unsigned int width, unsigned int height);
+	SharedTexture(DriftFXSurface* surface, GLContext* glContext, unsigned int width, unsigned int height);
 
 	GLContext* glContext;
 	GLTexture* glTexture;
 
 	unsigned int width;
 	unsigned int height;
+	
+	DriftFXSurface* surface;
 };
 
 }
