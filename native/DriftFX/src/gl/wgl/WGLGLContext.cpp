@@ -171,10 +171,11 @@ void WGLGLContext::createGL(HWND hWnd) {
 
 	//cout << "Creating Temp OpenGL Context" << endl;
 	WERR(HGLRC hTempContext = wglCreateContext(hDC);)
-	//cout << " Temp OpenGL Context = " << hTempContext << endl;
+		//cout << " Temp OpenGL Context = " << hTempContext << endl;
 
-	WERR(wglMakeCurrent(hDC, hTempContext);)
-	WERR(wglewInit();)
+		WERR(wglMakeCurrent(hDC, hTempContext);)
+		WERR(wglewInit();)
+		WERR(wglMakeCurrent(NULL, NULL);)
 
 	//cout << " * Temp OpenGL Context: " << glGetString( (GLenum) GL_VERSION ) << endl;
 
@@ -197,15 +198,15 @@ void WGLGLContext::createGL(HWND hWnd) {
 	//LogDebug("created OpenGL Context = " << hGLRC)
 
 	//WERR(wglMakeCurrent(hDC, hGLRC);)
-	SetCurrent();
+	//SetCurrent();
 
-	WERR(glewInit();)
+	//WERR(glewInit();)
 
 	//cout << "Deleting Temp OpenGL Context" << endl;
 	WERR(bool deleted = wglDeleteContext(hTempContext);)
 	//LogDebug("temp context deleted: " << deleted)
 
-	LogInfo("Created OpenGL Context " << hGLRC << ": "<< glGetString( GL_VERSION ) << " ( shared: " << sharedHGLRC << " )")
+	//LogInfo("Created OpenGL Context " << hGLRC << ": "<< glGetString( GL_VERSION ) << " ( shared: " << sharedHGLRC << " )")
 }
 
 void WGLGLContext::destroyGL(HWND hWnd) {

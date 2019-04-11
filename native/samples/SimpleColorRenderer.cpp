@@ -136,7 +136,7 @@ public:
 		unsigned int width = surface->GetWidth();
 		unsigned int height = surface->GetHeight();
 
-
+		width = 100; height = 100;
 
 		RenderTarget* acquired = surface->Acquire(width, height);
 		////////////////

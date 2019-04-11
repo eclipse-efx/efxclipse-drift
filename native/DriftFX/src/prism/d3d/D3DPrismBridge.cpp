@@ -47,15 +47,19 @@ D3DPrismBridge::D3DPrismBridge(jlong pContext) :
 	defaultContext = new WGLGLContext();
 
 	WGLGLContext* def = dynamic_cast<WGLGLContext*>(defaultContext);
+	def->UnsetCurrent();
 	LogDebug("def = " << def)
 	WGLGLContext* test1 = new WGLGLContext(def);
+	test1->UnsetCurrent();
 	LogDebug("test1 = " << test1)
 //	WGLContext* test2 = new WGLContext(test1);
 //	LogDebug("test2 = " << test2)
 
 	WGLGLContext* shareManagerGlContext = new WGLGLContext(def);
+	shareManagerGlContext->UnsetCurrent();
 
-	shareManager = new D3DShareManager(jfxContext, shareManagerGlContext);
+	D3D9ExContext *shareManagerD3DContext = new D3D9ExContext();
+	shareManager = new D3DShareManager(shareManagerD3DContext, shareManagerGlContext);
 	shareManager->Start();
 
 }

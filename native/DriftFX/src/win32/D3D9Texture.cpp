@@ -37,7 +37,7 @@ D3D9Texture::D3D9Texture(D3D9ExContext *context, int width, int height) :
 
 	switch (hr) {
 	case D3D_OK: // nice
-		LogDebug("created d3d texture " << width << "x" << height)
+		LogDebug("created d3d texture " << width << " x " << height)
 		texture->AddRef();
 		break;
 	case D3DERR_INVALIDCALL: LogError( "D3DERR_INVALIDCALL" ); break;

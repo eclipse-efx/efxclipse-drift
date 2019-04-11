@@ -30,11 +30,11 @@ GLRenderTarget::GLRenderTarget(DriftFXSurface* surface, unsigned int width, unsi
 	glGenTextures(1, &glTexture);
 	glBindTexture(GL_TEXTURE_2D, glTexture);
 	
-	unsigned int *pixels = (unsigned int*)malloc(width * height * sizeof(unsigned int));
-	for (int idx = 0; idx < width * height; idx++) {
-		pixels[idx] = 0xFF0000FF;
-	}
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, pixels);
+	//unsigned int *pixels = (unsigned int*)malloc(width * height * sizeof(unsigned int));
+	//for (int idx = 0; idx < width * height; idx++) {
+	//	pixels[idx] = 0xFF0000FF;
+	//}
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
 }

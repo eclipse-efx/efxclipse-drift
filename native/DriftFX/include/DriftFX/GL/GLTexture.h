@@ -42,6 +42,8 @@ protected:
 
 };
 
+void CopyGLTexture(GLuint sourceTex, GLuint targetTex, int width, int height);
+
 }
 }
 
