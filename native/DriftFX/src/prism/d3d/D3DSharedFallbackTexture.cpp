@@ -141,6 +141,8 @@ bool D3DSharedFallbackTexture::Disconnect() {
 
 	UploadPixels(d3dTexture, pixels);
 
+	free(pixels);
+
 	return true;
 }
 
