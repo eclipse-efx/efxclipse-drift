@@ -24,6 +24,8 @@ public:
 
 	static int GetLogLevel();
 
+	static bool IsUseWinFallback();
+
 	static const int LEVEL_DEBUG = 0;
 	static const int LEVEL_INFO = 1;
 	static const int LEVEL_WARNING = 2;
@@ -33,6 +35,7 @@ public:
 private:
 	static bool debug;
 	static int logLevel;
+	static bool useWinFallback;
 
 };
 

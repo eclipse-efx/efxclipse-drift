@@ -4,6 +4,8 @@ public class Configuration {
 
 	public static final boolean DEBUG = getBoolean("driftfx.debug", false);
 	public static final int LOGLEVEL = getInt("driftfx.loglevel", 1);
+	
+	public static final boolean USEWINFALLBACK = getBoolean("driftfx.winfallback", false);
 
 	private static boolean getBoolean(String name, boolean defaultValue) {
 		if (null == System.getProperty(name)) {

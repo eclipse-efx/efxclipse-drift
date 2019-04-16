@@ -23,6 +23,7 @@ using namespace driftfx::internal;
  
 bool Configuration::debug = false;
 int Configuration::logLevel = 1;
+bool Configuration::useWinFallback = false;
 
 
 bool getJavaField(JNIEnv *env, jclass cls, const char * name) {
@@ -36,8 +37,12 @@ void Configuration::Initialize() {
 	jfieldID jDebugField = env->GetStaticFieldID(jConfigurationClass, "DEBUG", "Z");
 	jfieldID jLogLevelField = env->GetStaticFieldID(jConfigurationClass, "LOGLEVEL", "I");
 
+	jfieldID jUseWinFallbackField = env->GetStaticFieldID(jConfigurationClass, "USEWINFALLBACK", "Z");
+
 	debug = (bool) env->GetStaticBooleanField(jConfigurationClass, jDebugField);
 	logLevel = (int )env->GetStaticIntField(jConfigurationClass, jLogLevelField);
+
+	useWinFallback = (bool)env->GetStaticBooleanField(jConfigurationClass, jUseWinFallbackField);
 
 	LogSetEnabled(LogLevel::Debug, false);
 	LogSetEnabled(LogLevel::Info, false);
@@ -54,9 +59,17 @@ void Configuration::Initialize() {
 	LogInfo("Loaded native driftfx configuration:");
 	LogInfo("debug = " << debug);
 	LogInfo("logLevel = " << logLevel);
+	LogInfo("useWinFallback = " << useWinFallback);
 }
 
 bool Configuration::IsDebug() {
 	return debug;
 }
 
+bool Configuration::IsUseWinFallback() {
+	return useWinFallback;
+}
+
+int Configuration::GetLogLevel() {
+	return logLevel;
+}
