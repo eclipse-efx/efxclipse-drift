@@ -71,7 +71,7 @@ void D3DSharedFallbackTexture::UploadPixels(D3D9Texture* texture, byte* pixels) 
 void D3DSharedFallbackTexture::DownloadPixels(GLTexture* texture, byte* pixels) {
 	auto start = chrono::steady_clock::now();
 	glBindTexture(GL_TEXTURE_2D, texture->Name());
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 	glBindTexture(GL_TEXTURE_2D, 0); // TODO should we restore the previously bound texture?
 	auto end = chrono::steady_clock::now();
 	LogDebug("Downloading " << dec << texture->GetWidth() * texture->GetHeight() << "px needed " << chrono::duration_cast<chrono::nanoseconds>(end - start).count() << "ns");
