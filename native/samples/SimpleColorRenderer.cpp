@@ -105,6 +105,24 @@ public:
 
 		glClearColor(red, green, blue, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(10, 10, 50, 50);
+		glViewport(10, 10, 50, 50);
+		glClearColor(1, 0, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glScissor(70, 10, 50, 50);
+		glViewport(10, 10, 50, 50);
+		glClearColor(0, 1, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glScissor(130, 10, 50, 50);
+		glViewport(10, 10, 50, 50);
+		glClearColor(0, 0, 1, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDisable(GL_SCISSOR_TEST);
+
 		glFlush();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
