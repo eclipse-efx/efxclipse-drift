@@ -27,8 +27,7 @@ D3D9Texture::D3D9Texture(D3D9ExContext *context, int width, int height) :
 	texture(nullptr),
 	textureShareHandle(nullptr) {
 
-
-	DWORD usage = D3DUSAGE_NONSECURE /*| D3DUSAGE_RENDERTARGET*/;
+	DWORD usage = D3DUSAGE_NONSECURE | D3DUSAGE_DYNAMIC;
 	//usage = 0;
 	HRESULT hr = context->d3d9Device->CreateTexture(
 			width, height,
@@ -37,7 +36,7 @@ D3D9Texture::D3D9Texture(D3D9ExContext *context, int width, int height) :
 
 	switch (hr) {
 	case D3D_OK: // nice
-		LogDebug("created d3d texture " << width << "x" << height)
+		LogDebug("Created D3D9Texture " << dec << width << "x" << dec << height << ", shareHandle: " << hex << textureShareHandle)
 		texture->AddRef();
 		break;
 	case D3DERR_INVALIDCALL: LogError( "D3DERR_INVALIDCALL" ); break;
@@ -54,25 +53,23 @@ D3D9Texture::D3D9Texture(D3D9ExContext *context, int width, int height) :
 
 
 D3D9Texture::~D3D9Texture() {
-
+	LogDebug("Disposing D3D9Texture: " << texture << ", shareHandle: " << textureShareHandle);
 	//int count = texture->Release();
 	//LogDebug("~D3D9Texture texture "<<texture<<" count after Release: " << count);
 
 	// cheat
-	LogDebug("CHEAT RELEASE " << texture);
+	LogDebug("  CHEAT RELEASE " << texture);
 	int count;
 	int max = 100;
 	while (true) {
 		count = texture->Release();
-		LogDebug(" count = " << count);
+		LogDebug("   count = " << count);
 		if (count == 0) break;
 		max--;
 		if (max == 0) break;
 	}
 
 	//while (0 != texture->Release());
-
-
 
 	texture = NULL;
 	textureShareHandle = NULL;

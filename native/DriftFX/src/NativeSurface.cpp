@@ -108,7 +108,7 @@ RenderTarget* NativeSurface::Acquire() {
 }
 
 RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
-	LogDebug("acquire0");
+	LogDebug("Acquire " << dec << width << " x " << dec << height);
 	DisposeSharedTextures();
 
 	PrismBridge* bridge = PrismBridge::Get();

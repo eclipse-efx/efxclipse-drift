@@ -39,6 +39,14 @@ public:
 //	static void glFlush();
 //	static void glFinish();
 
+	static void GetTexImage(GLenum target, GLint level, GLenum format, GLenum type, void* pixels);
+
+	static void GenBuffers(GLsizei n, GLuint* buffers);
+	static void DeleteBuffers(GLsizei n, GLuint* buffers);
+	static void* MapBuffer(GLenum target, GLenum access);
+	static void UnmapBuffer(GLenum target);
+	static void BindBuffer(GLenum target, GLuint buffer);
+
 
 	static void Initialize();
 	static void Cleanup();

@@ -43,6 +43,7 @@ public class Demo extends Application {
 		renderers.setCellFactory(v -> new CellImpl());
 		renderers.getItems().add(new SimpleColorRenderer(surface0));
 		renderers.getItems().add(new SimpleTriangleRenderer(surface0));
+		renderers.getSelectionModel().select(renderers.getItems().get(0));
 
 		Button stop = new Button("Stop");
 		stop.setMinWidth(Region.USE_PREF_SIZE);

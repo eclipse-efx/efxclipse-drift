@@ -21,7 +21,6 @@ class DRIFT_API Texture {
 public:
 	virtual ~Texture();
 
-
 	virtual unsigned int GetWidth();
 	virtual unsigned int GetHeight();
 

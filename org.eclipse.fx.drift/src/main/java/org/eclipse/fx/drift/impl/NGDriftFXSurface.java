@@ -226,7 +226,7 @@ public class NGDriftFXSurface extends NGNode {
 				x = Math.round((width - finalWidth) / 2f);
 				y = Math.round((height - finalHeight) / 2f);
 		
-			System.out.println("[J] [Info ] Surface# "+nativeSurfaceHandle+": Drawing texture " + GraphicsPipelineUtil.getTextureHandle(currentTexture));
+			System.out.println("[J] [Info ] Surface# "+nativeSurfaceHandle+": Drawing texture " + Long.toHexString(GraphicsPipelineUtil.getTextureHandle(currentTexture)));
 				
 			//System.err.println("## " + textureWidth + "x" + textureHeight + " -> " + x + ", " + y + " @ " + finalWidth + "x" + finalHeight);
 			g.drawTexture(currentTexture, x, y, x + finalWidth, y + finalHeight, 0, 0, textureWidth, textureHeight);

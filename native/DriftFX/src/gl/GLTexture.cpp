@@ -25,13 +25,18 @@ using namespace driftfx::gl;
 
 using namespace driftfx::internal::gl;
 
+
+
 GLTexture::GLTexture(GLContext *context, int width, int height) : Texture(width, height),
 	context(context),
 	textureName(0) {
 
 	context->SetCurrent();
 
+	logGLErr(;);
 	logGLErr(InternalGLContext::glGenTextures(1, &textureName););
+
+
 
 	// TODO check for error & if textureName is valid
 }

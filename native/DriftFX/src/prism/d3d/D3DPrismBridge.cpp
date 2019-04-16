@@ -74,14 +74,15 @@ int D3DPrismBridge::RecreateFXTexture(void* fxTexture, HANDLE shareHandle) {
 
 	WERR(;);
 
-	LogDebug("CreateTexture( " << w << ", " << h << ", 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, " << pTexture << ", " << sh << " )")
+	LogDebug("RecreateFXTexture( w: " << dec << w << ", h: " << dec << h << ", shareHandle: " << hex << sh << " )")
 	HRESULT res = jfxContext->Device()->CreateTexture(
 			w, h,
-			0, 0,
+			0, D3DUSAGE_DYNAMIC,
 			D3DFMT_A8R8G8B8,
 			D3DPOOL_DEFAULT,
 			&pTexture,
 			&sh);
+	LogDebug(" Handle: " << hex << pTexture);
 
 	if (FAILED(res)) {
 		LogError(HRESULT_CODE(res) << ": " << ToString(HRESULT_CODE(res)));

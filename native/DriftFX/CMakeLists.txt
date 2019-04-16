@@ -41,7 +41,8 @@ set(DriftFX-Sources
     src/DriftFXSurface.cpp
     src/InternalDriftFX.cpp
     
-    src/gl/InternalGLContext
+    src/gl/InternalGLContext.h
+    src/gl/InternalGLContext.cpp
 )
 
 if (WIN32)
@@ -49,7 +50,13 @@ if (WIN32)
 	
 	list(APPEND DriftFX-Sources src/prism/d3d/D3DPrismBridge)
 	list(APPEND DriftFX-Sources src/prism/d3d/D3DNativeSurface)
-	list(APPEND DriftFX-Sources src/prism/d3d/D3DSharedTexture)
+	
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DSharedTexture.h)
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DSharedTexture.cpp)
+	
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DSharedFallbackTexture.h)
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DSharedFallbackTexture.cpp)
+	
 	list(APPEND DriftFX-Sources src/prism/d3d/NativeAPI)
 	
 	list(APPEND DriftFX-Sources src/win32/D3D9ExContext)

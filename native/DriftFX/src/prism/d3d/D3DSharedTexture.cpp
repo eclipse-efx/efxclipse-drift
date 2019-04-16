@@ -168,8 +168,13 @@ FrameData* D3DSharedTexture::CreateFrameData() {
 	return data;
 }
 
+#include "D3DSharedFallbackTexture.h"
+
 SharedTexture* SharedTexture::Create(GLContext* glContext, Context* fxContext, unsigned int width, unsigned int height) {
 	D3D9ExContext* d3dContext = dynamic_cast<D3D9ExContext*>(fxContext);
-	return new D3DSharedTexture(glContext, d3dContext, width, height);
+	
+	//return new D3DSharedTexture(glContext, d3dContext, width, height);
+
+	return new D3DSharedFallbackTexture(glContext, d3dContext, width, height);
 }
 
