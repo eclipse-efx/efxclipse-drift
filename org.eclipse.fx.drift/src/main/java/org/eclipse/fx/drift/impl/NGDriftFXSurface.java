@@ -48,10 +48,12 @@ public class NGDriftFXSurface extends NGNode {
 	private Texture currentTexture;
 	
 	public void present(FrameData frame) {
-		FrameData oldData = currentFrameData;
-		currentFrameData = frame;
-		if (oldData != null) {
-			dispose(oldData);
+		synchronized (resourceFactory) {
+			FrameData oldData = currentFrameData;
+			currentFrameData = frame;
+			if (oldData != null) {
+				dispose(oldData);
+			}
 		}
 	}
 	
@@ -114,7 +116,9 @@ public class NGDriftFXSurface extends NGNode {
 		lock.lock();
 		fixer.execute(() -> {
 			lock.lock();
-			GraphicsPipelineUtil.onTextureCreated(texture, currentFrameData);
+			synchronized (resourceFactory) {
+				GraphicsPipelineUtil.onTextureCreated(texture, currentFrameData);
+			}
 			done.signal();
 			lock.unlock();
 		});
@@ -123,7 +127,7 @@ public class NGDriftFXSurface extends NGNode {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
+		lock.unlock();
 		
 		// recreate shared texture
 		//int result = GraphicsPipelineUtil.onTextureCreated(texture, currentFrameData);
