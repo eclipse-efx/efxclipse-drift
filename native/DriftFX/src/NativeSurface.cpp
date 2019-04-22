@@ -63,9 +63,6 @@ void NativeSurface::DisposeSharedTextures() {
 }
 
 void NativeSurface::Cleanup() {
-	LogDebug("clean textures");
-	DisposeSharedTextures();
-
 //	// TODO send some kind of signal to tell FX we are going to dispose our textures
 	FrameData* frameData = new FrameData();
 	frameData->d3dSharedHandle = 0;
@@ -75,6 +72,10 @@ void NativeSurface::Cleanup() {
 	api->Present(*frameData);
 
 	delete frameData;
+
+	LogDebug("clean textures");
+	DisposeSharedTextures();
+
 //
 //
 	// NOTE: since textures know their context and set it current upon deletion
