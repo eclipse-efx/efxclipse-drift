@@ -10,11 +10,15 @@
  *******************************************************************************/
 package org.eclipse.fx.drift; 
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.eclipse.fx.drift.impl.NGDriftFXSurface;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
 import org.eclipse.fx.drift.internal.JNINativeSurface;
 import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.NativeAPI;
+import org.eclipse.fx.drift.internal.ScreenObserver;
+import org.eclipse.fx.drift.internal.SurfaceData;
 
 import com.sun.javafx.geom.BaseBounds;
 import com.sun.javafx.geom.RectBounds;
@@ -23,22 +27,53 @@ import com.sun.javafx.jmx.MXNodeAlgorithm;
 import com.sun.javafx.jmx.MXNodeAlgorithmContext;
 import com.sun.javafx.scene.DirtyBits;
 import com.sun.javafx.sg.prism.NGNode;
+import com.sun.javafx.stage.ScreenHelper;
 import com.sun.javafx.tk.Toolkit;
 
 import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.Node;
+import javafx.stage.Screen;
 
 //Note: this implementation is against internal JavafX API
 @SuppressWarnings({"restriction", "deprecation"})
 public class DriftFXSurface extends Node {
+	
+	private AtomicReference<SurfaceData> surfaceData = new AtomicReference<>(null);
+	
+	private final ReadOnlyDoubleWrapper screenScaleFactor = new ReadOnlyDoubleWrapper(this, "screenScaleFactor", 1.0);
+	private final DoubleProperty userScaleFactor = new SimpleDoubleProperty(this, "userScaleFactor", 1.0);
+	
+	public ReadOnlyDoubleProperty screenScaleFactorProperty() {
+		return screenScaleFactor.getReadOnlyProperty();
+	}
+	
+	public double getScreenScaleFactor() {
+		return screenScaleFactorProperty().get();
+	}
+	
+	public DoubleProperty userScaleFactorProperty() {
+		return userScaleFactor;
+	}
+	
+	public double getUserScaleFactor() {
+		return userScaleFactorProperty().get();
+	}
+	
+	public void setUserScaleFactor(double value) {
+		userScaleFactorProperty().set(value);
+	}
 	
 	public long getNativeSurfaceHandle() {
 		return nativeSurfaceId;
 	}
 	
 	private long nativeSurfaceId;
+	
+	private ScreenObserver screenObserver = new ScreenObserver(this);
 	
 	public DriftFXSurface() {
 		JNINativeSurface jni = new JNINativeSurface((frame) -> {
@@ -50,7 +85,9 @@ public class DriftFXSurface extends Node {
 		});
 		nativeSurfaceId = NativeAPI.createNativeSurface(jni);
 		
-		
+		// observe current screen render factor
+		screenScaleFactor.bind(screenObserver.currentRenderScaleProperty());
+		screenScaleFactor.addListener((x, o, n) -> updateSurfaceData());
 	}
 
 	@Override
@@ -115,6 +152,7 @@ public class DriftFXSurface extends Node {
             
             impl_layoutBoundsChanged();
             impl_geomChanged();
+            updateSurfaceData();
             impl_markDirty(DirtyBits.NODE_GEOMETRY);
         }
 	}
@@ -146,6 +184,7 @@ public class DriftFXSurface extends Node {
 	            
 	            impl_geomChanged();
 	            impl_layoutBoundsChanged();
+	            updateSurfaceData();
 	            impl_markDirty(DirtyBits.NODE_GEOMETRY);
 	        }
 	    }
@@ -200,6 +239,14 @@ public class DriftFXSurface extends Node {
 	   Log.debug("Destroying NativeSurface system");
 	   GraphicsPipelineUtil.destroy();
    }
+
+   private SurfaceData computeSurfaceData() {
+	   return new SurfaceData(
+			   (float) getWidth(), (float) getHeight(), 
+			   (float) getScreenScaleFactor(), (float) getScreenScaleFactor(), 
+			   (float) getUserScaleFactor(), (float) getUserScaleFactor());
+	   
+   }
    
 	@Deprecated
 	@Override
@@ -208,7 +255,8 @@ public class DriftFXSurface extends Node {
 		NGDriftFXSurface peer = impl_getPeer();
 		
 		if (impl_isDirty(DirtyBits.NODE_GEOMETRY)) {
-			peer.updateSize((float) getWidth(), (float) getHeight());
+			SurfaceData data = surfaceData.get();
+			peer.updateSurface(data);
 			peer.markDirty();
 		}
 		
@@ -227,8 +275,13 @@ public class DriftFXSurface extends Node {
 	public void resize(double width, double height) {
 		setWidth(width);
 		setHeight(height);
-		impl_markDirty(DirtyBits.NODE_GEOMETRY);
+		updateSurfaceData();
 	}
+   
+   private void updateSurfaceData() {
+	   surfaceData.set(computeSurfaceData());
+	   impl_markDirty(DirtyBits.NODE_GEOMETRY);
+   }
    
    @Override
 	public void relocate(double x, double y) {
