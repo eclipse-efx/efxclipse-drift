@@ -21,11 +21,11 @@ struct SurfaceData {
 	math::Vec2d size;
 	math::Vec2d screenScale;
 	math::Vec2d userScale;
-	SurfaceData() :
+	SurfaceData() noexcept :
 		size(1, 1),
 		screenScale(1, 1),
 		userScale(1, 1) {}
-	SurfaceData(const SurfaceData& s) = default;
+	SurfaceData(const SurfaceData& s) noexcept = default;
 };
 
 }
