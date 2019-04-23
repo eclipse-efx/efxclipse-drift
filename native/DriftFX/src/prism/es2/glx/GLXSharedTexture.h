@@ -8,6 +8,7 @@
  * Contributors:
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  */
+
 #ifndef PRISM_ES2_GLX_GLXSHAREDTEXTURE_H_
 #define PRISM_ES2_GLX_GLXSHAREDTEXTURE_H_
 
