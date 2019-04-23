@@ -25,6 +25,7 @@ struct SurfaceData {
 		size(1, 1),
 		screenScale(1, 1),
 		userScale(1, 1) {}
+	SurfaceData(const SurfaceData& s) = default;
 };
 
 }
