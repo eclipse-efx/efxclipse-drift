@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.fx.drift.internal;
 
-import org.eclipse.fx.drift.internal.JNINativeSurface.FrameData;
-
 import com.sun.prism.Texture;
 
 //Note: this implementation is against internal JavafX API
@@ -28,9 +26,9 @@ public class NativeAPI {
 	public static native long nGetD3DTextureHandle(long fxTextureHandle);
 	
 	
-	private static native void nUpdateSize(long nativeSurfaceId, int width, int height);
-	public static void updateSize(long nativeSurfaceId, int width, int height) {
-		nUpdateSize(nativeSurfaceId, width, height);
+	private static native void nUpdateSurface(long nativeSurfaceId, double width, double height, double screenScaleX, double screenScaleY, double userScaleX, double userScaleY);
+	public static void updateSurface(long nativeSurfaceId, SurfaceData surfaceData) {
+		nUpdateSurface(nativeSurfaceId, surfaceData.width, surfaceData.height, surfaceData.renderScaleX, surfaceData.renderScaleY, surfaceData.userScaleX, surfaceData.userScaleY);
 	}
 	
 	private static native long nCreateSharedTexture(long nativeSurfaceId, long jfxTextureHandle);

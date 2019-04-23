@@ -11,28 +11,28 @@
 
 #include <jni.h>
 
+#include <DriftFX/math/Vec2.h>
+
 #include "prism/PrismBridge.h"
 
 #include "NativeSurface.h"
-#include "JNINativeSurface.h"
-
 #include "NativeSurfaceRegistry.h"
-
 #include "JNINativeSurface.h"
-#include "NativeSurface.h"
 
 #include "SharedTexture.h"
+
 
 #include "Configuration.h"
 
 #include <iostream>
-using namespace std;
 
 #include <utils/JNIHelper.h>
 #include <utils/Logger.h>
 
-using namespace driftfx::internal;
+using namespace std;
 
+using namespace driftfx::internal;
+using namespace driftfx::math;
 
 extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nInitialize(JNIEnv *env, jclass cls) {
 	LogDebug("nInitialize")
@@ -54,11 +54,10 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_n
 	NativeSurfaceRegistry::Get()->Destroy((long) surfaceId);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nUpdateSize(JNIEnv *env, jclass cls, jlong surfaceId, jint width, jint height) {
-	NativeSurface* surface = NativeSurfaceRegistry::Get()->Get((long) surfaceId);
-	surface->UpdateSize((int) width, (int) height);
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nUpdateSurface(JNIEnv *env, jclass cls, jlong surfaceId, jdouble width, jdouble height, jdouble screenScaleX, jdouble screenScaleY, jdouble userScaleX, jdouble userScaleY) {
+	NativeSurface* surface = NativeSurfaceRegistry::Get()->Get((long)surfaceId);
+	surface->UpdateSurface(Vec2d((double)width, (double)height), Vec2d((double)screenScaleX, (double)screenScaleY), Vec2d((double)userScaleX, (double)userScaleY));
 }
-
 
 extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nDisposeFrameData(JNIEnv* env, jclass cls, jlong surfaceId, jlong frameDataId) {
 	LogDebug("dispose frame data " << surfaceId << ": " << frameDataId);

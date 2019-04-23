@@ -23,6 +23,7 @@
 #include "win32/D3D9Texture.h"
 
 #include <DriftFX/GL/GLContext.h>
+#include <DriftFX/math/Vec2.h>
 
 
 namespace driftfx {
@@ -35,7 +36,7 @@ using namespace win32;
 class D3DSharedTexture : public SharedTexture {
 
 public:
-	D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, unsigned int width, unsigned int height);
+	D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, SurfaceData surfaceData, math::Vec2ui textureSize);
 	virtual ~D3DSharedTexture();
 
 

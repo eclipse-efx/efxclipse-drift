@@ -9,8 +9,8 @@
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  */
 
-#include "NativeSurfaceRegistry.h"
 #include "InternalDriftFX.h"
+#include "NativeSurfaceRegistry.h"
 
 using namespace driftfx;
 using namespace driftfx::internal;

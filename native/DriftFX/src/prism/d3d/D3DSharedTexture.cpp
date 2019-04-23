@@ -16,6 +16,8 @@
 
 #include <utils/Logger.h>
 
+#include <DriftFX/math/Vec2.h>
+
 
 #include "SharedTexture.h"
 #include "win32/Error.h"
@@ -29,6 +31,7 @@
 using namespace std;
 
 using namespace driftfx;
+using namespace driftfx::math;
 
 using namespace driftfx::internal;
 using namespace driftfx::internal::gl::wgl;
@@ -114,15 +117,15 @@ void D3DSharedTexture::CloseSharedDevice(D3D9ExContext* d3dContext, GLContext* g
 	sharedDevicesMutex.unlock();
 }
 
-D3DSharedTexture::D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, unsigned int width, unsigned int height) :
-	SharedTexture(glContext, width, height),
+D3DSharedTexture::D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, SurfaceData surfaceData, Vec2ui textureSize) :
+	SharedTexture(glContext, surfaceData, textureSize),
 	d3dContext(d3dContext),
 	d3dTexture(nullptr),
 	hDevice(nullptr),
 	hObject(nullptr) {
 
 
-	d3dTexture = new D3D9Texture(d3dContext, width, height);
+	d3dTexture = new D3D9Texture(d3dContext, textureSize.x, textureSize.y);
 
 }
 
@@ -165,21 +168,21 @@ FrameData* D3DSharedTexture::CreateFrameData() {
 	FrameData* data = new FrameData();
 	data->id = (long long) this;
 	data->d3dSharedHandle = (long long) d3dTexture->GetShareHandle();
-	data->height = GetHeight();
-	data->width = GetWidth();
+	data->textureSize = textureSize;
+	data->surfaceData = surfaceData;
 	return data;
 }
 
 #include "D3DSharedFallbackTexture.h"
 
-SharedTexture* SharedTexture::Create(GLContext* glContext, Context* fxContext, unsigned int width, unsigned int height) {
+SharedTexture* SharedTexture::Create(GLContext* glContext, Context* fxContext, SurfaceData surfaceData, Vec2ui textureSize) {
 	D3D9ExContext* d3dContext = dynamic_cast<D3D9ExContext*>(fxContext);
 	
 	if (Configuration::IsUseWinFallback()) {
-		return new D3DSharedFallbackTexture(glContext, d3dContext, width, height);
+		return new D3DSharedFallbackTexture(glContext, d3dContext, surfaceData, textureSize);
 	}
 	else {
-		return new D3DSharedTexture(glContext, d3dContext, width, height);
+		return new D3DSharedTexture(glContext, d3dContext, surfaceData, textureSize);
 	}
 
 

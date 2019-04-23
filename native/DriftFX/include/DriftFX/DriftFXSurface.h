@@ -12,18 +12,26 @@
 #define DRIFTFX_DRIFTFXSURFACE_H_
 
 #include <DriftFX/Common.h>
-
 #include <DriftFX/RenderTarget.h>
-
 #include <DriftFX/Context.h>
 #include <DriftFX/GL/GLContext.h>
+#include <DriftFX/math/Vec2.h>
 
 namespace driftfx {
 
 enum DRIFT_API PresentationHint {
-	CENTER
+	CENTER,
+	COVER,
+	CONTAIN,
+	TOP_LEFT,
+	TOP_CENTER,
+	TOP_RIGHT,
+	CENTER_LEFT,
+	CENTER_RIGHT,
+	BOTTOM_LEFT,
+	BOTTOM_CENTER,
+	BOTTOM_RIGHT
 };
-
 
 class DRIFT_API DriftFXSurface {
 
@@ -55,6 +63,8 @@ public:
 	 */
 	virtual RenderTarget* Acquire(unsigned int width, unsigned int height) = 0;
 
+	virtual RenderTarget* Acquire(math::Vec2ui size) = 0;
+
 	/*
 	 * Presents a previously acquired RenderTarget.
 	 * Should be called from your render thread.
@@ -73,6 +83,27 @@ public:
 	 * returns the current height of the NativeSurface in JavaFX
 	 */
 	virtual unsigned int GetHeight() = 0;
+
+	/*
+	 * returns the current surface size in JavaFX units
+	 */
+	virtual math::Vec2d GetSurfaceSize() = 0;
+
+	/*
+	 * returns the current screen scale
+	 */
+	virtual math::Vec2d GetScreenScale() = 0;
+
+	/*
+	 * returns the current user scale
+	 */
+	virtual math::Vec2d GetUserScale() = 0;
+
+	/*
+	 * returns ceil(surfaceSize * screenScale * userScale)
+	 */
+	virtual math::Vec2ui GetScaledSize() = 0;
+
 
 protected:
 	virtual ~DriftFXSurface() = 0;

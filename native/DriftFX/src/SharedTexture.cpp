@@ -11,13 +11,17 @@
 
 #include "SharedTexture.h"
 
+#include <DriftFX/math/Vec2.h>
+
 #include "Common.h"
 
+using namespace driftfx::math;
 using namespace driftfx::gl;
 using namespace driftfx::internal;
 
-SharedTexture::SharedTexture(GLContext* glContext, unsigned int width, unsigned int height) :
-		width(width), height(height),
+SharedTexture::SharedTexture(GLContext* glContext, SurfaceData surfaceData, Vec2ui textureSize) :
+		surfaceData(surfaceData),
+		textureSize(textureSize), 
 		glContext(glContext),
 		glTexture(nullptr) {
 }
@@ -34,9 +38,9 @@ unsigned int SharedTexture::GetGLTexture() {
 }
 
 unsigned int SharedTexture::GetWidth() {
-	return width;
+	return textureSize.x;
 }
 
 unsigned int SharedTexture::GetHeight() {
-	return height;
+	return textureSize.y;
 }

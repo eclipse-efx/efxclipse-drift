@@ -17,12 +17,17 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.TextBoundsType;
 import javafx.stage.Stage;
 
 public class Demo extends Application {
@@ -65,7 +70,12 @@ public class Demo extends Application {
 		});
 		stop.setDisable(true);
 
-		dummy.setBottom(new HBox(renderers, start, stop));
+		Spinner userScale = new Spinner<>();
+		userScale.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 2.4, 1.0, 0.1));
+		surface0.userScaleFactorProperty().bind(userScale.valueProperty());
+		
+		
+		dummy.setBottom(new VBox(new HBox(renderers, start, stop), new HBox(new Label("User Scale:"), userScale)));
 
 		return dummy;
 	}

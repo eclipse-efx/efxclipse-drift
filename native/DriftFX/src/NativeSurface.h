@@ -11,20 +11,23 @@
 #ifndef DRIFTFX_INTERNAL_NATIVESURFACE_H_
 #define DRIFTFX_INTERNAL_NATIVESURFACE_H_
 
-//class NativeSurface;
+#include <vector>
+#include <mutex>
+#include <atomic>
 
 #include <DriftFX/RenderTarget.h>
 #include <DriftFX/DriftFXSurface.h>
 #include <DriftFX/GL/GLContext.h>
+#include <DriftFX/math/Vec2.h>
 
-#include <vector>
-#include <mutex>
-
+#include "SurfaceData.h"
 #include "JNINativeSurface.h"
 
 namespace driftfx {
-using namespace driftfx::gl;
+	using namespace gl;
 namespace internal {
+
+	class SharedTexture;
 
 class NativeSurface : public DriftFXSurface {
 
@@ -58,6 +61,8 @@ public:
 	 */
 	virtual RenderTarget* Acquire(unsigned int width, unsigned int height);
 
+	virtual RenderTarget* Acquire(math::Vec2ui size);
+
 	/*
 	 * Presents a previously acquired RenderTarget.
 	 * Should be called from your render thread.
@@ -77,10 +82,17 @@ public:
 	 */
 	unsigned int GetHeight();
 
+	
+	math::Vec2d GetSurfaceSize();
+	math::Vec2d GetScreenScale();
+	math::Vec2d GetUserScale();
+
+	math::Vec2ui GetScaledSize();
+
 	/**
 	 * Internal API.
 	 */
-	virtual void UpdateSize(int width, int height);
+	virtual void UpdateSurface(math::Vec2d size, math::Vec2d screenScale, math::Vec2d userScale);
 
 	virtual void DisposeSharedTexture(long long id);
 
@@ -95,12 +107,8 @@ protected:
 
 	GLContext* context;
 
-	volatile unsigned int width;
-	volatile unsigned int height;
-
-
-
 private:
+	std::atomic<SurfaceData> surfaceData;
 
 	std::mutex toDisposeMutex;
 	std::vector<SharedTexture*> toDispose;

@@ -15,11 +15,7 @@
 #include <DriftFX/Common.h>
 
 // This is the only place where we need the GL Header (GLuint for textureName) 
-// maybe we should just use unsigned int..
-//#if defined(_WIN32)
-//#include <Windows.h>
-//#endif
-//#include <GL/GL.h>
+// for now we should just use unsigned int..
 typedef unsigned int GLuint;
 
 #include <DriftFX/Texture.h>

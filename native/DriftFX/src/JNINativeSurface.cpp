@@ -14,24 +14,10 @@
 #include <utils/Logger.h>
 #include <utils/JNIHelper.h>
 
+#include "SharedTexture.h"
 #include "JNINativeSurface.h"
 
 using namespace driftfx::internal;
-
-jclass JNINativeSurface::jNativeSurfaceClass = nullptr;
-jclass JNINativeSurface::jFrameDataClass = nullptr;
-
-jmethodID JNINativeSurface::jNativeSurface_AcquireMethod = nullptr;
-jmethodID JNINativeSurface::jNativeSurface_PresentMethod = nullptr;
-jmethodID JNINativeSurface::jNativeSurface_Present2Method = nullptr;
-jmethodID JNINativeSurface::jNativeSurface_Present3Method = nullptr;
-
-jfieldID JNINativeSurface::jFrameData_d3dShareHandleField = nullptr;
-jfieldID JNINativeSurface::jFrameData_widthField = nullptr;
-jfieldID JNINativeSurface::jFrameData_heightField = nullptr;
-
-jmethodID JNINativeSurface::jFrameData_constructor = nullptr;
-
 
 jclass ResolveClass(JNIEnv* env, const char* name) {
 	jclass cls = env->FindClass(name);
@@ -56,26 +42,76 @@ jfieldID ResolveField(JNIEnv* env, jclass cls, const char* name, const char* sig
 }
 
 
+
+// FrameData
+jclass jni::FrameData::cls = nullptr;
+jmethodID jni::FrameData::constructor = nullptr;
+
+void jni::FrameData::Initialize(JNIEnv* env) {
+	cls = ResolveClass(env, "org/eclipse/fx/drift/internal/FrameData");
+	cls = (jclass) env->NewGlobalRef(jni::FrameData::cls);
+	constructor = ResolveMethod(env, cls, "<init>", "(JIILorg/eclipse/fx/drift/internal/SurfaceData;JJII)V");
+}
+void jni::FrameData::Dispose(JNIEnv* env) {
+	env->DeleteGlobalRef(cls);
+	cls = nullptr;
+	constructor = nullptr;
+}
+jobject jni::FrameData::New(JNIEnv* env, jlong frameId, jint width, jint height, jobject surfaceData, jlong d3dShareHandle, jlong ioSurfaceHandle, jint textureName, jint placementHint) {
+	return env->NewObject(cls, constructor, frameId, width, height, surfaceData, d3dShareHandle, ioSurfaceHandle, textureName, placementHint);
+}
+
+// SurfaceData
+jclass jni::SurfaceData::cls = nullptr;
+jmethodID jni::SurfaceData::constructor = nullptr;
+
+void jni::SurfaceData::Initialize(JNIEnv* env) {
+	cls = ResolveClass(env, "org/eclipse/fx/drift/internal/SurfaceData");
+	cls = (jclass) env->NewGlobalRef(cls);
+	constructor = ResolveMethod(env, cls, "<init>", "(FFFFFF)V");
+}
+void jni::SurfaceData::Dispose(JNIEnv* env) {
+	env->DeleteGlobalRef(cls);
+	cls = nullptr;
+	constructor = nullptr;
+}
+jobject jni::SurfaceData::New(JNIEnv* env, jfloat width, jfloat height, jfloat renderScaleX, jfloat renderScaleY, jfloat userScaleX, jfloat userScaleY) {
+	return env->NewObject(cls, constructor, width, height, renderScaleX, renderScaleY, userScaleX, userScaleY);
+}
+
+// NativeSurface
+jclass jni::NativeSurface::cls = nullptr;
+jmethodID jni::NativeSurface::present = nullptr;
+
+void jni::NativeSurface::Initialize(JNIEnv* env) {
+	cls = ResolveClass(env, "org/eclipse/fx/drift/internal/JNINativeSurface");
+	cls = (jclass)env->NewGlobalRef(cls);
+	present = ResolveMethod(env, cls, "present", "(Lorg/eclipse/fx/drift/internal/FrameData;)V");
+}
+
+void jni::NativeSurface::Dispose(JNIEnv* env) {
+	env->DeleteGlobalRef(cls);
+	cls = nullptr;
+	present = nullptr;
+}
+
+void jni::NativeSurface::Present(JNIEnv* env, jobject nativeSurface, jobject frameData) {
+	env->CallVoidMethod(nativeSurface, present, frameData);
+}
+
 void JNINativeSurface::Initialize() {
 	LogDebug("Initialize")
-
 	JNIEnv *env = JNIHelper::GetJNIEnv(true);
-	jNativeSurfaceClass = ResolveClass(env, "org/eclipse/fx/drift/internal/JNINativeSurface");
-	//jNativeSurface_AcquireMethod = ResolveMethod(env, jNativeSurfaceClass, "acquire", "()J");
-	//jNativeSurface_PresentMethod = ResolveMethod(env, jNativeSurfaceClass, "present", "(J)V");
-
-	jFrameDataClass = ResolveClass(env, "org/eclipse/fx/drift/internal/JNINativeSurface$FrameData");
-	jNativeSurface_Present2Method = ResolveMethod(env, jNativeSurfaceClass, "present", "(Lorg/eclipse/fx/drift/internal/JNINativeSurface$FrameData;)V");
-	jNativeSurface_Present3Method = ResolveMethod(env, jNativeSurfaceClass, "present", "(JJJIII)V");
-
-	jFrameData_d3dShareHandleField = ResolveField(env, jFrameDataClass, "d3dShareHandle", "J");
-	jFrameData_widthField = ResolveField(env, jFrameDataClass, "width", "I");
-	jFrameData_heightField = ResolveField(env, jFrameDataClass, "height", "I");
-
-	jFrameData_constructor = ResolveMethod(env, jFrameDataClass, "<init>", "()V");
-
-
+	jni::FrameData::Initialize(env);
+	jni::SurfaceData::Initialize(env);
+	jni::NativeSurface::Initialize(env);
 	LogDebug("initialization complete")
+}
+void JNINativeSurface::Dispose() {
+	JNIEnv *env = JNIHelper::GetJNIEnv(true);
+	jni::FrameData::Dispose(env);
+	jni::SurfaceData::Dispose(env);
+	jni::NativeSurface::Dispose(env);
 }
 
 JNINativeSurface::JNINativeSurface(jobject javaNativeSurface) {
@@ -90,25 +126,17 @@ JNINativeSurface::~JNINativeSurface() {
 	env->DeleteGlobalRef(jNativeSurfaceInstance);
 }
 
-
 void JNINativeSurface::Present(FrameData frameData) {
 	LogDebug("going to call present")
 	JNIEnv *env = JNIHelper::GetJNIEnv(true);
 
-	env->CallVoidMethod(jNativeSurfaceInstance, jNativeSurface_Present3Method, frameData.id, frameData.d3dSharedHandle, frameData.ioSurfaceHandle, frameData.glTextureName, frameData.width, frameData.height);
-//	LogDebug("got jni env: " << env)
-//
-//	jobject instance = env->NewObject(jFrameDataClass, jFrameData_constructor);
-//
-//	LogDebug("created instance " << instance);
-//	env->SetLongField(instance, jFrameData_d3dShareHandleField, frameData.d3dSharedHandle);
-//	LogDebug("set handle")
-//	env->SetIntField(instance, jFrameData_widthField, frameData.width);
-//	LogDebug("set width")
-//	env->SetIntField(instance, jFrameData_heightField, frameData.height);
-//	LogDebug("set height")
-//
-//	LogDebug("now calling into the jvm..")
-//	env->CallVoidMethod(jNativeSurfaceInstance, jNativeSurface_Present2Method, instance);
-}
+	jobject surfaceData = jni::SurfaceData::New(env,
+		(jfloat) frameData.surfaceData.size.x, (jfloat) frameData.surfaceData.size.y, 
+		(jfloat) frameData.surfaceData.screenScale.x, (jfloat) frameData.surfaceData.screenScale.y,
+		(jfloat) frameData.surfaceData.userScale.x, (jfloat) frameData.surfaceData.userScale.y);
 
+	jobject jFrameData = jni::FrameData::New(env, frameData.id, frameData.textureSize.x, frameData.textureSize.y, surfaceData, 
+		frameData.d3dSharedHandle, frameData.ioSurfaceHandle, frameData.glTextureName, frameData.presentationHint);
+
+	jni::NativeSurface::Present(env, jNativeSurfaceInstance, jFrameData);
+}

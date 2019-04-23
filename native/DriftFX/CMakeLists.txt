@@ -18,18 +18,32 @@ set(DriftFX-Headers
 	include/DriftFX/Texture.h
 	include/DriftFX/GL/GLContext.h
 	include/DriftFX/GL/GLTexture.h
+	include/DriftFX/math/Vec2.h
+	
 )
 
 # list each source file individually
 set(DriftFX-Sources
+	src/SurfaceData.h
+	
     src/Context.cpp
+    
+    src/JNINativeSurface.h
     src/JNINativeSurface.cpp
+    
     src/NativeSurface.h
     src/NativeSurface.cpp
+    
     src/NativeSurfaceAPI.cpp
+    
+    src/NativeSurfaceRegistry.h
     src/NativeSurfaceRegistry.cpp
+    
     src/RenderTarget.cpp
+    
+    src/SharedTexture.h
     src/SharedTexture.cpp
+    
     src/Texture.cpp
     
     src/gl/GL.cpp
@@ -46,6 +60,8 @@ set(DriftFX-Sources
     
     src/Configuration.h
     src/Configuration.cpp
+    
+    src/math/Vec2.cpp
 )
 
 if (WIN32)

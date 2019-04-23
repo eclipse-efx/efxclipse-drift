@@ -12,10 +12,45 @@
 #define JNINATIVESURFACE_H_
 
 #include <jni.h>
-#include "SharedTexture.h"
 
 namespace driftfx {
 namespace internal {
+
+	struct FrameData;
+
+namespace jni {
+
+	class FrameData {
+	public:
+		static void Initialize(JNIEnv* env);
+		static void Dispose(JNIEnv* env);
+		static jobject New(JNIEnv* env, jlong frameId, jint width, jint height, jobject surfaceData, jlong d3dShareHandle, jlong ioSurfaceHandle, jint textureName, jint placementHint);
+	private :
+		static jclass cls;
+		static jmethodID constructor;
+	};
+
+	class SurfaceData {
+	public:
+		static void Initialize(JNIEnv* env);
+		static void Dispose(JNIEnv* env);
+		static jobject New(JNIEnv* env, jfloat width, jfloat height, jfloat renderScaleX, jfloat renderScaleY, jfloat userScaleX, jfloat userScaleY);
+	private:
+		static jclass cls;
+		static jmethodID constructor;
+	};
+
+	class NativeSurface {
+	public:
+		static void Initialize(JNIEnv* env);
+		static void Dispose(JNIEnv* env);
+		static void Present(JNIEnv* env, jobject nativeSurface, jobject frameData);
+	private:
+		static jclass cls;
+		static jmethodID present;
+	};
+
+}
 
 class JNINativeSurface {
 
@@ -27,24 +62,10 @@ public:
 	void Present(FrameData frameData);
 
 	static void Initialize();
+	static void Dispose();
 
 private:
-
 	jobject jNativeSurfaceInstance;
-
-	static jclass jNativeSurfaceClass;
-	static jmethodID jNativeSurface_AcquireMethod;
-	static jmethodID jNativeSurface_PresentMethod;
-	static jmethodID jNativeSurface_Present2Method;
-	static jmethodID jNativeSurface_Present3Method;
-
-	static jclass jFrameDataClass;
-	static jfieldID jFrameData_d3dShareHandleField;
-	static jfieldID jFrameData_widthField;
-	static jfieldID jFrameData_heightField;
-
-	static jmethodID jFrameData_constructor;
-
 };
 
 }

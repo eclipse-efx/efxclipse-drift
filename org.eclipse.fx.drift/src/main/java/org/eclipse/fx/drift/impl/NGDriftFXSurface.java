@@ -18,10 +18,12 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.fx.drift.DriftFXSurface;
+import org.eclipse.fx.drift.internal.FrameData;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
 import org.eclipse.fx.drift.internal.Log;
-import org.eclipse.fx.drift.internal.JNINativeSurface.FrameData;
 import org.eclipse.fx.drift.internal.NativeAPI;
+import org.eclipse.fx.drift.internal.Placement;
+import org.eclipse.fx.drift.internal.SurfaceData;
 
 import com.sun.javafx.sg.prism.NGNode;
 import com.sun.javafx.tk.Toolkit;
@@ -37,8 +39,7 @@ public class NGDriftFXSurface extends NGNode {
 
 	private long nativeSurfaceHandle;
 	
-	private float width;
-	private float height;
+	private SurfaceData surfaceData;
 	
 	private ResourceFactory resourceFactory;
 	private DriftFXSurface node;
@@ -79,20 +80,16 @@ public class NGDriftFXSurface extends NGNode {
 	// TODO output some kind of placeholder info
 	private void renderPlaceholder(Graphics g)
 	{
-		Paint white = (Paint)Toolkit.getPaintAccessor().getPlatformPaint(javafx.scene.paint.Color.WHITE);
-		g.setPaint(white);
-		g.fillQuad(0, 0, this.width, this.height);
+		float width = (float) surfaceData.width;
+		float height = (float) surfaceData.height;
+		
+//		Paint white = (Paint)Toolkit.getPaintAccessor().getPlatformPaint(javafx.scene.paint.Color.WHITE);
+//		g.setPaint(white);
+//		g.fillQuad(0, 0, width, height);
 
 		Paint red = (Paint)Toolkit.getPaintAccessor().getPlatformPaint(javafx.scene.paint.Color.RED);
 		g.setPaint(red);
-		g.drawRect(0, 0, this.width - 1, this.height - 1);
-	}
-	
-	private int getWidth() {
-		return Math.max(1, (int) Math.ceil(width));
-	}
-	private int getHeight() {
-		return Math.max(1, (int) Math.ceil(height));
+		g.drawRect(0, 0, width - 1, height - 1);
 	}
 
 	private Texture createTexture(Graphics g, FrameData data) {
@@ -102,11 +99,12 @@ public class NGDriftFXSurface extends NGNode {
 		// create fx texture
 		Texture texture = resourceFactory.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, w, h);
 		if (texture == null) {
-			System.err.println("[J] Allocation of requested texture failed! This is FATAL! requested size was " + w + "x" + h);
-			System.err.flush();
+			Log.error("[J] Allocation of requested texture failed! This is FATAL! requested size was " + w + "x" + h);
+			System.out.flush();
 			System.exit(1);
 		}
 		texture.makePermanent();
+		Log.debug("Created Texture @ " + texture.getContentWidth() + " x " + texture.getContentHeight());
 		
 		// to protect the javafx gl context we change threads here
 		ReentrantLock lock = new ReentrantLock();
@@ -148,15 +146,117 @@ public class NGDriftFXSurface extends NGNode {
 		}
 	});
 	
+	private int toPixels(double value) {
+		return (int) Math.ceil(value);
+	}
+	
+	private float center(float dst, float src) {
+		return (dst - src) / 2f;
+	}
+	private float end(float dst, float src) {
+		return dst - src;
+	}
+	
+	static class Pos {
+		float x;
+		float width;
+		float y;
+		float height;
+		Pos(float x, float width, float y, float height) {
+			this.x = x;
+			this.width = width;
+			this.y = y;
+			this.height = height;
+		}
+	}
+	
+	private Pos computeCover(float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		float dstRatio = dstWidth / dstHeight;
+		float srcRatio = srcWidth / srcHeight;
+		float width, height;
+		if (dstRatio > srcRatio) {
+			width = dstWidth;
+			height = width / srcRatio;
+		}
+		else {
+			height = dstHeight;
+			width = height * srcRatio;
+		}
+		return new Pos(center(dstWidth, width), width, center(dstHeight, height), height);
+		
+	}
+	private Pos computeContain(float dstWidth, float dstHeight, float srcWidth, float srcHeight)  {
+		float dstRatio = dstWidth / dstHeight;
+		float srcRatio = srcWidth / srcHeight;
+		float width, height;
+		if (srcRatio <= dstRatio) {
+			height = dstHeight;
+			width = height * srcRatio;
+		}
+		else {
+			width = dstWidth;
+			height = width / srcRatio;
+		}
+		return new Pos(center(dstWidth, width), width, center(dstHeight, height), height);
+	}
+	private Pos computeCenter(float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		return new Pos(center(dstWidth, srcWidth), srcWidth, center(dstHeight, srcHeight), srcHeight);
+	}
+	private Pos computeTopLeft(float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		return new Pos(0, srcWidth, 0, srcHeight);
+	}
+	private Pos computeTopCenter(float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		return new Pos(center(dstWidth, srcWidth), srcWidth, 0, srcHeight);
+	}
+	private Pos computeTopRight(float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		return new Pos(end(dstWidth, srcWidth), srcWidth, 0, srcHeight);
+	}
+	private Pos computeCenterLeft(float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		return new Pos(0, srcWidth, center(dstHeight, srcHeight), srcHeight);
+	}
+	private Pos computeCenterRight(float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		return new Pos(end (dstWidth, srcWidth), srcWidth, center(dstHeight, srcHeight), srcHeight);
+	}
+	private Pos computeBottomLeft(float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		return new Pos(0, srcWidth, end(dstHeight, srcHeight), srcHeight);
+	}
+	private Pos computeBottomCenter(float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		return new Pos(center(dstWidth, srcWidth), srcWidth, end(dstHeight, srcHeight), srcHeight);
+	}
+	private Pos computeBottomRight(float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		return new Pos(end(dstWidth, srcWidth), srcWidth, end(dstHeight, srcHeight), srcHeight);
+	}
+	
+	private Pos computePlacement(Placement placement, float dstWidth, float dstHeight, float srcWidth, float srcHeight) {
+		switch (placement) {
+		case COVER: return computeCover(dstWidth, dstHeight, srcWidth, srcHeight);
+		case CONTAIN: return computeContain(dstWidth, dstHeight, srcWidth, srcHeight);
+		case TOP_LEFT: return computeTopLeft(dstWidth, dstHeight, srcWidth, srcHeight);
+		case TOP_CENTER: return computeTopCenter(dstWidth, dstHeight, srcWidth, srcHeight);
+		case TOP_RIGHT: return computeTopRight(dstWidth, dstHeight, srcWidth, srcHeight);
+		case CENTER_LEFT: return computeCenterLeft(dstWidth, dstHeight, srcWidth, srcHeight);
+		case CENTER_RIGHT: return computeCenterRight(dstWidth, dstHeight, srcWidth, srcHeight);
+		case BOTTOM_LEFT: return computeBottomLeft(dstWidth, dstHeight, srcWidth, srcHeight);
+		case BOTTOM_CENTER: return computeBottomCenter(dstWidth, dstHeight, srcWidth, srcHeight);
+		case BOTTOM_RIGHT: return computeBottomRight(dstWidth, dstHeight, srcWidth, srcHeight);
+		case CENTER:
+			default:
+				return computeCenter(dstWidth, dstHeight, srcWidth, srcHeight);
+		}
+	}
+	
+	private Placement toPlacement(int placement) {
+		if (placement < 0 || placement >= Placement.values().length) {
+			return Placement.CENTER;
+		}
+		return Placement.values()[placement];
+	}
+	
 	@Override
 	protected void renderContent(Graphics g) {
-		int width = getWidth();
-		int height = getHeight();
-	
-		// flip it vertically
-		g.scale(1, -1);
-		g.translate(0, -height);
 		
+		//renderPlaceholder(g);
+				
 		// TODO add signal & check it here!
 		if (currentFrameData != null && currentFrameData.width != 0 && currentFrameData.height != 0) {
 			int hash = currentFrameData.hashCode();
@@ -174,63 +274,57 @@ public class NGDriftFXSurface extends NGNode {
 				}
 			}
 		}
-//		renderPlaceholder(g);
-		if (currentTexture != null) {
-			
-			// TODO support for different positioning algorithms
-			// COVER, CONTAIN, 
-			// TOP_LEFT,    TOP_CENTER,    TOP_RIGHT,
-			// CENTER_LEFT, CENTER,        CENTER_RIGHT,
-			// BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT
-			
-			int textureWidth = currentTexture.getContentWidth();
-			int textureHeight = currentTexture.getContentHeight();
-			
-			
-			int containerWidth = width;
-			int containerHeight = height;
-			
-			
-			float textureRatio = textureWidth / (float) textureHeight;
-			float containerRatio = containerWidth / (float) containerHeight;
-			
-			int finalWidth = textureWidth;
-			int finalHeight = textureHeight;
-			
-			// cover algorithm
-			//if (containerRatio > textureRatio) {
-			//	finalHeight = containerHeight;
-			//	finalWidth = Math.round(containerHeight / textureRatio);
-			//}
-			//else {
-			//	finalWidth = containerWidth;
-			//	finalHeight = Math.round(containerWidth * textureRatio);
-			//}
-			
-			// contain alogrithm
-			if (textureRatio <= containerRatio) {
-				finalWidth = Math.round(containerHeight * textureRatio);
-				finalHeight = containerHeight;
-			}
-			else {
-				finalWidth = containerWidth;
-				finalHeight = Math.round(containerWidth / textureRatio);
-			}
-			
-			
-			// just center
-			
-			int x = 0;
-			int y = 0;
-			
-				x = Math.round((width - finalWidth) / 2f);
-				y = Math.round((height - finalHeight) / 2f);
 		
-				Log.debug("Surface# "+nativeSurfaceHandle+": Drawing texture " + Long.toHexString(GraphicsPipelineUtil.getTextureHandle(currentTexture)));
-				
-			//System.err.println("## " + textureWidth + "x" + textureHeight + " -> " + x + ", " + y + " @ " + finalWidth + "x" + finalHeight);
-			g.drawTexture(currentTexture, x, y, x + finalWidth, y + finalHeight, 0, 0, textureWidth, textureHeight);
+		// nothing to render!
+		if (currentFrameData == null || currentFrameData.surfaceData == null) return;
+		
+		float frameWidth = currentFrameData.surfaceData.width;
+		float frameHeight = currentFrameData.surfaceData.height;
+
+		
+		// TODO we need to transport the effective scale here, because the client could use any scale
+		float renderScaleX = this.surfaceData.renderScaleX * this.surfaceData.userScaleX;
+		float renderScaleY = this.surfaceData.renderScaleY * this.surfaceData.userScaleY;
+		
+		float frameScaleX = this.surfaceData.renderScaleX * this.surfaceData.userScaleX;
+		float frameScaleY = this.surfaceData.renderScaleY * this.surfaceData.userScaleY;
+		
+		
+		if (currentTexture != null) {
+			float frameContainerWidth = currentFrameData.surfaceData.width;
+			float frameContainerHeight = currentFrameData.surfaceData.height;
 			
+			Placement placement = toPlacement(currentFrameData.placementHint);
+			
+			float textureRatio = currentTexture.getContentWidth() / (float) currentTexture.getContentHeight();
+			float frameRatio = currentFrameData.surfaceData.width / currentFrameData.surfaceData.height;
+			
+			Pos framePos = new Pos(0, frameContainerWidth, 0, frameContainerHeight);
+			
+			if (Math.abs(textureRatio - frameRatio) > 0.001f) {
+				// aspect ratio is not matching, we need to do compute the position within the frame container
+				framePos = computeContain(frameContainerWidth, frameContainerHeight, currentTexture.getContentWidth(), currentTexture.getContentHeight());
+//				System.err.println("frame: " + frameContainerWidth + " / " + frameContainerHeight);
+//				System.err.println("framePos = " + framePos.width + " / " + framePos.height);
+			}
+			
+			
+			int frameTextureWidth = currentTexture.getContentWidth();
+			int frameTextureHeight = currentTexture.getContentHeight();
+			
+			float currentContainerWidth = surfaceData.width;
+			float currentContainerHeight = surfaceData.height;	
+
+			Pos pos = computePlacement(placement, currentContainerWidth, currentContainerHeight, framePos.width, framePos.height);
+
+			// flip it vertically
+			g.scale(1, -1);
+			g.translate(0, -currentContainerHeight);		
+				
+			pos.y = currentContainerHeight - pos.y - pos.height;
+
+			g.drawTexture(currentTexture, pos.x, pos.y, 
+					pos.x + pos.width, pos.y + pos.height, 0, 0, frameTextureWidth, frameTextureHeight);
 			
 		}
 		else {
@@ -240,13 +334,20 @@ public class NGDriftFXSurface extends NGNode {
 		
 	}
 	
-	public void updateSize(float width, float height)  {
-		//Log.debug("[J] NativeSurface updateSize " + width + " " + height);
-		if (width != -1) this.width = width;
-		if (height != -1) this.height = height;
-		CompletableFuture.runAsync(() ->
-		NativeAPI.updateSize(nativeSurfaceHandle, getWidth(), getHeight()));
+	public void updateSurface(SurfaceData surfaceData)  {
+		Log.debug("[J] NativeSurface updateSurface("+surfaceData+")");
+		if (isValid(surfaceData)) {
+			this.surfaceData = surfaceData;
+			CompletableFuture.runAsync(() -> {
+				NativeAPI.updateSurface(nativeSurfaceHandle, surfaceData);
+			});
+		}
 	}
+	
+	private boolean isValid(SurfaceData data) {
+		return true;
+	}
+	
 	
 	
 

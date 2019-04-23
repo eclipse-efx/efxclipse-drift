@@ -12,6 +12,7 @@
 #ifndef DRIFTFX_INTERNAL_SHAREDTEXTURE_H_
 #define DRIFTFX_INTERNAL_SHAREDTEXTURE_H_
 
+#include <DriftFX/DriftFXSurface.h>
 #include <DriftFX/Context.h>
 #include <DriftFX/Texture.h>
 
@@ -20,17 +21,25 @@
 
 #include <DriftFX/RenderTarget.h>
 
+#include <DriftFX/math/Vec2.h>
+
+#include "NativeSurface.h"
+#include "SurfaceData.h"
+
 namespace driftfx {
 using namespace gl;
 namespace internal {
 
 struct FrameData {
+
+	SurfaceData surfaceData;
+	math::Vec2ui textureSize;
+
 	long long id;
 	long long d3dSharedHandle;
 	long long ioSurfaceHandle;
 	int glTextureName;
-	int width;
-	int height;
+	
 	int presentationHint;
 };
 
@@ -52,7 +61,7 @@ public:
 	virtual FrameData* CreateFrameData() = 0;
 
 
-	static SharedTexture* Create(GLContext* context, Context* fxContext, unsigned int width, unsigned int height);
+	static SharedTexture* Create(GLContext* context, Context* fxContext, SurfaceData surfaceData, math::Vec2ui textureSize);
 
 	// RenderTarget
 	virtual unsigned int GetGLTexture();
@@ -60,13 +69,13 @@ public:
 	virtual unsigned int GetHeight();
 
 protected:
-	SharedTexture(GLContext* glContext, unsigned int width, unsigned int height);
+	SharedTexture(GLContext* glContext, SurfaceData surfaceData, math::Vec2ui textureSize);
 
 	GLContext* glContext;
 	GLTexture* glTexture;
 
-	unsigned int width;
-	unsigned int height;
+	math::Vec2ui textureSize;
+	SurfaceData surfaceData;
 };
 
 }

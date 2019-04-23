@@ -15,8 +15,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
-import org.eclipse.fx.drift.internal.JNINativeSurface.FrameData;
-
 import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
 

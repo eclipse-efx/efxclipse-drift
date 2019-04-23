@@ -22,7 +22,6 @@
 namespace driftfx {
 namespace internal {
 
-
 class NativeSurfaceRegistry {
 
 public:

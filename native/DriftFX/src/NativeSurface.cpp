@@ -8,18 +8,25 @@
  * Contributors:
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  */
+
+#include <iostream>
+
+#include <DriftFX/DriftFXSurface.h>
+#include <DriftFX/math/Vec2.h>
+
 #include "Common.h"
+#include "JNINativeSurface.h"
 #include "NativeSurface.h"
 #include "SharedTexture.h"
-
 #include "prism/PrismBridge.h"
 
 #include <utils/Logger.h>
 
-#include <iostream>
+
 using namespace std;
 
 using namespace driftfx;
+using namespace driftfx::math;
 using namespace driftfx::gl;
 
 using namespace driftfx::internal;
@@ -27,7 +34,8 @@ using namespace driftfx::internal::prism;
 
 NativeSurface::NativeSurface(JNINativeSurface* api) :
 	api(api),
-	context(nullptr) {
+	context(nullptr),
+	surfaceData(SurfaceData()) {
 	LogDebug("NativeSurface constructor")
 
 }
@@ -70,8 +78,9 @@ void NativeSurface::Cleanup() {
 	FrameData* frameData = new FrameData();
 	frameData->d3dSharedHandle = 0;
 	frameData->ioSurfaceHandle = 0;
-	frameData->width=0;
-	frameData->height=0;
+	frameData->glTextureName = 0;
+	frameData->textureSize = Vec2ui();
+
 	api->Present(*frameData);
 
 	delete frameData;
@@ -90,25 +99,35 @@ GLContext* NativeSurface::GetContext() {
 	return context;
 }
 
-void NativeSurface::UpdateSize(int width, int height) {
-	this->height = height;
-	this->width = width;
+void NativeSurface::UpdateSurface(Vec2d size, Vec2d screenScale, Vec2d userScale) {
+	SurfaceData newSurfaceData;
+	newSurfaceData.size = size;
+	newSurfaceData.screenScale = screenScale;
+	newSurfaceData.userScale = userScale;
+
+	surfaceData = newSurfaceData;
 }
 
 unsigned int NativeSurface::GetWidth() {
-	return width;
+	return GetScaledSize().x;
 }
 
 unsigned int NativeSurface::GetHeight() {
-	return height;
+	return GetScaledSize().y;
 }
 
 RenderTarget* NativeSurface::Acquire() {
 	return Acquire(GetWidth(), GetHeight());
 }
 
+RenderTarget* NativeSurface::Acquire(Vec2ui size) {
+	return Acquire(size.x, size.y);
+}
+
 RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
+	auto currentSurfaceData = surfaceData.load();
 	LogDebug("Acquire " << dec << width << " x " << dec << height);
+	LogDebug(" " << dec << currentSurfaceData.size.x << " / " << currentSurfaceData.screenScale.x << " / " << currentSurfaceData.userScale.x);
 	DisposeSharedTextures();
 
 	PrismBridge* bridge = PrismBridge::Get();
@@ -118,7 +137,7 @@ RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
 		return nullptr;
 	}
 
-	SharedTexture* tex = SharedTexture::Create(GetContext(), GetFxContext(), width, height);
+	SharedTexture* tex = SharedTexture::Create(GetContext(), GetFxContext(), currentSurfaceData, Vec2ui(width, height));
 
 	tex->Connect();
 	tex->Lock();
@@ -151,3 +170,22 @@ Context* NativeSurface::GetFxContext() {
 	return PrismBridge::Get()->GetFxContext();
 }
 
+Vec2d NativeSurface::GetSurfaceSize() {
+	return surfaceData.load().size;
+}
+
+Vec2d NativeSurface::GetScreenScale() {
+	return surfaceData.load().screenScale;
+}
+
+Vec2d NativeSurface::GetUserScale() {
+	return surfaceData.load().userScale;
+}
+
+Vec2ui NativeSurface::GetScaledSize() {
+	SurfaceData data = surfaceData.load();
+	Vec2ui r;
+	r.x = (unsigned int) ceil(data.size.x * data.screenScale.x * data.userScale.x);
+	r.y = (unsigned int) ceil(data.size.y * data.screenScale.y * data.userScale.y);
+	return r;
+}

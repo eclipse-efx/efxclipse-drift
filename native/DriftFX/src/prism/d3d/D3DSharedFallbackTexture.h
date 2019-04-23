@@ -24,6 +24,7 @@
 
 #include <DriftFX/GL/GLContext.h>
 
+#include <DriftFX/math/Vec2.h>
 
 namespace driftfx {
 namespace internal {
@@ -35,7 +36,7 @@ using namespace win32;
 class D3DSharedFallbackTexture : public SharedTexture {
 
 public:
-	D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, unsigned int width, unsigned int height);
+	D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, SurfaceData surfaceData, math::Vec2ui textureSize);
 	virtual ~D3DSharedFallbackTexture();
 
 

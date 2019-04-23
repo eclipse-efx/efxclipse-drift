@@ -23,11 +23,14 @@
 #include "win32/D3D9ExContext.h"
 #include "gl/wgl/WGLGLContext.h"
 
+#include <DriftFX/math/Vec2.h>
+
 #include <iostream>
 
 using namespace std;
 
 using namespace driftfx;
+using namespace driftfx::math;
 
 using namespace driftfx::internal;
 using namespace driftfx::internal::gl;
@@ -110,8 +113,8 @@ void D3DSharedFallbackTexture::DownloadPixels(GLTexture* texture, byte* pixels) 
 }
 
 
-D3DSharedFallbackTexture::D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, unsigned int width, unsigned int height) :
-	SharedTexture(glContext, width, height),
+D3DSharedFallbackTexture::D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, SurfaceData surfaceData, Vec2ui textureSize) :
+	SharedTexture(glContext, surfaceData, textureSize),
 	d3dContext(d3dContext),
 	d3dTexture(nullptr) {
 	d3dTexture = new D3D9Texture(d3dContext, GetWidth(), GetHeight());
@@ -158,7 +161,8 @@ FrameData* D3DSharedFallbackTexture::CreateFrameData() {
 	FrameData* data = new FrameData();
 	data->id = (long long) this;
 	data->d3dSharedHandle = (long long) d3dTexture->GetShareHandle();
-	data->height = GetHeight();
-	data->width = GetWidth();
+	data->textureSize = textureSize;
+	data->surfaceData = surfaceData;
+
 	return data;
 }
