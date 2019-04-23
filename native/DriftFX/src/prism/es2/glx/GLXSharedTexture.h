@@ -13,6 +13,7 @@
 
 #include <GL/gl.h>
 #include <DriftFX/GL/GLContext.h>
+#include <DriftFX/math/Vec2.h>
 
 #include "SharedTexture.h"
 
@@ -33,7 +34,7 @@ private:
 
 public:
 
-	GLXSharedTexture(GLContext* context, GLContext* fxContext, int width, int height);
+	GLXSharedTexture(GLContext* context, GLContext* fxContext, SurfaceData surfaceData, math::Vec2ui textureSize);
 	virtual ~GLXSharedTexture();
 
 	virtual bool Connect();

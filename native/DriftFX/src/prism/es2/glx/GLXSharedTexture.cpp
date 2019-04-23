@@ -17,20 +17,24 @@
 
 #include <DriftFX/GL/GLDebug.h>
 
+#include <DriftFX/math/Vec2.h>
+
+
+using namespace driftfx::math;
 using namespace driftfx::internal;
 using namespace driftfx::internal::prism::es2::glx;
 
-GLXSharedTexture::GLXSharedTexture(GLContext* context, GLContext* fxContext, int width, int height) :
-	SharedTexture(glContext, width, height),
+GLXSharedTexture::GLXSharedTexture(GLContext* context, GLContext* fxContext, SurfaceData surfaceData, Vec2ui textureSize) :
+	SharedTexture(glContext, surfaceData, textureSize),
 	fxContext(fxContext) {
 
 	context->SetCurrent();
 
-	glTexture = dynamic_cast<GLTexture*>(context->CreateTexture(width, height));
+	glTexture = dynamic_cast<GLTexture*>(context->CreateTexture(textureSize.x, textureSize.y));
 
 	GLERR(glBindTexture(GL_TEXTURE_2D, glTexture->Name()););
-	GLERR(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL););
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+	GLERR(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize.x, textureSize.y, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL););
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize.x, textureSize.y, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
 	GLERR(glBindTexture(GL_TEXTURE_2D, 0););
 
 }
@@ -66,18 +70,16 @@ bool GLXSharedTexture::Unlock() {
 }
 
 FrameData* GLXSharedTexture::CreateFrameData() {
-
-
 	FrameData* data = new FrameData();
 	data->id = (long long) this;
-	data->width = GetWidth();
-	data->height = GetHeight();
+	data->surfaceData = surfaceData;
+	data->textureSize = textureSize;
 	data->glTextureName = glTexture->Name();
 	return data;
 }
 
-SharedTexture* SharedTexture::Create(GLContext* context, Context* fxContext, unsigned int width, unsigned int height) {
-	return new GLXSharedTexture(context, dynamic_cast<GLContext*>(fxContext), width, height);
+SharedTexture* SharedTexture::Create(GLContext* context, Context* fxContext, SurfaceData surfaceData, Vec2ui textureSize) {
+	return new GLXSharedTexture(context, dynamic_cast<GLContext*>(fxContext), surfaceData, textureSize);
 }
 
 

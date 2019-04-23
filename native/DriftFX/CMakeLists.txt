@@ -123,6 +123,7 @@ target_compile_definitions(driftfx PRIVATE BUILDING_DLL)
 target_link_libraries(driftfx PUBLIC lib-utils-obj)
 target_link_libraries(driftfx PUBLIC lib-glew-obj)
 target_link_libraries(driftfx PRIVATE ${LinkLibraries})
+target_link_libraries(driftfx PRIVATE "atomic")
 target_include_directories(driftfx PRIVATE ${IncludeDirectories})
 
 
