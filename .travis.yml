@@ -128,4 +128,4 @@ jobs:
         - cp git_commit dist/git_commit
         - zip -r dist.zip dist/*
         - aws s3 cp dist.zip s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/dist.zip
-        - wget "$WEBHOOK_URL?token=$WEBHOOK_TOKEN&token0=$AWS_ACCESS_KEY_ID&token1=$AWS_SECRET_ACCESS_KEY&travisBuildNumber=$TRAVIS_BUILD_NUMBER"
+        - wget "$WEBHOOK_URL?token=$WEBHOOK_TOKEN&token0=$AWS_ACCESS_KEY_ID&token1=$AWS_SECRET_ACCESS_KEY&travisBuildNumber=$TRAVIS_BUILD_NUMBER&branch_name=$TRAVIS_BRANCH"
