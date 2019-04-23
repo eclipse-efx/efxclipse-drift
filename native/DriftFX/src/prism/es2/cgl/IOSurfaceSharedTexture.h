@@ -13,6 +13,7 @@
 
 #include "../../../SharedTexture.h"
 #include <IOSurface/IOSurface.h>
+#include <DriftFX/math/Vec2.h>
 
 namespace driftfx {
 namespace internal {
@@ -29,7 +30,7 @@ private:
 
 public:
 
-	IOSurfaceSharedTexture(gl::GLContext* context, gl::GLContext* fxContext, unsigned int width, unsigned int height);
+	IOSurfaceSharedTexture(gl::GLContext* context, gl::GLContext* fxContext, SurfaceData surfaceData, math::Vec2ui textureSize);
 	virtual ~IOSurfaceSharedTexture();
 
 	virtual bool Connect();
