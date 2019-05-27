@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.fx.drift.samples;
 
+import org.eclipse.fx.drift.DriftFXConfig;
 import org.eclipse.fx.drift.DriftFXSurface;
 
 import javafx.application.Application;
@@ -82,7 +83,7 @@ public class Demo extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		DriftFXSurface.initialize();
+		DriftFXSurface.initialize(DriftFXConfig.initSystemProperties().debug(true).logLevel(0));
 
 		BorderPane root = new BorderPane();
 		root.setPrefSize(400, 300);

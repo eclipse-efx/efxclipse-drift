@@ -1,13 +1,36 @@
 package org.eclipse.fx.drift.internal;
 
+import org.eclipse.fx.drift.DriftFXConfig;
+
+/**
+ * This is an internal class, it is not intended to change the configuration at runtime!
+ */
 public class Configuration {
 
-	public static final boolean DEBUG = getBoolean("driftfx.debug", false);
-	public static final int LOGLEVEL = getInt("driftfx.loglevel", 1);
+	public static final String KEY_DEBUG = "driftfx.debug";
+	public static final String KEY_LOGLEVEL = "driftfx.loglevel";
+	public static final String KEY_USEWINFALLBACK = "driftfx.winfallback";
 	
-	public static final boolean USEWINFALLBACK = getBoolean("driftfx.winfallback", false);
+	public static boolean DEBUG;
+	public static boolean USEWINFALLBACK;
+	public static int LOGLEVEL;
+	
+	private static boolean initialized;
+	
+	public static void initialize(DriftFXConfig config) {
+		if (initialized) {
+			throw new RuntimeException("configuration was already initialized");
+		}
+		if (config == null) {
+			config = DriftFXConfig.initSystemProperties();
+		}
+		DEBUG = config.isDebug();
+		USEWINFALLBACK = config.isUseWinFallback();
+		LOGLEVEL = config.getLogLevel();
+		initialized = true;	
+	}
 
-	private static boolean getBoolean(String name, boolean defaultValue) {
+	public static boolean getBoolean(String name, boolean defaultValue) {
 		if (null == System.getProperty(name)) {
 			return defaultValue;
 		}
@@ -16,7 +39,7 @@ public class Configuration {
 		}
 	}
 	
-	private static int getInt(String name, int defaultValue) {
+	public static int getInt(String name, int defaultValue) {
 		String prop = System.getProperty(name);
 		try {
 			return Integer.parseInt(prop);
@@ -25,5 +48,6 @@ public class Configuration {
 			return defaultValue;
 		}
 	}
+
 	
 }
