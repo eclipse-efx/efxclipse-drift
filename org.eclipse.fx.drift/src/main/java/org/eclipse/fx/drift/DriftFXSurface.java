@@ -13,6 +13,7 @@ package org.eclipse.fx.drift;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.fx.drift.impl.NGDriftFXSurface;
+import org.eclipse.fx.drift.internal.Configuration;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
 import org.eclipse.fx.drift.internal.JNINativeSurface;
 import org.eclipse.fx.drift.internal.Log;
@@ -211,8 +212,10 @@ public class DriftFXSurface extends Node {
    
    private static boolean initialized = false;
    
-   public static void initialize() {
+   public static void initialize(DriftFXConfig config) {
 	   if (initialized) return;
+	   
+	   Configuration.initialize(config);
 	   
 	   Log.debug("Initializing NativeSurface system");
 	   try {
@@ -232,6 +235,10 @@ public class DriftFXSurface extends Node {
 	   
 	   Toolkit.getToolkit().addShutdownHook(DriftFXSurface::destroy);
 	   initialized = true;
+   }
+   
+   public static void initialize() {
+	   initialize(DriftFXConfig.initSystemProperties());
    }
    
    public static void destroy() {
