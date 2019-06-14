@@ -92,8 +92,10 @@ extern "C" JNIEXPORT void JNICALL Java_DriftFXDemo_nRun(JNIEnv* env, jclass cls,
  * **Java 8**
  * Windows Vista or newer (only the prism Direct3D9Ex backend is supported)
  * On Windows the GPU must support **NV_DX_interop**
+
  
 ### Known issues
  * Intel HD Graphics 4000 (10.18.10.5059): **NV_DX_interop** has issues if new IDirect3D9Texture's get the same address as already disposed ones.
+ * Windows 7 / nvidia: the nvidia driver deadlocks - this seems related to the NV_DX_interop calls (there is a -Ddriftfx.winfallback=true which moves the pixel data on windows through main memory between opengl and directx)
+ * Linux / intel: Drift does not work - it fails with i965: Failed to submit batchbuffer: No such file or directory
  
-
