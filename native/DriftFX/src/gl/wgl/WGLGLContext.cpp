@@ -285,13 +285,10 @@ LRESULT CALLBACK WGLGLContext::WindowProc(HWND hWnd, UINT message, WPARAM wParam
 
 
 void WGLGLContext::SetCurrent() {
-	//LogDebug("setting context current = " << hGLRC << " wglMakeCurrent = " << wglMakeCurrent)
-	cerr << " ** SetCurrent " << GetName() << endl;
 	WERR(bool success = wglMakeCurrent(hDC, hGLRC);)
 }
 
 void WGLGLContext::UnsetCurrent() {
-	cerr << " ** UnsetCurrent " << GetName() << endl;
 	wglMakeCurrent(NULL, NULL);
 }
 
