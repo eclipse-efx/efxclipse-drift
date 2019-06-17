@@ -8,6 +8,8 @@
  * Contributors:
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  */
+#include <sstream>
+
 #include <gl/glew.h>
 #include <utils/Logger.h>
 
@@ -19,8 +21,8 @@ using namespace driftfx::internal;
 using namespace driftfx::internal::win32;
 using namespace driftfx::internal::prism::d3d;
 
-D3DNativeSurface::D3DNativeSurface(JNINativeSurface* api) :
-	NativeSurface(api),
+D3DNativeSurface::D3DNativeSurface(long surfaceId, JNINativeSurface* api) :
+	NativeSurface(surfaceId, api),
 	fxContext(nullptr) {
 
 }
@@ -35,7 +37,9 @@ void D3DNativeSurface::Initialize() {
 	NativeSurface::Initialize();
 
 	LogDebug("init D3DContext");
-	fxContext = new D3D9ExContext();
+	std::ostringstream s;
+	s << "surface" << surfaceId;
+	fxContext = new D3D9ExContext(s.str());
 }
 
 void D3DNativeSurface::Cleanup() {

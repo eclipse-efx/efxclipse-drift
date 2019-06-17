@@ -42,12 +42,12 @@ D3DPrismBridge::D3DPrismBridge(jlong pContext) :
 	PrismBridge(nullptr) {
 	LogDebug("D3DPrismBridge(" << pContext << ")")
 	java8::D3DContext *context = (java8::D3DContext*) pContext;
-	jfxContext = new D3D9ExContext(context->pd3dObjectEx, context->pd3dDeviceEx);
-	defaultContext = new WGLGLContext();
+	jfxContext = new D3D9ExContext("javafx", context->pd3dObjectEx, context->pd3dDeviceEx);
+	defaultContext = new WGLGLContext("root");
 
 	WGLGLContext* def = dynamic_cast<WGLGLContext*>(defaultContext);
 	LogDebug("def = " << def)
-	WGLGLContext* test1 = new WGLGLContext(def);
+	WGLGLContext* test1 = new WGLGLContext("dummy", def);
 	LogDebug("test1 = " << test1)
 //	WGLContext* test2 = new WGLContext(test1);
 //	LogDebug("test2 = " << test2)
@@ -111,11 +111,11 @@ D3D9ExContext* D3DPrismBridge::GetJfxContext() {
 }
 
 GLContext* D3DPrismBridge::CreateSharedContext() {
-	LogDebug("CreateSharedContext()")
-	return new WGLGLContext(dynamic_cast<WGLGLContext*>(defaultContext));
+	LogDebug("CreateSharedContext()");
+	return defaultContext->CreateSharedContext();
 }
 
-NativeSurface* D3DPrismBridge::CreateNativeSurface(JNINativeSurface* api) {
-	return new D3DNativeSurface(api);
+NativeSurface* D3DPrismBridge::CreateNativeSurface(long surfaceId, JNINativeSurface* api) {
+	return new D3DNativeSurface(surfaceId, api);
 }
 
