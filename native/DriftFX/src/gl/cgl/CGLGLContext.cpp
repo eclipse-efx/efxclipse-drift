@@ -67,7 +67,7 @@ CGLGLContext::CGLGLContext(std::string name) : InternalGLContext(name),
 		//kCGLPFAPBuffer,
 		kCGLPFAAccelerated,
 		kCGLPFAOpenGLProfile,
-		(CGLPixelFormatAttribute) kCGLOGLPVersion_3_2_Core,
+		(CGLPixelFormatAttribute) kCGLOGLPVersion_GL4_Core,
 		(CGLPixelFormatAttribute) 0
 	};
 	GLint num;
