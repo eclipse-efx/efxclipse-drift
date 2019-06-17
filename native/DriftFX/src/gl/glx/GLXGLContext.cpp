@@ -16,6 +16,7 @@
 #include <GL/glxew.h>
 
 #include <iostream>
+#include <sstream>
 
 #include "../InternalGLContext.h"
 
@@ -80,6 +81,7 @@ GLXGLContext::GLXGLContext(std::string name, GLXContext sharedContext) : Interna
 }
 
 void GLXGLContext::UnsetCurrent() {
+	std::cerr << " ** Unset Current " << GetName() << std::endl;
 	glXMakeCurrent(display, None, NULL);
 	//glXMakeContextCurrent(display, 0, 0, 0);
 }
@@ -105,10 +107,13 @@ GLContext* GLXGLContext::CreateSharedContext() {
 	return CreateSharedContext("shared");
 }
 GLContext* GLXGLContext::CreateSharedContext(std::string name) {
-	return new GLXGLContext(name, this);
+	ostringstream s;
+	s << GetName() << "/" << name;
+	return new GLXGLContext(s.str(), this);
 }
 
 void GLXGLContext::SetCurrent() {
+	std::cerr << " ** Set Current " << GetName() << std::endl;
 	glXMakeContextCurrent(display, pBuffer, pBuffer, glxContext);
 }
 bool GLXGLContext::IsCurrent() {
