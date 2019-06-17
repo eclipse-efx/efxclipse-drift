@@ -19,8 +19,8 @@ using namespace driftfx::gl;
 
 using namespace driftfx::internal::prism::es2;
 
-ES2NativeSurface::ES2NativeSurface(JNINativeSurface* api) :
-	NativeSurface(api) {
+ES2NativeSurface::ES2NativeSurface(long surfaceId, JNINativeSurface* api) :
+	NativeSurface(surfaceId, api) {
 
 //	GLContext* fxContext = dynamic_cast<GLContext*>(PrismBridge::Get()->GetFxContext());
 //	sharedFXContext = fxContext->CreateSharedContext();

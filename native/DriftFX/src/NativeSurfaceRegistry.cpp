@@ -40,7 +40,7 @@ NativeSurfaceRegistry* NativeSurfaceRegistry::Get() {
 long NativeSurfaceRegistry::Create(JNINativeSurface* api) {
 	mutex.lock();
 	long surfaceId = nextSurfaceId++;
-	NativeSurface* surface = PrismBridge::Get()->CreateNativeSurface(api);
+	NativeSurface* surface = PrismBridge::Get()->CreateNativeSurface(surfaceId, api);
 	registry[surfaceId] = surface;
 	mutex.unlock();
 	return surfaceId;

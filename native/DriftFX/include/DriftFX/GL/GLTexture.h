@@ -28,7 +28,7 @@ class DRIFT_API GLTexture : public Texture {
 
 public:
 	GLTexture(GLContext *context, int width, int height);
-	virtual ~GLTexture();
+	virtual ~GLTexture() noexcept(false);
 
 	GLuint Name();
 

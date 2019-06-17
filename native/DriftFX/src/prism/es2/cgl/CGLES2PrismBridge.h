@@ -23,7 +23,6 @@ namespace cgl {
 class CGLES2PrismBridge : public ES2PrismBridge {
 
 protected:
-	gl::GLContext* sharedFXContext;
 
 	virtual ~CGLES2PrismBridge();
 

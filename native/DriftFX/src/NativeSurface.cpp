@@ -10,6 +10,7 @@
  */
 
 #include <iostream>
+#include <sstream>
 
 #include <DriftFX/DriftFXSurface.h>
 #include <DriftFX/math/Vec2.h>
@@ -34,7 +35,8 @@ using namespace driftfx::gl;
 using namespace driftfx::internal;
 using namespace driftfx::internal::prism;
 
-NativeSurface::NativeSurface(JNINativeSurface* api) :
+NativeSurface::NativeSurface(long surfaceId, JNINativeSurface* api) :
+	surfaceId(surfaceId),
 	api(api),
 	context(nullptr),
 	surfaceData(SurfaceData()) {
@@ -43,12 +45,14 @@ NativeSurface::NativeSurface(JNINativeSurface* api) :
 }
 
 NativeSurface::~NativeSurface() {
-	LogDebug("NativeSurface" << " destructor")
+	LogDebug("NativeSurface" << surfaceId << " destructor")
 }
 
 void NativeSurface::Initialize() {
 	LogDebug("init GLContext");
-	context = PrismBridge::Get()->GetDefaultContext()->CreateSharedContext();
+	ostringstream s;
+	s << "surface" << surfaceId;
+	context = PrismBridge::Get()->GetDefaultContext()->CreateSharedContext(s.str());
 }
 
 void NativeSurface::DisposeSharedTexture(long long id) {
@@ -73,8 +77,6 @@ void NativeSurface::DisposeSharedTextures() {
 }
 
 void NativeSurface::Cleanup() {
-
-
 //	// TODO send some kind of signal to tell FX we are going to dispose our textures
 	FrameData* frameData = new FrameData();
 	frameData->d3dSharedHandle = 0;
@@ -89,8 +91,6 @@ void NativeSurface::Cleanup() {
 	LogDebug("clean textures");
 	DisposeSharedTextures();
 
-//
-//
 	// NOTE: since textures know their context and set it current upon deletion
 	// we must ensure that all textures from a context are deleted before the context is deleted!
 
@@ -142,6 +142,11 @@ RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
 		return nullptr;
 	}
 
+	if (!GetContext()->IsCurrent()) {
+		LogInfo("Setting context " << GetContext()->GetName() << " current");
+		GetContext()->SetCurrent();
+	}
+
 	SharedTexture* tex = SharedTexture::Create(GetContext(), GetFxContext(), currentSurfaceData, Vec2ui(width, height));
 
 	tex->Connect();
@@ -190,7 +195,7 @@ Vec2d NativeSurface::GetUserScale() {
 Vec2ui NativeSurface::GetScaledSize() {
 	SurfaceData data = surfaceData.load();
 	Vec2ui r;
-	r.x = (unsigned int) ceil(data.size.x * data.screenScale.x * data.userScale.x);
-	r.y = (unsigned int) ceil(data.size.y * data.screenScale.y * data.userScale.y);
+	r.x = (unsigned int) ceil((long double) data.size.x * data.screenScale.x * data.userScale.x);
+	r.y = (unsigned int) ceil((long double) data.size.y * data.screenScale.y * data.userScale.y);
 	return r;
 }

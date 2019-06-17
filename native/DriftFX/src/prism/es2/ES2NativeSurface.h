@@ -25,7 +25,7 @@ protected:
 	gl::GLContext* sharedFXContext;
 
 public:
-	ES2NativeSurface(JNINativeSurface* api);
+	ES2NativeSurface(long surfaceId, JNINativeSurface* api);
 	virtual ~ES2NativeSurface();
 
 	virtual Context* GetFxContext();

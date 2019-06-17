@@ -20,12 +20,14 @@
 bool debugEnabled = false;
 bool errorEnabled = true;
 bool infoEnabled = true;
+bool warnEnabled = true;
 
 std::ostream& operator<<(std::ostream& ostr, const LogLevel& level) {
 	switch (level) {
 	case Debug: return ostr << "DEBUG";
 	case Error: return ostr << "ERROR";
 	case Info: return ostr << "INFO";
+	case Warning: return ostr << "WARN";
 	default: return ostr;
 	}
 }
@@ -80,6 +82,7 @@ std::ostream& Log(LogLevel level, std::string file, int line, std::string func) 
 	case Debug: if (!debugEnabled) return nullStream;
 	case Error: if (!errorEnabled) return nullStream;
 	case Info: if (!infoEnabled) return nullStream;
+	case Warning: if (!warnEnabled) return nullStream;
 	}
 	
 	
@@ -96,5 +99,6 @@ void LogSetEnabled(LogLevel level, bool enable) {
 	case Debug: debugEnabled = enable; break;
 	case Error: errorEnabled = enable; break;
 	case Info: infoEnabled = enable; break;
+	case Warning: warnEnabled = enable; break;
 	}
 }

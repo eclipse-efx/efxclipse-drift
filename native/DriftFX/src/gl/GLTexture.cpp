@@ -20,6 +20,10 @@
 
 #include "InternalGLContext.h"
 
+#include <gl/GLLog.h>
+
+#include <utils/Logger.h>
+
 using namespace driftfx;
 using namespace driftfx::gl;
 
@@ -30,22 +34,34 @@ using namespace driftfx::internal::gl;
 GLTexture::GLTexture(GLContext *context, int width, int height) : Texture(width, height),
 	context(context),
 	textureName(0) {
+//	GLCALL( std::string s0 = "before create set-current" );
+//	context->SetCurrent();
+//
+//	GLCALL( std::string s1 = "before create" );
 
-	context->SetCurrent();
+	if (!context->IsCurrent()) {
+		throw GLContextException("current context must match texture context ");
+	}
 
-	logGLErr(;);
-	logGLErr(InternalGLContext::glGenTextures(1, &textureName););
+	GLCALL( glGenTextures(1, &textureName) );
 
-
+	if (textureName == 0) {
+		std::cerr << "textureName was 0!!!" << std::endl;
+	}
 
 	// TODO check for error & if textureName is valid
 }
 
-GLTexture::~GLTexture() {
+GLTexture::~GLTexture() noexcept(false) {
+//	GLCALL( std::string s0 = "before dispose set-current" );
+//	context->SetCurrent();
 
-	context->SetCurrent();
+	if (!context->IsCurrent()) {
+		throw GLContextException("current context must match texture context");
+	}
 
-	glDeleteTextures(1, &textureName);
+//	GLCALL( std::string s1 = "before dispose" );
+	GLCALL( glDeleteTextures(1, &textureName) );
 }
 
 GLuint GLTexture::Name() {

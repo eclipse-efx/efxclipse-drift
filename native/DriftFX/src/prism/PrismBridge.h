@@ -36,7 +36,7 @@ public:
 
 	virtual Context* GetFxContext();
 
-	virtual NativeSurface* CreateNativeSurface(JNINativeSurface* api) = 0;
+	virtual NativeSurface* CreateNativeSurface(long surfaceId, JNINativeSurface* api) = 0;
 
 	static void Destroy();
 

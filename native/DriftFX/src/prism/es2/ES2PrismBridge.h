@@ -27,13 +27,14 @@ class ES2PrismBridge : public PrismBridge {
 
 public:
 	virtual int CopyTexture(int sourceTex, int targetTex, int width, int height);
-	virtual NativeSurface* CreateNativeSurface(JNINativeSurface* api);
+	virtual NativeSurface* CreateNativeSurface(long surfaceId, JNINativeSurface* api);
 
 protected:
 	ES2PrismBridge(GLContext* fxContext);
 	virtual ~ES2PrismBridge();
 
 	GLContext *fxGLContext;
+	GLContext *fxSharedGLContext;
 
 };
 

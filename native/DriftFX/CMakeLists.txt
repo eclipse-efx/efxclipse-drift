@@ -62,6 +62,10 @@ set(DriftFX-Sources
     src/Configuration.cpp
     
     src/math/Vec2.cpp
+    
+    src/gl/GLLog.h
+    src/gl/GLLog.cpp
+    
 )
 
 if (WIN32)
@@ -108,6 +112,9 @@ if (APPLE)
 	list(APPEND DriftFX-Sources src/prism/es2/cgl/CGLES2PrismBridge)
 	list(APPEND DriftFX-Sources src/prism/es2/cgl/IOSurfaceSharedTexture)
 	list(APPEND DriftFX-Sources src/prism/es2/cgl/NativeAPI)
+	
+	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.h)
+	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.cpp)
 endif (APPLE)
 
 

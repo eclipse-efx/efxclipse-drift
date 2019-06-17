@@ -19,7 +19,7 @@ namespace driftfx {
 class DRIFT_API Texture {
 
 public:
-	virtual ~Texture();
+	virtual ~Texture() noexcept(false);
 
 	virtual unsigned int GetWidth();
 	virtual unsigned int GetHeight();

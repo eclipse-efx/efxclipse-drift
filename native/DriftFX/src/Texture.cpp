@@ -19,7 +19,7 @@ Texture::Texture(unsigned int width, unsigned int height) :
 
 }
 
-Texture::~Texture() {
+Texture::~Texture() noexcept(false) {
 
 }
 

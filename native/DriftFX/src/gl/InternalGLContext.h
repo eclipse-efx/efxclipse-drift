@@ -15,6 +15,8 @@
 
 #include <GL/glew.h>
 
+#include <string>
+
 namespace driftfx {
 namespace internal {
 namespace gl {
@@ -23,13 +25,15 @@ namespace gl {
 class InternalGLContext : public driftfx::gl::GLContext {
 
 public:
-	InternalGLContext();
+	InternalGLContext(std::string name);
 	virtual ~InternalGLContext();
 
-	static GLenum glGetError();
-	static void glGenTextures(GLsizei n, GLuint* textures);
-	static void glDeleteTextures(GLsizei n, GLuint* textures);
-	static void glBindTexture(GLenum target, GLuint texture);
+	virtual std::string GetName();
+
+//	static GLenum glGetError();
+//	static void glGenTextures(GLsizei n, GLuint* textures);
+//	static void glDeleteTextures(GLsizei n, GLuint* textures);
+//	static void glBindTexture(GLenum target, GLuint texture);
 //	static void glGenFramebuffers(GLsizei n, GLuint* ids);
 //	static void glDeleteFramebuffers(GLsizei n, GLuint* ids);
 //	static void glBindFramebuffer(GLenum target, GLuint id);
@@ -39,22 +43,31 @@ public:
 //	static void glFlush();
 //	static void glFinish();
 
-	static void GetTexImage(GLenum target, GLint level, GLenum format, GLenum type, void* pixels);
+//	static void GetTexImage(GLenum target, GLint level, GLenum format, GLenum type, void* pixels);
 
-	static void GenBuffers(GLsizei n, GLuint* buffers);
-	static void DeleteBuffers(GLsizei n, GLuint* buffers);
-	static void* MapBuffer(GLenum target, GLenum access);
-	static void UnmapBuffer(GLenum target);
-	static void BindBuffer(GLenum target, GLuint buffer);
+//	static void GenBuffers(GLsizei n, GLuint* buffers);
+//	static void DeleteBuffers(GLsizei n, GLuint* buffers);
+//	static void* MapBuffer(GLenum target, GLenum access);
+//	static void UnmapBuffer(GLenum target);
+//	static void BindBuffer(GLenum target, GLuint buffer);
 
 
 	static void Initialize();
 	static void Cleanup();
+
+//	static void checkGLError();
+//	static std::string getGLErrorString(GLenum error);
+
+//	static bool checkGLErrors;
 protected:
+	std::string name;
+	long instanceNum;
+
 	static void* resolve(const GLubyte* name);
 
 	static long instanceCount;
 	static bool initialized;
+
 };
 
 }

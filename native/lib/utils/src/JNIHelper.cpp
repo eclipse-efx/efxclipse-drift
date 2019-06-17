@@ -29,7 +29,7 @@ thread_local JNIEnv* jniEnv;
 
 void JNIHelper::Initialize(JavaVM* jvm) {
 	LogDebug("jvm = " << jvm)
-	if (JNIHelper::jvm != nullptr) {LogError("JNIHelper already initialized") return;}
+	if (JNIHelper::jvm != nullptr) {LogWarning("JNIHelper already initialized") return;}
 	JNIHelper::jvm = jvm;
 }
 

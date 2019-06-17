@@ -26,31 +26,41 @@
 #include <OpenGL/gl.h>
 
 #include <iostream>
+#include <sstream>
 #include <string>
+#include <thread>
 
 
 #include <utils/Logger.h>
+
+#include <gl/cgl/CGLLog.h>
 
 using namespace std;
 
 using namespace driftfx::gl;
 using namespace driftfx::internal::gl::cgl;
 
-CGLGLContext::CGLGLContext(CGLContextObj cglContext, bool managed) :
+CGLGLContext::CGLGLContext(std::string name, CGLContextObj cglContext, bool managed) : InternalGLContext(name),
 		contextObj(cglContext),
 		managed(managed) {
 }
 
 GLContext* CGLGLContext::CreateSharedContext() {
+	return CreateSharedContext("shared");
+}
+
+GLContext* CGLGLContext::CreateSharedContext(std::string name) {
 	LogDebug("creating shared context!!");
 	CGLPixelFormatObj pix = CGLGetPixelFormat(contextObj);
 	CGLContextObj newContext;
-	checkErr(CGLCreateContext( pix, contextObj, &newContext ), "CGLCreateContext");
-	//checkErr(CGLDestroyPixelFormat( pix ), "CGLDestroyPixelFormat");
-	return new CGLGLContext(newContext, true);
+	CGLCALL(CGLCreateContext( pix, contextObj, &newContext );)
+	//CGLCALL(CGLDestroyPixelFormat( pix ););
+	ostringstream s;
+	s << GetName() << "/" << name;
+	return new CGLGLContext(s.str(), newContext, true);
 }
 
-CGLGLContext::CGLGLContext() :
+CGLGLContext::CGLGLContext(std::string name) : InternalGLContext(name),
 	managed(true) {
 
 	CGLPixelFormatAttribute attributes[5] = {
@@ -63,21 +73,26 @@ CGLGLContext::CGLGLContext() :
 	GLint num;
 
 	CGLPixelFormatObj pix;
-	checkErr(CGLChoosePixelFormat( attributes, &pix, &num ), "CGLChoosePixelFormat");
-	checkErr(CGLCreateContext( pix, 0, &contextObj ), "CGLCreateContext");
-	checkErr(CGLDestroyPixelFormat( pix ), "CGLDestroyPixelFormat");
+	CGLCALL(CGLChoosePixelFormat( attributes, &pix, &num );)
+	CGLCALL(CGLCreateContext( pix, 0, &contextObj );)
+	CGLCALL(CGLDestroyPixelFormat( pix );)
 }
 
 CGLGLContext::~CGLGLContext() {
 	cerr << "CGLGLContext Destructor" << endl;
-	checkErr(CGLDestroyContext( contextObj ), "CGLDestroyContext");
+	CGLCALL(CGLDestroyContext( contextObj );)
 }
 
 void CGLGLContext::SetCurrent() {
-	checkErr(CGLSetCurrentContext( contextObj ), "CGLSetCurrentContext");
+	cerr << " ** SetCurrent " << name << " on " << this_thread::get_id() << endl;
+	CGLCALL(CGLSetCurrentContext( contextObj ););
+
+	if (!IsCurrent()) {
+		cerr << "SetCurrent FAILED!!! " << contextObj << endl << flush;
+	}
 }
 void CGLGLContext::UnsetCurrent() {
-	checkErr(CGLSetCurrentContext( NULL ), "CGLSetCurrentContext");
+	CGLCALL(CGLSetCurrentContext( NULL ););
 }
 bool CGLGLContext::IsCurrent() {
 	return CGLGetCurrentContext() == contextObj;
@@ -86,3 +101,8 @@ bool CGLGLContext::IsCurrent() {
 void* CGLGLContext::GetHandle() {
 	return (void*) contextObj;
 }
+
+CGLContextObj CGLGLContext::GetCGLContextObj() {
+	return contextObj;
+}
+
