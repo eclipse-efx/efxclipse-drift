@@ -34,10 +34,6 @@ using namespace driftfx::internal::gl;
 GLTexture::GLTexture(GLContext *context, int width, int height) : Texture(width, height),
 	context(context),
 	textureName(0) {
-//	GLCALL( std::string s0 = "before create set-current" );
-//	context->SetCurrent();
-//
-//	GLCALL( std::string s1 = "before create" );
 
 	if (!context->IsCurrent()) {
 		throw GLContextException("current context must match texture context ");
@@ -53,14 +49,11 @@ GLTexture::GLTexture(GLContext *context, int width, int height) : Texture(width,
 }
 
 GLTexture::~GLTexture() noexcept(false) {
-//	GLCALL( std::string s0 = "before dispose set-current" );
-//	context->SetCurrent();
 
 	if (!context->IsCurrent()) {
 		throw GLContextException("current context must match texture context");
 	}
 
-//	GLCALL( std::string s1 = "before dispose" );
 	GLCALL( glDeleteTextures(1, &textureName) );
 }
 

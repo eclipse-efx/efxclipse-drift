@@ -53,8 +53,7 @@ GLContext* CGLGLContext::CreateSharedContext(std::string name) {
 	LogDebug("creating shared context!!");
 	CGLPixelFormatObj pix = CGLGetPixelFormat(contextObj);
 	CGLContextObj newContext;
-	CGLCALL(CGLCreateContext( pix, contextObj, &newContext );)
-	//CGLCALL(CGLDestroyPixelFormat( pix ););
+	CGLCALL( CGLCreateContext( pix, contextObj, &newContext ) );
 	ostringstream s;
 	s << GetName() << "/" << name;
 	return new CGLGLContext(s.str(), newContext, true);
@@ -73,26 +72,20 @@ CGLGLContext::CGLGLContext(std::string name) : InternalGLContext(name),
 	GLint num;
 
 	CGLPixelFormatObj pix;
-	CGLCALL(CGLChoosePixelFormat( attributes, &pix, &num );)
-	CGLCALL(CGLCreateContext( pix, 0, &contextObj );)
-	CGLCALL(CGLDestroyPixelFormat( pix );)
+	CGLCALL( CGLChoosePixelFormat( attributes, &pix, &num ) );
+	CGLCALL( CGLCreateContext( pix, 0, &contextObj ) );
+	CGLCALL( CGLDestroyPixelFormat( pix ) );
 }
 
 CGLGLContext::~CGLGLContext() {
-	cerr << "CGLGLContext Destructor" << endl;
-	CGLCALL(CGLDestroyContext( contextObj );)
+	CGLCALL( CGLDestroyContext( contextObj ) );
 }
 
 void CGLGLContext::SetCurrent() {
-	cerr << " ** SetCurrent " << name << " on " << this_thread::get_id() << endl;
-	CGLCALL(CGLSetCurrentContext( contextObj ););
-
-	if (!IsCurrent()) {
-		cerr << "SetCurrent FAILED!!! " << contextObj << endl << flush;
-	}
+	CGLCALL( CGLSetCurrentContext( contextObj ) );
 }
 void CGLGLContext::UnsetCurrent() {
-	CGLCALL(CGLSetCurrentContext( NULL ););
+	CGLCALL( CGLSetCurrentContext( NULL ) );
 }
 bool CGLGLContext::IsCurrent() {
 	return CGLGetCurrentContext() == contextObj;
