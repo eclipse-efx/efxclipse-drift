@@ -28,14 +28,16 @@ using namespace driftfx;
 
 using namespace driftfx::internal::win32;
 
-D3D9ExContext::D3D9ExContext(IDirect3D9Ex* d3d9, IDirect3DDevice9Ex* device) :
+D3D9ExContext::D3D9ExContext(std::string name, IDirect3D9Ex* d3d9, IDirect3DDevice9Ex* device) :
+		name(name),
 		d3d9(d3d9),
 		d3d9Device(device),
 		hWnd(nullptr) {
 	cout << "D3D0ExContext created!" << endl;
 }
 
-D3D9ExContext::D3D9ExContext() :
+D3D9ExContext::D3D9ExContext(std::string name) :
+	name(name),
 	d3d9(nullptr),
 	d3d9Device(nullptr),
 	hWnd(nullptr) {
@@ -98,6 +100,10 @@ D3D9ExContext::~D3D9ExContext() {
 		d3d9Device->Release();
 		d3d9->Release();
 	}
+}
+
+std::string D3D9ExContext::GetName() {
+	return name;
 }
 
 LRESULT APIENTRY D3D9ExContext::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {

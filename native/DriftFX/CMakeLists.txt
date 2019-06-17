@@ -69,7 +69,8 @@ set(DriftFX-Sources
 )
 
 if (WIN32)
-	list(APPEND DriftFX-Sources src/gl/wgl/WGLGLContext)
+	list(APPEND DriftFX-Sources src/gl/wgl/WGLGLContext.h)
+	list(APPEND DriftFX-Sources src/gl/wgl/WGLGLContext.cpp)
 	
 	list(APPEND DriftFX-Sources src/prism/d3d/D3DPrismBridge)
 	list(APPEND DriftFX-Sources src/prism/d3d/D3DNativeSurface)
@@ -82,8 +83,12 @@ if (WIN32)
 	
 	list(APPEND DriftFX-Sources src/prism/d3d/NativeAPI)
 	
-	list(APPEND DriftFX-Sources src/win32/D3D9ExContext)
-	list(APPEND DriftFX-Sources src/win32/D3D9Texture)
+	list(APPEND DriftFX-Sources src/win32/D3D9ExContext.h)
+	list(APPEND DriftFX-Sources src/win32/D3D9ExContext.cpp)
+
+	list(APPEND DriftFX-Sources src/win32/D3D9Texture.h)
+	list(APPEND DriftFX-Sources src/win32/D3D9Texture.cpp)
+
 	list(APPEND DriftFX-Sources src/win32/Error)
 endif (WIN32)
 
