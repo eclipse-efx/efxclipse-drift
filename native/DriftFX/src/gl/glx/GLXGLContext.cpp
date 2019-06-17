@@ -16,6 +16,9 @@
 #include <GL/glxew.h>
 
 #include <iostream>
+
+#include "../InternalGLContext.h"
+
 using namespace std;
 
 using namespace driftfx::gl;
@@ -26,7 +29,7 @@ typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXC
 typedef Bool (*glXMakeContextCurrentARBProc)(Display*, GLXDrawable, GLXDrawable, GLXContext);
 
 
-GLXGLContext::GLXGLContext(GLXContext sharedContext) {
+GLXGLContext::GLXGLContext(std::string name, GLXContext sharedContext) : InternalGLContext(name) {
 	LogDebug("sharedContext = " << sharedContext);
 
 	display = XOpenDisplay( NULL );
@@ -81,14 +84,14 @@ void GLXGLContext::UnsetCurrent() {
 	//glXMakeContextCurrent(display, 0, 0, 0);
 }
 
-GLXGLContext::GLXGLContext(GLXGLContext* shared) :
-		GLXGLContext(shared == nullptr ? 0 : shared->GetHandle()){
+GLXGLContext::GLXGLContext(std::string name, GLXGLContext* shared) :
+		GLXGLContext(name, shared == nullptr ? 0 : shared->GetHandle()){
 
 	GLXContext ctx;
 }
 
-GLXGLContext::GLXGLContext() :
-		GLXGLContext((GLXContext) 0) {
+GLXGLContext::GLXGLContext(std::string name) :
+		GLXGLContext(name, (GLXContext) 0) {
 }
 
 GLXGLContext::~GLXGLContext() {
@@ -99,7 +102,10 @@ GLXGLContext::~GLXGLContext() {
 }
 
 GLContext* GLXGLContext::CreateSharedContext() {
-	return new GLXGLContext(this);
+	return CreateSharedContext("shared");
+}
+GLContext* GLXGLContext::CreateSharedContext(std::string name) {
+	return new GLXGLContext(name, this);
 }
 
 void GLXGLContext::SetCurrent() {
