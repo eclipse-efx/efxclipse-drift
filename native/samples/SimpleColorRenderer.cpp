@@ -183,6 +183,8 @@ public:
 			this_thread::sleep_for(milliseconds(10));
 		}
 
+		cleanup();
+
 		JNIHelper::ReleaseThread();
 	}
 

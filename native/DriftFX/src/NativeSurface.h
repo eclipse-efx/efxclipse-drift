@@ -101,11 +101,13 @@ public:
 	virtual Context* GetFxContext();
 
 protected:
-	NativeSurface(JNINativeSurface* api);
+	NativeSurface(long surfaceId, JNINativeSurface* api);
 
 	JNINativeSurface *api;
 
 	GLContext* context;
+
+	long surfaceId;
 
 private:
 	std::atomic<SurfaceData> surfaceData;

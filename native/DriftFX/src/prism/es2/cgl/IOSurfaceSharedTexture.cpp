@@ -26,6 +26,12 @@
 #include <DriftFX/GL/GLDebug.h>
 #include <DriftFX/math/Vec2.h>
 
+#include <gl/GLLog.h>
+#include <gl/cgl/CGLLog.h>
+
+#include <string>
+#include <sstream>
+
 using namespace driftfx::gl;
 using namespace driftfx::math;
 using namespace driftfx::internal;
@@ -35,126 +41,52 @@ using namespace driftfx::internal::prism::es2;
 using namespace driftfx::internal::prism::es2::cgl;
 
 SharedTexture* SharedTexture::Create(GLContext* context, Context* fxContext, SurfaceData surfaceData, Vec2ui textureSize) {
-	return new IOSurfaceSharedTexture(context, dynamic_cast<GLContext*>(fxContext), surfaceData, textureSize);
+	return new IOSurfaceSharedTexture(context, surfaceData, textureSize);
 }
 
-IOSurfaceSharedTexture::IOSurfaceSharedTexture(GLContext* context, GLContext* fxContext, SurfaceData surfaceData, Vec2ui textureSize) :
-	SharedTexture(context, surfaceData, textureSize),
-	fxContext(fxContext)
+IOSurfaceSharedTexture::IOSurfaceSharedTexture(GLContext* context, SurfaceData surfaceData, Vec2ui textureSize) :
+	SharedTexture(context, surfaceData, textureSize)
 		{
 	ioSurface = createIOSurface(textureSize.x, textureSize.y);
 
-	fxContext->SetCurrent();
+	if (!glContext->IsCurrent()) {
+		std::ostringstream s;
+		s << "IOSurfaceSharedTexture: context " << glContext->GetName() << " must be current";
+		throw GLContextException(s.str());
+	}
 
-	fxTexture = dynamic_cast<GLTexture*>(fxContext->CreateTexture(textureSize.x, textureSize.y));
-
-	// SIZE IT!
-//	GLERR( glBindTexture(GL_TEXTURE_2D, fxTexture->Name()); );
-//  GLERR( glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL); );
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
-//	GLERR( glBindTexture(GL_TEXTURE_2D, 0); );
-
-	glContext->SetCurrent();
 	glTexture = dynamic_cast<GLTexture*>(glContext->CreateTexture(textureSize.x, textureSize.y));
 
 	CGLGLContext* cglCtx = dynamic_cast<CGLGLContext*>(glContext);
-	void* ctxHandle = cglCtx->GetHandle();
-	CGLContextObj ctx = (CGLContextObj) ctxHandle;
 
-
-	GLERR( glBindTexture(GL_TEXTURE_RECTANGLE, glTexture->Name()); );
-	checkErr( CGLTexImageIOSurface2D(ctx, GL_TEXTURE_RECTANGLE, GL_RGBA, textureSize.x, textureSize.y, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0), "CGLTexImageIOSurface2D");
-	GLERR( glBindTexture(GL_TEXTURE_RECTANGLE, 0); );
-
-
-	//context->SetCurrent();
+	GLCALL( glBindTexture(GL_TEXTURE_RECTANGLE, glTexture->Name()) );
+	CGLCALL( CGLTexImageIOSurface2D(cglCtx->GetCGLContextObj(), GL_TEXTURE_RECTANGLE, GL_RGBA, textureSize.x, textureSize.y, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0) );
+	GLCALL( glBindTexture(GL_TEXTURE_RECTANGLE, 0) );
 }
 
 IOSurfaceSharedTexture::~IOSurfaceSharedTexture() {
-
 	releaseIOSurface(ioSurface);
 
-	delete fxTexture;
-
+	if (!glContext->IsCurrent()) {
+		LogInfo("Forcing context switch to " << glContext->GetName());
+		glContext->SetCurrent();
+	}
 	delete glTexture;
 }
 
 bool IOSurfaceSharedTexture::Connect() {
-	int width = GetWidth();
-	int height = GetHeight();
-
-
-
-
-
 	return true;
 }
 bool IOSurfaceSharedTexture::Disconnect() {
-	int width = GetWidth();
-	int height = GetHeight();
-
-
-	// is it impossible to disconnect the ioSurface from the texture =?
-
-	// we can delete the texture
-//	delete glTexture;
-//
-//	glFlush();
-//	fxContext->SetCurrent();
-//
-//	GLuint fb;
-//	GLERR(glGenFramebuffers(1, &fb););
-//
-//	GLERR(glBindFramebuffer(GL_FRAMEBUFFER, fb););
-//	LogDebug("bound GL_FRAMEBUFFER to " << fb << ", fxTexture->Name() is " << fxTexture->Name());
-//	GLERR(glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fxTexture->Name(), 0););
-//
-//	GLERR(glClearColor(1, 0, 0, 1););
-//	GLERR(glClear(GL_COLOR_BUFFER_BIT););
-//	GLERR(glFlush(););
-//
-//	GLERR(glBindFramebuffer(GL_FRAMEBUFFER, 0););
-//	GLERR(glDeleteFramebuffers(1, &fb););
-
-
-//	GLuint err = glGetError();
-//
-//
-//	LogDebug("Error: " << err);
-
-//	// receive texture in shared fx context
-//
-//	GLuint tmpTex;
-//
-//	glGenTextures(1, &tmpTex);
-//
-//	CGLGLContext* fx = dynamic_cast<CGLGLContext*>(fxContext);
-//	CGLContextObj ctx = (CGLContextObj) fx->GetHandle();
-//
-//	glBindTexture(GL_TEXTURE_RECTANGLE, tmpTex);
-//	CGLError err = CGLTexImageIOSurface2D(ctx, GL_TEXTURE_RECTANGLE, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0);
-//	checkErr(err, "bind io surface");
-//	glBindTexture(GL_TEXTURE_RECTANGLE, 0);
-//
-//
-//	// COPY OVER
-//	ES2PrismBridge* bridge = dynamic_cast<ES2PrismBridge*>(PrismBridge::Get());
-//	bridge->CopyTexture(tmpTex, fxTexture->Name(), width, height);
-//
-//	glDeleteTextures(1, &tmpTex);
-
-//	glContext->SetCurrent();
 	return true;
 }
 
 bool IOSurfaceSharedTexture::Lock() {
 	//IOSurfaceLock(ioSurface, kIOSurfaceLockAvoidSync, NULL);
-
 	return true;
 }
 bool IOSurfaceSharedTexture::Unlock() {
 	//IOSurfaceUnlock(ioSurface, kIOSurfaceLockAvoidSync, NULL);
-
 	return true;
 }
 
@@ -163,7 +95,7 @@ FrameData* IOSurfaceSharedTexture::CreateFrameData() {
 	FrameData* data = new FrameData();
 	data->id = (long long) this;
 	data->surfaceData = surfaceData;
-	data->glTextureName = fxTexture->Name();
+	data->glTextureName = 0;
 	data->ioSurfaceHandle = (long long) ioSurface;
 	data->textureSize = textureSize;
 

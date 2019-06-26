@@ -20,6 +20,8 @@
 
 #include "../InternalGLContext.h"
 
+#include <string>
+
 namespace driftfx {
 namespace internal {
 namespace gl {
@@ -28,8 +30,8 @@ namespace cgl {
 class CGLGLContext : public InternalGLContext {
 
 public:
-	CGLGLContext();
-	CGLGLContext(CGLContextObj contextObj, bool managed);
+	CGLGLContext(std::string name);
+	CGLGLContext(std::string name, CGLContextObj contextObj, bool managed);
 	virtual ~CGLGLContext();
 
 	virtual void SetCurrent();
@@ -37,14 +39,15 @@ public:
 	virtual bool IsCurrent();
 
 	virtual GLContext* CreateSharedContext();
+	virtual GLContext* CreateSharedContext(std::string name);
 
 	virtual void* GetHandle();
 
+	virtual CGLContextObj GetCGLContextObj();
 
 private:
 	CGLContextObj contextObj;
 	bool managed;
-
 };
 
 }

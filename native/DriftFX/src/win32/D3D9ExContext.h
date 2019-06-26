@@ -26,8 +26,8 @@ class D3D9ExContext : public Context {
 	friend D3D9Texture;
 
 public:
-	D3D9ExContext();
-	D3D9ExContext(IDirect3D9Ex* d3d9, IDirect3DDevice9Ex* device);
+	D3D9ExContext(std::string name);
+	D3D9ExContext(std::string name, IDirect3D9Ex *d3d9, IDirect3DDevice9Ex *device);
 
 	virtual ~D3D9ExContext();
 
@@ -36,7 +36,10 @@ public:
 	virtual IDirect3D9Ex* GetD3D9();
 	virtual IDirect3DDevice9Ex* Device();
 
+	virtual std::string GetName();
+
 private:
+	std::string name;
 
 	IDirect3D9Ex* d3d9;
 	IDirect3DDevice9Ex* d3d9Device;

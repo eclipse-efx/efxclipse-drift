@@ -11,8 +11,13 @@
 #ifndef DRIFTFX_GL_GLCONTEXT_H_
 #define DRIFTFX_GL_GLCONTEXT_H_
 
+#include <string>
+#include <exception>
+
 #include <DriftFX/Common.h>
 #include <DriftFX/Context.h>
+
+#include <string>
 
 namespace driftfx {
 namespace gl {
@@ -26,10 +31,21 @@ public:
 	virtual bool IsCurrent() = 0;
 
 	virtual GLContext* CreateSharedContext() = 0;
+	virtual GLContext* CreateSharedContext(std::string name) = 0;
 
 	virtual Texture* CreateTexture(int width, int height);
 
+	virtual std::string GetName() = 0;
 
+};
+
+struct DRIFT_API GLContextException : public std::exception {
+	std::string message;
+	const char* what() const throw () {
+		return message.c_str();
+	}
+	GLContextException(std::string msg) : message(msg) {
+	}
 };
 
 }

@@ -36,7 +36,7 @@ public:
 
 protected:
 	virtual Context* GetFxContext();
-	D3DNativeSurface(JNINativeSurface* api);
+	D3DNativeSurface(long surfaceId, JNINativeSurface* api);
 
 private:
 	D3D9ExContext* fxContext;

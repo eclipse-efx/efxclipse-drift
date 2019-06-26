@@ -23,6 +23,7 @@ import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
 import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.NativeAPI;
 import org.eclipse.fx.drift.internal.Placement;
+import org.eclipse.fx.drift.internal.QuantumRendererHelper;
 import org.eclipse.fx.drift.internal.SurfaceData;
 
 import com.sun.javafx.sg.prism.NGNode;
@@ -107,25 +108,8 @@ public class NGDriftFXSurface extends NGNode {
 		Log.debug("Created Texture @ " + texture.getContentWidth() + " x " + texture.getContentHeight());
 		
 		// to protect the javafx gl context we change threads here
-		ReentrantLock lock = new ReentrantLock();
-		Condition done = lock.newCondition();
-		lock.lock();
-		fixer.execute(() -> {
-			lock.lock();
-			GraphicsPipelineUtil.onTextureCreated(texture, currentFrameData);
-			done.signal();
-			lock.unlock();
-		});
-		try {
-			done.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		
 		// recreate shared texture
-		//int result = GraphicsPipelineUtil.onTextureCreated(texture, currentFrameData);
-		int result = 0;
+		int result = QuantumRendererHelper.syncExecute(() -> GraphicsPipelineUtil.onTextureCreated(texture, currentFrameData));
 		
 		if (result == 0) {
 			return texture;
@@ -137,14 +121,7 @@ public class NGDriftFXSurface extends NGNode {
 		}
 	}
 	
-	static Executor fixer = Executors.newSingleThreadExecutor(new ThreadFactory() {
-		@Override
-		public Thread newThread(Runnable r) {
-			Thread t = new Thread(r);
-			t.setDaemon(true);
-			return t;
-		}
-	});
+	
 	
 	private int toPixels(double value) {
 		return (int) Math.ceil(value);

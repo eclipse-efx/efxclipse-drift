@@ -16,7 +16,7 @@
 #include <ostream>
 #include <string>
 
-enum LogLevel { Debug, Error, Info };
+enum LogLevel { Debug, Error, Warning, Info };
 
 std::ostream& operator<<(std::ostream& ostr, const LogLevel& level);
 std::ostream& Log(LogLevel level, std::string file, int line, std::string func);
@@ -34,10 +34,12 @@ void LogSetEnabled(LogLevel level, bool enable);
 #define LogDebug(msg) Log(Debug, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
 #define LogError(msg) Log(Error, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
 #define LogInfo(msg) Log(Info, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
+#define LogWarning(msg) Log(Warning, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
 #else
 #define LogDebug(msg)
 #define LogError(msg)
 #define LogInfo(msg)
+#define LogWarning(msg)
 #endif
 
 

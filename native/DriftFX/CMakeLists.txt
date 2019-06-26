@@ -62,10 +62,15 @@ set(DriftFX-Sources
     src/Configuration.cpp
     
     src/math/Vec2.cpp
+    
+    src/gl/GLLog.h
+    src/gl/GLLog.cpp
+    
 )
 
 if (WIN32)
-	list(APPEND DriftFX-Sources src/gl/wgl/WGLGLContext)
+	list(APPEND DriftFX-Sources src/gl/wgl/WGLGLContext.h)
+	list(APPEND DriftFX-Sources src/gl/wgl/WGLGLContext.cpp)
 	
 	list(APPEND DriftFX-Sources src/prism/d3d/D3DPrismBridge)
 	list(APPEND DriftFX-Sources src/prism/d3d/D3DNativeSurface)
@@ -78,8 +83,12 @@ if (WIN32)
 	
 	list(APPEND DriftFX-Sources src/prism/d3d/NativeAPI)
 	
-	list(APPEND DriftFX-Sources src/win32/D3D9ExContext)
-	list(APPEND DriftFX-Sources src/win32/D3D9Texture)
+	list(APPEND DriftFX-Sources src/win32/D3D9ExContext.h)
+	list(APPEND DriftFX-Sources src/win32/D3D9ExContext.cpp)
+
+	list(APPEND DriftFX-Sources src/win32/D3D9Texture.h)
+	list(APPEND DriftFX-Sources src/win32/D3D9Texture.cpp)
+
 	list(APPEND DriftFX-Sources src/win32/Error)
 endif (WIN32)
 
@@ -108,6 +117,9 @@ if (APPLE)
 	list(APPEND DriftFX-Sources src/prism/es2/cgl/CGLES2PrismBridge)
 	list(APPEND DriftFX-Sources src/prism/es2/cgl/IOSurfaceSharedTexture)
 	list(APPEND DriftFX-Sources src/prism/es2/cgl/NativeAPI)
+	
+	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.h)
+	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.cpp)
 endif (APPLE)
 
 

@@ -11,6 +11,7 @@
 
 
 #include <jni.h>
+#include <iomanip>
 
 #include "ES2PrismBridge.h"
 #include "ES2NativeSurface.h"
@@ -18,6 +19,8 @@
 #include <DriftFX/GL/GLContext.h>
 #include <DriftFX/GL/GLDebug.h>
 #include <utils/Logger.h>
+
+#include <gl/GLLog.h>
 
 using namespace driftfx::gl;
 
@@ -31,44 +34,41 @@ ES2PrismBridge::ES2PrismBridge(GLContext* fxContext) :
 
 	LogDebug("Constructed PrismBridge with fxContext = " << fxContext);
 
-	defaultContext = fxContext->CreateSharedContext();
-
-
+	fxSharedGLContext = fxContext->CreateSharedContext();
 }
 
 ES2PrismBridge::~ES2PrismBridge() {
-
+	delete fxSharedGLContext;
 }
 
-#include <iomanip>
 
 int ES2PrismBridge::CopyTexture(int sourceTex, int targetTex, int width, int height) {
 	// COPY OVER
 	GLuint fbos[2];
 
-	GLERR( glGenFramebuffers(2, &fbos[0]); );
+	GLCALL( glGenFramebuffers(2, &fbos[0]) );
 
-	GLERR( glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[0]); );
-	GLERR( glFramebufferTexture(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, sourceTex, 0); );
+	GLCALL( glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[0]) );
+	GLCALL( glFramebufferTexture(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, sourceTex, 0) );
 
-	GLERR( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[1]); );
-	GLERR( glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, targetTex, 0); );
+	GLCALL( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[1]); );
+	GLCALL( glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, targetTex, 0) );
 
-	GLERR( glClearColor(0, 0, 0, 0); );
-	GLERR( glClear(GL_COLOR_BUFFER_BIT); );
+	GLCALL( glClearColor(0, 0, 0, 0) );
+	GLCALL( glClear(GL_COLOR_BUFFER_BIT) );
 
-	GLERR( glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR); );
+	GLCALL( glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR) );
 
 	// We need to wait here for the blit operation to finish to prevent copying an empty texture in FX context
-	glFinish();
+	GLCALL( glFinish() );
 
-	GLERR( glDeleteFramebuffers(2, &fbos[0]); );
+	GLCALL( glDeleteFramebuffers(2, &fbos[0]) );
 
 	return 0;
 }
 
-NativeSurface* ES2PrismBridge::CreateNativeSurface(JNINativeSurface* api) {
-	return new ES2NativeSurface(api);
+NativeSurface* ES2PrismBridge::CreateNativeSurface(long surfaceId, JNINativeSurface* api) {
+	return new ES2NativeSurface(surfaceId, api);
 }
 
 

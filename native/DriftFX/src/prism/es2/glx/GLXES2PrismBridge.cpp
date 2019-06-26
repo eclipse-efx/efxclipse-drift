@@ -19,9 +19,9 @@ using namespace driftfx::internal::prism::es2;
 using namespace driftfx::internal::prism::es2::glx;
 
 GLXES2PrismBridge::GLXES2PrismBridge(jlong pContext) :
-	ES2PrismBridge(new GLXGLContext((GLXContext) pContext))
+	ES2PrismBridge(new GLXGLContext("javafx", (GLXContext) pContext))
 {
-	defaultContext = fxGLContext->CreateSharedContext();
+	defaultContext = fxGLContext->CreateSharedContext("drift");
 	defaultContext->SetCurrent();
 	glewInit();
 	defaultContext->UnsetCurrent();

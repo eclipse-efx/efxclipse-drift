@@ -18,6 +18,8 @@
 #include <DriftFX/GL/GLContext.h>
 #include <DriftFX/Texture.h>
 
+#include "../InternalGLContext.h"
+
 namespace driftfx {
 using namespace gl;
 namespace internal {
@@ -25,11 +27,11 @@ namespace gl {
 namespace wgl {
 
 
-class WGLGLContext : public GLContext {
+class WGLGLContext : public InternalGLContext {
 
 public:
-	WGLGLContext();
-	WGLGLContext(WGLGLContext *shared);
+	WGLGLContext(std::string name);
+	WGLGLContext(std::string name, WGLGLContext *shared);
 
 	virtual ~WGLGLContext();
 	virtual void SetCurrent();
@@ -39,6 +41,7 @@ public:
 	virtual HGLRC GetHandle();
 
 	virtual GLContext* CreateSharedContext();
+	virtual GLContext* CreateSharedContext(std::string name);
 
 private:
 	WGLGLContext *shared;

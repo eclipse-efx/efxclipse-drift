@@ -25,12 +25,10 @@ class IOSurfaceSharedTexture : public SharedTexture {
 
 private:
 	IOSurfaceRef ioSurface;
-	gl::GLContext* fxContext;
-	gl::GLTexture* fxTexture;
 
 public:
 
-	IOSurfaceSharedTexture(gl::GLContext* context, gl::GLContext* fxContext, SurfaceData surfaceData, math::Vec2ui textureSize);
+	IOSurfaceSharedTexture(gl::GLContext* context, SurfaceData surfaceData, math::Vec2ui textureSize);
 	virtual ~IOSurfaceSharedTexture();
 
 	virtual bool Connect();

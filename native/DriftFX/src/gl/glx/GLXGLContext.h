@@ -17,6 +17,8 @@
 //#include <GL/glx.h>
 #include <GL/glxew.h>
 
+#include "../InternalGLContext.h"
+
 namespace driftfx {
 using namespace gl;
 namespace internal {
@@ -24,14 +26,14 @@ namespace gl {
 namespace glx {
 
 
-class GLXGLContext : public GLContext {
+class GLXGLContext : public InternalGLContext {
 
 public:
-	GLXGLContext(GLXContext* context, Drawable* drawable);
+	GLXGLContext(std::string name, GLXContext* context, Drawable* drawable);
 
-	GLXGLContext();
-	GLXGLContext(GLXGLContext* shared);
-	GLXGLContext(GLXContext glxContext);
+	GLXGLContext(std::string name);
+	GLXGLContext(std::string name, GLXGLContext* shared);
+	GLXGLContext(std::string name, GLXContext glxContext);
 	virtual ~GLXGLContext();
 
 	virtual void SetCurrent();
@@ -39,6 +41,7 @@ public:
 	virtual bool IsCurrent();
 
 	virtual GLContext* CreateSharedContext();
+	virtual GLContext* CreateSharedContext(std::string name);
 	virtual GLXContext GetHandle();
 
 private:

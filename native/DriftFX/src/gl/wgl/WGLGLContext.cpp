@@ -14,6 +14,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 #include "../../win32/Error.h"
@@ -114,10 +115,10 @@ HPALETTE setupPalette(HDC hDC) {
 }
 }
 
-WGLGLContext::WGLGLContext() : WGLGLContext(nullptr) {
+WGLGLContext::WGLGLContext(std::string name) : WGLGLContext(name, nullptr) {
 }
 
-WGLGLContext::WGLGLContext(WGLGLContext *shared) : shared(shared) {
+WGLGLContext::WGLGLContext(std::string name, WGLGLContext *shared) : InternalGLContext(name), shared(shared) {
 
 	HINSTANCE hInst = GetModuleHandle(NULL);
 
@@ -146,7 +147,12 @@ WGLGLContext::WGLGLContext(WGLGLContext *shared) : shared(shared) {
 }
 
 GLContext* WGLGLContext::CreateSharedContext() {
-	return new WGLGLContext(this);
+	return CreateSharedContext("shared");
+}
+GLContext* WGLGLContext::CreateSharedContext(std::string name) {
+	ostringstream s;
+	s << GetName() << "/" << name;
+	return new WGLGLContext(s.str(), this);
 }
 
 WGLGLContext::~WGLGLContext() {
@@ -174,8 +180,18 @@ void WGLGLContext::createGL(HWND hWnd) {
 	//cout << " Temp OpenGL Context = " << hTempContext << endl;
 
 	WERR(wglMakeCurrent(hDC, hTempContext);)
-	WERR(wglewInit();)
-
+	// glewInit always seems to produce an 0x7f windows error
+	glewInit();
+	{
+		DWORD err = GetLastError(); SetLastError(0);
+		if (err == 0x7f) {
+			// ok
+		}
+		else
+		{
+			LogError("glewInit error code: " << hex << err);
+		}
+	}
 	//cout << " * Temp OpenGL Context: " << glGetString( (GLenum) GL_VERSION ) << endl;
 
 	int attribList[] = {
@@ -199,8 +215,18 @@ void WGLGLContext::createGL(HWND hWnd) {
 	//WERR(wglMakeCurrent(hDC, hGLRC);)
 	SetCurrent();
 
-	WERR(glewInit();)
-
+	// glewInit always seems to produce an 0x7f windows error
+	glewInit();
+	{
+		DWORD err = GetLastError(); SetLastError(0);
+		if (err == 0x7f) {
+			// ok
+		}
+		else
+		{
+			LogError("glewInit error code: " << hex << err);
+		}
+	}
 	//cout << "Deleting Temp OpenGL Context" << endl;
 	WERR(bool deleted = wglDeleteContext(hTempContext);)
 	//LogDebug("temp context deleted: " << deleted)
@@ -259,7 +285,6 @@ LRESULT CALLBACK WGLGLContext::WindowProc(HWND hWnd, UINT message, WPARAM wParam
 
 
 void WGLGLContext::SetCurrent() {
-	//LogDebug("setting context current = " << hGLRC << " wglMakeCurrent = " << wglMakeCurrent)
 	WERR(bool success = wglMakeCurrent(hDC, hGLRC);)
 }
 

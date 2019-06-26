@@ -19,24 +19,24 @@
 
 #include <DriftFX/GL/GLDebug.h>
 
+#include <gl/GLLog.h>
+#include <gl/cgl/CGLLog.h>
+
 
 using namespace driftfx::internal::gl::cgl;
 using namespace driftfx::internal::prism::es2::cgl;
 
 CGLES2PrismBridge::CGLES2PrismBridge(jlong pContext) :
-	ES2PrismBridge(new CGLGLContext((CGLContextObj) getCGLContextObj((void*) pContext), false))
+	ES2PrismBridge(new CGLGLContext("javafx", (CGLContextObj) getCGLContextObj((void*) pContext), false))
 {
-	defaultContext = new CGLGLContext();
-
-	sharedFXContext = fxGLContext->CreateSharedContext();
-
+	defaultContext = new CGLGLContext("drift");
 	defaultContext->SetCurrent();
 	glewInit();
 
 }
 
 CGLES2PrismBridge::~CGLES2PrismBridge() {
-	delete sharedFXContext;
+	delete defaultContext;
 }
 
 
@@ -47,30 +47,27 @@ void CGLES2PrismBridge::Initialize(jlong pContext) {
 int CGLES2PrismBridge::ConnectTextureToIOSurface(int textureName, int width, int height, long ioSurfaceHandle) {
 
 	// SAVE THE STATE!
-	sharedFXContext->SetCurrent();
+	if (!fxSharedGLContext->IsCurrent()) { // this should only happen once since java should always use the same thread for this call
+		fxSharedGLContext->SetCurrent();
+	}
+	CGLGLContext* fx = dynamic_cast<CGLGLContext*>(fxSharedGLContext);
 
 	// CONNECT ioSurface to temporary texture
 	GLuint tmpTex;
 
 	IOSurfaceRef ioSurface = (IOSurfaceRef) (void*) ioSurfaceHandle;
 
-	GLERR( glGenTextures(1, &tmpTex); )
+	GLCALL( glGenTextures(1, &tmpTex) );
 
-	CGLGLContext* fx = dynamic_cast<CGLGLContext*>(sharedFXContext);
-	CGLContextObj ctx = (CGLContextObj) fx->GetHandle();
-
-	GLERR( glBindTexture(GL_TEXTURE_RECTANGLE, tmpTex); );
-	CGLError err = CGLTexImageIOSurface2D(ctx, GL_TEXTURE_RECTANGLE, GL_RGBA, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0);
-	checkErr(err, "bind io surface");
-	GLERR( glBindTexture(GL_TEXTURE_RECTANGLE, 0); )
-
+	GLCALL( glBindTexture(GL_TEXTURE_RECTANGLE, tmpTex) );
+	CGLCALL( CGLTexImageIOSurface2D(fx->GetCGLContextObj(), GL_TEXTURE_RECTANGLE, GL_RGBA, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0) );
+	GLCALL( glBindTexture(GL_TEXTURE_RECTANGLE, 0) );
 
 	// COPY OVER
+	// Note: we need to copy the texture here, because iosurface works with GL_TEXTURE_RECTANGLE, while javafx can only work with GL_TEXTURE_2D
 	CopyTexture(tmpTex, textureName, width, height);
 
-	GLERR( glDeleteTextures(1, &tmpTex); )
-
-	fxGLContext->SetCurrent();
+	GLCALL( glDeleteTextures(1, &tmpTex) );
 
 	return 0;
 }
