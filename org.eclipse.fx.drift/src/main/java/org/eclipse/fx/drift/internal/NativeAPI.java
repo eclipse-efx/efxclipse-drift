@@ -10,6 +10,11 @@
  *******************************************************************************/
 package org.eclipse.fx.drift.internal;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.eclipse.fx.drift.DriftFXSurface.TransferMode;
+
 import com.sun.prism.Texture;
 
 //Note: this implementation is against internal JavafX API
@@ -23,12 +28,19 @@ public class NativeAPI {
 		Initialize();
 	}
 	
+	public static native TransferMode[] nGetTransferModes();
+	public static List<TransferMode> getTransferModes() {
+		return Arrays.asList(nGetTransferModes());
+	}
+	
+	
 	public static native long nGetD3DTextureHandle(long fxTextureHandle);
+
 	
 	
-	private static native void nUpdateSurface(long nativeSurfaceId, double width, double height, double screenScaleX, double screenScaleY, double userScaleX, double userScaleY);
+	private static native void nUpdateSurface(long nativeSurfaceId, double width, double height, double screenScaleX, double screenScaleY, double userScaleX, double userScaleY, int transferMode);
 	public static void updateSurface(long nativeSurfaceId, SurfaceData surfaceData) {
-		nUpdateSurface(nativeSurfaceId, surfaceData.width, surfaceData.height, surfaceData.renderScaleX, surfaceData.renderScaleY, surfaceData.userScaleX, surfaceData.userScaleY);
+		nUpdateSurface(nativeSurfaceId, surfaceData.width, surfaceData.height, surfaceData.renderScaleX, surfaceData.renderScaleY, surfaceData.userScaleX, surfaceData.userScaleY, surfaceData.transferMode);
 	}
 	
 	private static native long nCreateSharedTexture(long nativeSurfaceId, long jfxTextureHandle);
@@ -82,6 +94,7 @@ public class NativeAPI {
 	}
 	
 	private static native void nDisposeFrameData(long nativeSurfaceHandle, long frameDataId);
+	@Deprecated
 	public static void disposeFrameData(long nativeSurfaceHandle, FrameData frameData) {
 		nDisposeFrameData(nativeSurfaceHandle, frameData.frameId);
 	}
@@ -100,6 +113,9 @@ public class NativeAPI {
 	public static int es2CopyTexture(int sourceTexture, int targetTexture, int w, int h) {
 		return nES2CopyTexture(sourceTexture, targetTexture, w, h);
 	}
+	
+	
+	public static native void nES2UploadTexture(int targetTexture, int width, int height, long memoryPointer, long memorySize);
 
 	private static native int nES2ConnectTextureToIOSurface(int textureName, int w, int h, long ioSurfaceHandle);
 	public static int es2ConnectTextureToIOSurface(int textureName, int w, int h, long ioSurfaceHandle) {
@@ -110,7 +126,15 @@ public class NativeAPI {
 	public static void es2DeleteTexture(int textureName) {
 		nES2DeleteTexture(textureName);
 	}
+	
+	
+	private static native void nDisposeFrame(long surfaceId, long frameId);
+	public static void disposeFrame(Frame frame) {
+		nDisposeFrame(frame.surfaceId, frame.frameId);
+	}
 
+	
+	public static native int nOnTextureCreated(long surfaceId, long frameId, Texture fxTexture);
 
 
 	
