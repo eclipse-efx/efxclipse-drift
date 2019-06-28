@@ -17,14 +17,25 @@ namespace driftfx {
 namespace internal {
 
 	struct FrameData;
+	class Frame;
 
 namespace jni {
+
+	class Frame {
+	public:
+		static void Initialize(JNIEnv* env);
+		static void Dispose(JNIEnv* env);
+		static jobject New(JNIEnv* env, jlong surfaceId, jlong frameId, jint w, jint h, jobject surfaceData, jint presentationHint);
+	private:
+		static jclass cls;
+		static jmethodID constructor;
+	};
 
 	class FrameData {
 	public:
 		static void Initialize(JNIEnv* env);
 		static void Dispose(JNIEnv* env);
-		static jobject New(JNIEnv* env, jlong frameId, jint width, jint height, jobject surfaceData, jlong d3dShareHandle, jlong ioSurfaceHandle, jint textureName, jint placementHint);
+		static jobject New(JNIEnv* env, jlong frameId, jint width, jint height, jobject surfaceData, jlong d3dShareHandle, jlong ioSurfaceHandle, jint textureName, jint placementHint, jlong memoryPointer, jlong memorySize);
 	private :
 		static jclass cls;
 		static jmethodID constructor;
@@ -34,7 +45,7 @@ namespace jni {
 	public:
 		static void Initialize(JNIEnv* env);
 		static void Dispose(JNIEnv* env);
-		static jobject New(JNIEnv* env, jfloat width, jfloat height, jfloat renderScaleX, jfloat renderScaleY, jfloat userScaleX, jfloat userScaleY);
+		static jobject New(JNIEnv* env, jfloat width, jfloat height, jfloat renderScaleX, jfloat renderScaleY, jfloat userScaleX, jfloat userScaleY, jint transferMode);
 	private:
 		static jclass cls;
 		static jmethodID constructor;
@@ -45,9 +56,11 @@ namespace jni {
 		static void Initialize(JNIEnv* env);
 		static void Dispose(JNIEnv* env);
 		static void Present(JNIEnv* env, jobject nativeSurface, jobject frameData);
+		static void Present2(JNIEnv* env, jobject nativeSurface, jobject frame);
 	private:
 		static jclass cls;
 		static jmethodID present;
+		static jmethodID present2;
 	};
 
 }
@@ -60,6 +73,7 @@ public:
 
 
 	void Present(FrameData frameData);
+	void Present(Frame* frame);
 
 	static void Initialize();
 	static void Dispose();

@@ -89,5 +89,25 @@ JNIEnv* JNIHelper::GetJNIEnv(bool autoAttach) {
 	return jniEnv;
 }
 
-
+jclass JNIHelper::ResolveClass(JNIEnv* env, const char* name) {
+	jclass cls = env->FindClass(name);
+	if (cls == nullptr) {
+		LogError("Failed to resolve class " << name)
+	}
+	return cls;
+}
+jmethodID JNIHelper::ResolveMethod(JNIEnv* env, jclass cls, const char* name, const char* sig) {
+	jmethodID method = env->GetMethodID(cls, name, sig);
+	if (method == nullptr) {
+		LogError("Failed to resolve Method " << name << " ( " << sig << ")")
+	}
+	return method;
+}
+jfieldID JNIHelper::ResolveField(JNIEnv* env, jclass cls, const char* name, const char* sig) {
+	jfieldID field = env->GetFieldID(cls, name, sig);
+	if (field == nullptr) {
+		LogError("Failed to resolve Field " << name << " ( " << sig << " )")
+	}
+	return field;
+}
 

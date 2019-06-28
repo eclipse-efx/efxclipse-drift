@@ -75,7 +75,7 @@ public class GraphicsPipelineUtil {
 		}
 	}
 	
-	static class ES2 {
+	public static class ES2 {
 		
 		private static boolean isMac;
 		private static boolean isX11;
@@ -286,7 +286,22 @@ public class GraphicsPipelineUtil {
 		return (ResourceFactory) iDefaultResourceFactory;
 	}
 
+	
+	
+	public static int onTextureCreated(Texture texture, Frame frame) {
+		return NativeAPI.nOnTextureCreated(frame.surfaceId, frame.frameId, texture);
+	}
+	
 	public static int onTextureCreated(Texture texture, FrameData currentFrameData) {
+		
+		if (currentFrameData.memoryPointer != 0) {
+			int textureName = ES2.getTextureName(texture);
+	
+			NativeAPI.nES2UploadTexture(textureName, currentFrameData.width, currentFrameData.height, currentFrameData.memoryPointer, currentFrameData.memorySize);
+
+			return 0;
+		}
+		
 		if (isD3D()) {
 			return NativeAPI.d3dRecreateTextureAsShared(texture, currentFrameData.d3dShareHandle);
 		}

@@ -21,10 +21,13 @@ struct SurfaceData {
 	math::Vec2d size;
 	math::Vec2d screenScale;
 	math::Vec2d userScale;
+	unsigned int transferMode;
+
 	SurfaceData() noexcept :
 		size(1, 1),
 		screenScale(1, 1),
-		userScale(1, 1) {}
+		userScale(1, 1),
+		transferMode(0) {}
 	SurfaceData(const SurfaceData& s) noexcept = default;
 };
 

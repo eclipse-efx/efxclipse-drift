@@ -13,12 +13,15 @@
 #include <jni.h>
 #include <iomanip>
 
+#include <chrono>
+
 #include "ES2PrismBridge.h"
 #include "ES2NativeSurface.h"
 
 #include <DriftFX/GL/GLContext.h>
 #include <DriftFX/GL/GLDebug.h>
 #include <utils/Logger.h>
+#include <utils/JNIHelper.h>
 
 #include <gl/GLLog.h>
 
@@ -39,6 +42,25 @@ ES2PrismBridge::ES2PrismBridge(GLContext* fxContext) :
 
 ES2PrismBridge::~ES2PrismBridge() {
 	delete fxSharedGLContext;
+}
+
+GLContext* ES2PrismBridge::GetFXSharedGLContext() {
+	return fxSharedGLContext;
+}
+
+GLuint ES2PrismBridge::GetGLTextureName(jobject fxTexture) {
+	// TODO we could handle this purely in native code via jni calls
+	JNIEnv* env = JNIHelper::GetJNIEnv(true);
+
+	jclass cls = env->FindClass("org/eclipse/fx/drift/internal/GraphicsPipelineUtil$ES2");
+	cls = (jclass)env->NewGlobalRef(cls);
+
+	jmethodID getTextureName = env->GetStaticMethodID(cls, "getTextureName", "(Lcom/sun/prism/Texture;)I");
+
+	//LogDebug("Calling now with " << cls << " / " << getTextureName << " / " << fxTexture);
+	jint val = env->CallStaticIntMethod(cls, getTextureName, fxTexture);
+	//LogDebug(" Got " << val);
+	return (GLuint) val;
 }
 
 
@@ -65,6 +87,16 @@ int ES2PrismBridge::CopyTexture(int sourceTex, int targetTex, int width, int hei
 	GLCALL( glDeleteFramebuffers(2, &fbos[0]) );
 
 	return 0;
+}
+
+void ES2PrismBridge::UploadTexture(int targetTex, int width, int height, void* memoryPointer, unsigned long memorySize) {
+	std::cerr << "updateTexture " << targetTex << ", " << width << ", " << height << ", " << memoryPointer << ", " << memorySize << std::endl;
+	auto begin = std::chrono::steady_clock::now();
+	GLCALL( glBindTexture(GL_TEXTURE_2D, targetTex) );
+	GLCALL( glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, memoryPointer) );
+	GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
+	std::cerr << "upload frame needed " << duration.count() << "ns" << std::endl;
 }
 
 NativeSurface* ES2PrismBridge::CreateNativeSurface(long surfaceId, JNINativeSurface* api) {

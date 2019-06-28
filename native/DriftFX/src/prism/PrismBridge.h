@@ -12,7 +12,10 @@
 #ifndef PRISM_PRISMBRIDGE_H_
 #define PRISM_PRISMBRIDGE_H_
 
+#include <jni.h>
 #include <set>
+#include <map>
+#include <functional>
 
 #include <DriftFX/Context.h>
 #include <DriftFX/GL/GLContext.h>
@@ -21,11 +24,15 @@
 #include "../JNINativeSurface.h"
 
 #include "../NativeSurface.h"
+#include "../SharedTexture.h"
 
 namespace driftfx {
 using namespace driftfx::gl;
 namespace internal {
 namespace prism {
+
+class PrismBridge;
+typedef std::function<int(PrismBridge*, Frame*, jobject)> OnTextureCreatedFunc;
 
 class PrismBridge {
 
@@ -38,7 +45,11 @@ public:
 
 	virtual NativeSurface* CreateNativeSurface(long surfaceId, JNINativeSurface* api) = 0;
 
+	virtual int OnTextureCreated(Frame* frame, jobject fxTexture);
+
 	static void Destroy();
+
+	static SharedTextureFactoryId Register(SharedTextureFactoryId id, OnTextureCreatedFunc func);
 
 protected:
 	PrismBridge(Context* fxContext);
@@ -50,6 +61,7 @@ protected:
 
 	Context* fxContext;
 
+	static std::map<SharedTextureFactoryId, OnTextureCreatedFunc> handlers;
 };
 
 }

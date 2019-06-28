@@ -22,6 +22,7 @@
 
 #include "SurfaceData.h"
 #include "JNINativeSurface.h"
+#include "FrameManager.h"
 
 namespace driftfx {
 	using namespace gl;
@@ -92,13 +93,15 @@ public:
 	/**
 	 * Internal API.
 	 */
-	virtual void UpdateSurface(math::Vec2d size, math::Vec2d screenScale, math::Vec2d userScale);
+	virtual void UpdateSurface(math::Vec2d size, math::Vec2d screenScale, math::Vec2d userScale, unsigned int transferMode);
 
 	virtual void DisposeSharedTexture(long long id);
 
 	static NativeSurface* Create(JNINativeSurface* api);
 
 	virtual Context* GetFxContext();
+
+	FrameManager* GetFrameManager();
 
 protected:
 	NativeSurface(long surfaceId, JNINativeSurface* api);
@@ -109,11 +112,15 @@ protected:
 
 	long surfaceId;
 
+	FrameManager frameManager;
+
 private:
 	std::atomic<SurfaceData> surfaceData;
 
 	std::mutex toDisposeMutex;
 	std::vector<SharedTexture*> toDispose;
+
+
 
 	void DisposeSharedTextures();
 };

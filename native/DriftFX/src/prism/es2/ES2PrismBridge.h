@@ -26,8 +26,14 @@ namespace es2 {
 class ES2PrismBridge : public PrismBridge {
 
 public:
-	virtual int CopyTexture(int sourceTex, int targetTex, int width, int height);
+	static int CopyTexture(int sourceTex, int targetTex, int width, int height);
 	virtual NativeSurface* CreateNativeSurface(long surfaceId, JNINativeSurface* api);
+
+	virtual void UploadTexture(int targetTex, int width, int height, void* memoryPointer, unsigned long memorySize);
+
+	virtual GLContext* GetFXSharedGLContext();
+
+	virtual GLuint GetGLTextureName(jobject fxTexture);
 
 protected:
 	ES2PrismBridge(GLContext* fxContext);

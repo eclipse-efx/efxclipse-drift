@@ -66,6 +66,15 @@ set(DriftFX-Sources
     src/gl/GLLog.h
     src/gl/GLLog.cpp
     
+    
+    src/MainMemorySharedTexture.h
+    src/MainMemorySharedTexture.cpp
+    
+    src/NoopSharedTexture.h
+    src/NoopSharedTexture.cpp
+    
+    src/FrameManager.h
+    src/FrameManager.cpp
 )
 
 if (WIN32)
@@ -90,6 +99,8 @@ if (WIN32)
 	list(APPEND DriftFX-Sources src/win32/D3D9Texture.cpp)
 
 	list(APPEND DriftFX-Sources src/win32/Error)
+	
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DMainMemorySharedTexture.cpp)
 endif (WIN32)
 
 if (LINUX)
@@ -120,6 +131,8 @@ if (APPLE)
 	
 	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.h)
 	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.cpp)
+	
+	list(APPEND DriftFX-Sources src/prism/es2/ES2MainMemorySharedTexture.cpp)
 endif (APPLE)
 
 

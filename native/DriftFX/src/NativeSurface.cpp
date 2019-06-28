@@ -39,7 +39,8 @@ NativeSurface::NativeSurface(long surfaceId, JNINativeSurface* api) :
 	surfaceId(surfaceId),
 	api(api),
 	context(nullptr),
-	surfaceData(SurfaceData()) {
+	surfaceData(SurfaceData()),
+	frameManager(surfaceId) {
 	LogDebug("NativeSurface constructor")
 
 }
@@ -78,18 +79,18 @@ void NativeSurface::DisposeSharedTextures() {
 
 void NativeSurface::Cleanup() {
 //	// TODO send some kind of signal to tell FX we are going to dispose our textures
-	FrameData* frameData = new FrameData();
-	frameData->d3dSharedHandle = 0;
-	frameData->ioSurfaceHandle = 0;
-	frameData->glTextureName = 0;
-	frameData->textureSize = Vec2ui();
+//	FrameData* frameData = new FrameData();
+//	frameData->d3dSharedHandle = 0;
+//	frameData->ioSurfaceHandle = 0;
+//	frameData->glTextureName = 0;
+//	frameData->textureSize = Vec2ui();
+//
+//	api->Present(*frameData);
+//
+//	delete frameData;
 
-	api->Present(*frameData);
-
-	delete frameData;
-
-	LogDebug("clean textures");
-	DisposeSharedTextures();
+	//LogDebug("clean textures");
+	//DisposeSharedTextures();
 
 	// NOTE: since textures know their context and set it current upon deletion
 	// we must ensure that all textures from a context are deleted before the context is deleted!
@@ -104,11 +105,12 @@ GLContext* NativeSurface::GetContext() {
 	return context;
 }
 
-void NativeSurface::UpdateSurface(Vec2d size, Vec2d screenScale, Vec2d userScale) {
+void NativeSurface::UpdateSurface(Vec2d size, Vec2d screenScale, Vec2d userScale, unsigned int transferMode) {
 	SurfaceData newSurfaceData;
 	newSurfaceData.size = size;
 	newSurfaceData.screenScale = screenScale;
 	newSurfaceData.userScale = userScale;
+	newSurfaceData.transferMode = transferMode;
 
 	surfaceData = newSurfaceData;
 }
@@ -133,7 +135,7 @@ RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
 	auto currentSurfaceData = surfaceData.load();
 	LogDebug("Acquire " << dec << width << " x " << dec << height);
 	LogDebug(" " << dec << currentSurfaceData.size.x << " / " << currentSurfaceData.screenScale.x << " / " << currentSurfaceData.userScale.x);
-	DisposeSharedTextures();
+//	DisposeSharedTextures();
 
 	PrismBridge* bridge = PrismBridge::Get();
 	// in case the system was destroyed
@@ -147,12 +149,13 @@ RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
 		GetContext()->SetCurrent();
 	}
 
-	SharedTexture* tex = SharedTexture::Create(GetContext(), GetFxContext(), currentSurfaceData, Vec2ui(width, height));
+	auto frame = frameManager.CreateFrame(currentSurfaceData, Vec2ui(width, height));
 
-	tex->Connect();
-	tex->Lock();
+	auto tex = SharedTextureFactory::CreateSharedTexture(currentSurfaceData.transferMode, GetContext(), GetFxContext(), frame);
 
-	return tex;
+	tex->BeforeRender();
+
+	return frame;
 }
 
 void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
@@ -160,20 +163,15 @@ void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 		LogDebug("Cannot present nullptr; doing nothing.");
 		return;
 	}
-	SharedTexture* texture = dynamic_cast<SharedTexture*>(target);
 
-	texture->Unlock();
-	texture->Disconnect();
+	auto frame = dynamic_cast<Frame*>(target);
+	auto tex = frame->GetSharedTexture();
 
+	tex->AfterRender();
 
-	FrameData* frameData = texture->CreateFrameData();
-	LogDebug("PRESENT " << frameData->ioSurfaceHandle << " " << frameData->glTextureName);
-	frameData->presentationHint = hint;
+	frame->SetPresentationHint(hint);
 
-
-	api->Present(*frameData);
-
-	delete frameData;
+	api->Present(frame);
 }
 
 Context* NativeSurface::GetFxContext() {
@@ -198,4 +196,8 @@ Vec2ui NativeSurface::GetScaledSize() {
 	r.x = (unsigned int) ceil((long double) data.size.x * data.screenScale.x * data.userScale.x);
 	r.y = (unsigned int) ceil((long double) data.size.y * data.screenScale.y * data.userScale.y);
 	return r;
+}
+
+FrameManager* NativeSurface::GetFrameManager() {
+	return &frameManager;
 }

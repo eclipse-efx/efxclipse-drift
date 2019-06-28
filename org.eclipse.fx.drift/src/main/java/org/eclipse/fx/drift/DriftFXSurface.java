@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.fx.drift; 
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.fx.drift.impl.NGDriftFXSurface;
@@ -33,15 +36,51 @@ import com.sun.javafx.tk.Toolkit;
 
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
 import javafx.stage.Screen;
 
 //Note: this implementation is against internal JavafX API
 @SuppressWarnings({"restriction", "deprecation"})
 public class DriftFXSurface extends Node {
+	
+	public static class TransferMode {
+		private String name;
+		private int id;
+		
+		protected TransferMode(String name, int id) {
+			this.name = name;
+			this.id = id;
+		}
+		
+		@Override
+		public String toString() {
+			return name + " " + id;
+		}
+	}
+	public final static TransferMode NO_TRANSFER = new TransferMode("No Transfer", 0);
+	
+	public ObjectProperty<TransferMode> transferMode = new SimpleObjectProperty<>(this, "transferMode", NO_TRANSFER);
+	
+	public List<TransferMode> queryAvailableTransferModes() {
+		List<TransferMode> allModes = new ArrayList<>();
+		allModes.add(NO_TRANSFER);
+		allModes.addAll(NativeAPI.getTransferModes());
+		return Collections.unmodifiableList(allModes);
+	}
+	
+	public void setTransferMode(TransferMode mode) {
+		transferMode.set(mode);
+		
+		Platform.runLater(() -> {
+			updateSurfaceData();
+		});
+		
+	}
 	
 	private AtomicReference<SurfaceData> surfaceData = new AtomicReference<>(null);
 	
@@ -78,6 +117,13 @@ public class DriftFXSurface extends Node {
 	
 	public DriftFXSurface() {
 		JNINativeSurface jni = new JNINativeSurface((frame) -> {
+			NGDriftFXSurface ngSurface = impl_getPeer();
+			ngSurface.present(frame);
+			Platform.runLater(() -> {
+				impl_markDirty(DirtyBits.NODE_CONTENTS);
+			});
+		},
+		(frame) -> {
 			NGDriftFXSurface ngSurface = impl_getPeer();
 			ngSurface.present(frame);
 			Platform.runLater(() -> {
@@ -246,12 +292,16 @@ public class DriftFXSurface extends Node {
 	   Log.debug("Destroying NativeSurface system");
 	   GraphicsPipelineUtil.destroy();
    }
+   
+   private int getTransferMode() {
+	   return transferMode.get().id;
+   }
 
    private SurfaceData computeSurfaceData() {
 	   return new SurfaceData(
 			   (float) getWidth(), (float) getHeight(), 
 			   (float) getScreenScaleFactor(), (float) getScreenScaleFactor(), 
-			   (float) getUserScaleFactor(), (float) getUserScaleFactor());
+			   (float) getUserScaleFactor(), (float) getUserScaleFactor(), getTransferMode());
 	   
    }
    

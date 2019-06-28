@@ -67,7 +67,8 @@ endif (WIN32)
 if (APPLE)
 	# Add macos framework symlinks for CDT
 	include_directories( "../../MacOSFrameworks/" )
-	include_directories( "../../JNIHeader/" )
+	include_directories( "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers/" )
+	message ( "${JNI_INCLUDE_DIRS}" )
 endif (APPLE)
 
 
