@@ -1,0 +1,26 @@
+task generateBuild(type: Exec, group: 'build') {
+    workingDir "$buildDir/${project.name}"
+    outputs.dir workingDir
+
+    executable 'cmake'
+    args '-G', 'Ninja', "$projectDir"
+    environment 'JAVA_HOME' : System.properties.'java.home'
+
+    doFirst {
+        workingDir.mkdirs()
+    }
+}
+
+task compile(type: Exec, group: 'build') {
+    dependsOn generateBuild
+
+    outputs.files(fileTree(generateBuild.workingDir) {
+        include 'DriftFX/libdriftfx.so'
+        include 'samples/libsamples.so'
+    })
+
+    workingDir generateBuild.workingDir
+    executable 'ninja'
+}
+
+build.dependsOn compile

@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+configurations {
+    nativeDep
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'http://maven.bestsolution.at/efxclipse-releases/' }
+}
+
+dependencies {
+    implementation project(':org-eclipse-fx-drift')
+    implementation ('at.bestsolution.efxclipse.rt:org.eclipse.fx.core:3.3.0')
+
+    nativeDep files(project(':driftFX-native').tasks.findByPath('compile'))
+}
+
+mainClassName = 'org.eclipse.fx.drift.samples.Demo'
+
+tasks.withType(JavaCompile) {
+    dependsOn ':driftFX-native:compile'
+}
+
+run {
+    doFirst {
+        def libDirs = files(configurations.nativeDep.files.collect {it.parentFile})
+        systemProperty "java.library.path", libDirs.asPath
+    }
+}
