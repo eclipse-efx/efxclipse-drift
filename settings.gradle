@@ -1,0 +1,17 @@
+rootProject.name = 'driftFx'
+
+includeOsgiProject 'org.eclipse.fx.drift.feature',
+        'org.eclipse.fx.drift',
+        'org.eclipse.fx.drift.samples',
+        'org.eclipse.fx.drift.samples.feature',
+        'org.eclipse.fx.drift.updatesite'
+
+def includeOsgiProject(String... name) {
+    name.each {
+        include(it)
+        project(":$it").name = it.replace('.', '-')
+    }
+}
+
+include 'native'
+project(':native').name = 'driftFX-native'

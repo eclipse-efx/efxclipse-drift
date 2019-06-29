@@ -1,0 +1,9 @@
+allprojects {
+    apply plugin: 'base' // For clean task
+    group = 'org.eclipse.fx.drift'
+}
+
+wrapper {
+    distributionType = Wrapper.DistributionType.ALL
+    gradleVersion = '5.4.1'
+}
