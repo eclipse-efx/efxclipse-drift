@@ -30,8 +30,6 @@ public:
 	virtual bool BeforeRender();
 	virtual bool AfterRender();
 
-	virtual FrameData* CreateFrameData();
-
 private:
 	static SharedTextureFactoryId registered;
 };

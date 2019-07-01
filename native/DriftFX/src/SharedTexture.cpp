@@ -15,9 +15,12 @@
 
 #include "Common.h"
 
+#include <DriftFX/Context.h>
+
 #include <utils/Logger.h>
 #include <gl/GLLog.h>
 
+using namespace driftfx;
 using namespace driftfx::math;
 using namespace driftfx::gl;
 using namespace driftfx::internal;

@@ -73,6 +73,19 @@ public class GraphicsPipelineUtil {
 		static long getContextHandle(Object iD3DContext) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 			return (Long) mD3DContextGetContextHandle.invoke(iD3DContext);
 		}
+		
+		static long getTextureHandle(Texture texture) {
+			try {
+				// TODO move class and method to members
+				Class<?> d3dTexture = Class.forName("com.sun.prism.d3d.D3DTexture");
+				Method mD3DTextureGetNativeSourceHandle = d3dTexture.getMethod("getNativeSourceHandle");
+				mD3DTextureGetNativeSourceHandle.setAccessible(true);
+				return (long) mD3DTextureGetNativeSourceHandle.invoke(texture);
+			}
+			catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 	
 	public static class ES2 {

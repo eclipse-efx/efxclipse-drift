@@ -133,8 +133,7 @@ RenderTarget* NativeSurface::Acquire(Vec2ui size) {
 
 RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
 	auto currentSurfaceData = surfaceData.load();
-	LogDebug("Acquire " << dec << width << " x " << dec << height);
-	LogDebug(" " << dec << currentSurfaceData.size.x << " / " << currentSurfaceData.screenScale.x << " / " << currentSurfaceData.userScale.x);
+	//LogDebug(" " << dec << currentSurfaceData.size.x << " / " << currentSurfaceData.screenScale.x << " / " << currentSurfaceData.userScale.x);
 //	DisposeSharedTextures();
 
 	PrismBridge* bridge = PrismBridge::Get();
@@ -151,6 +150,8 @@ RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
 
 	auto frame = frameManager.CreateFrame(currentSurfaceData, Vec2ui(width, height));
 
+	LogDebug("Acquire " << frame->ToString() << "(" << dec << width << " x " << dec << height << ")");
+
 	auto tex = SharedTextureFactory::CreateSharedTexture(currentSurfaceData.transferMode, GetContext(), GetFxContext(), frame);
 
 	tex->BeforeRender();
@@ -165,6 +166,8 @@ void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 	}
 
 	auto frame = dynamic_cast<Frame*>(target);
+	LogDebug("Present " << frame->ToString());
+
 	auto tex = frame->GetSharedTexture();
 
 	tex->AfterRender();

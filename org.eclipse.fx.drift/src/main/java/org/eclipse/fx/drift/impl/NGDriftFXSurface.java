@@ -131,6 +131,8 @@ public class NGDriftFXSurface extends NGNode {
 		int result = QuantumRendererHelper.syncExecute(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame));
 		
 		if (result == 0) {
+			// once the texture is ready we want to dispose the frame
+			dispose(frame);
 			return texture;
 		}
 		else {

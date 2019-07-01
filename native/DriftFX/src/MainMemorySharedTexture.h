@@ -22,6 +22,12 @@
 namespace driftfx {
 namespace internal {
 
+class MainMemoryShareData : public ShareData {
+public:
+	void* pointer;
+	unsigned int length;
+};
+
 class MainMemorySharedTexture : public SharedTexture {
 
 public:
@@ -30,12 +36,6 @@ public:
 
 	virtual bool BeforeRender();
 	virtual bool AfterRender();
-
-	virtual FrameData* CreateFrameData();
-
-
-	unsigned long GetLength();
-	void* GetPointer();
 
 	static SharedTextureFactoryId registered;
 protected:

@@ -17,9 +17,14 @@
 #include <utils/Logger.h>
 
 #include <map>
+#include <string>
+#include <sstream>
+#include <iomanip>
 
 using namespace driftfx;
 using namespace driftfx::internal;
+
+using namespace std;
 
 
 Frame::Frame(long surfaceId, long long frameId, SurfaceData surfaceData, math::Vec2ui size) :
@@ -28,15 +33,26 @@ Frame::Frame(long surfaceId, long long frameId, SurfaceData surfaceData, math::V
 		surfaceData(surfaceData),
 		size(size),
 		sharedTexture(nullptr),
-		presentationHint(CENTER){
+		presentationHint(CENTER),
+		frameData(nullptr) {
 
 }
 
 Frame::~Frame() {
-	LogDebug("Destroying Frame " << surfaceId << "." << frameId);
+	LogDebug("Destroying Frame " << dec << surfaceId << "." << dec << frameId);
 	if (sharedTexture != nullptr) {
 		delete sharedTexture;
 	}
+	if (frameData != nullptr) {
+		delete frameData;
+	}
+}
+
+void Frame::SetData(ShareData* data) {
+	this->frameData = data;
+}
+ShareData* Frame::GetData() {
+	return this->frameData;
 }
 
 void Frame::SetSharedTexture(SharedTexture* texture) {
@@ -73,6 +89,12 @@ SurfaceData Frame::GetSurfaceData() {
 }
 PresentationHint Frame::GetPresentationHint() {
 	return presentationHint;
+}
+
+std::string Frame::ToString() {
+	ostringstream s;
+	s << "Frame(" << dec << surfaceId << "." << dec << frameId << ")";
+	return s.str();
 }
 
 math::Vec2ui Frame::GetSize() {

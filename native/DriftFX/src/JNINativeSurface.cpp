@@ -11,11 +11,15 @@
 
 #include <jni.h>
 
+#include <iomanip>
+
 #include <utils/Logger.h>
 #include <utils/JNIHelper.h>
 
 #include "SharedTexture.h"
 #include "JNINativeSurface.h"
+
+using namespace std;
 
 using namespace driftfx::internal;
 
@@ -150,23 +154,7 @@ JNINativeSurface::~JNINativeSurface() {
 	env->DeleteGlobalRef(jNativeSurfaceInstance);
 }
 
-void JNINativeSurface::Present(FrameData frameData) {
-	LogDebug("going to call present")
-	JNIEnv *env = JNIHelper::GetJNIEnv(true);
-
-	jobject surfaceData = jni::SurfaceData::New(env,
-		(jfloat) frameData.surfaceData.size.x, (jfloat) frameData.surfaceData.size.y, 
-		(jfloat) frameData.surfaceData.screenScale.x, (jfloat) frameData.surfaceData.screenScale.y,
-		(jfloat) frameData.surfaceData.userScale.x, (jfloat) frameData.surfaceData.userScale.y, (jint) frameData.surfaceData.transferMode);
-
-	jobject jFrameData = jni::FrameData::New(env, frameData.id, frameData.textureSize.x, frameData.textureSize.y, surfaceData, 
-		frameData.d3dSharedHandle, frameData.ioSurfaceHandle, frameData.glTextureName, frameData.presentationHint, frameData.memoryPointer, frameData.memorySize);
-
-	jni::NativeSurface::Present(env, jNativeSurfaceInstance, jFrameData);
-}
-
 void JNINativeSurface::Present(Frame* frame) {
-	LogDebug("Present Frame " << frame->GetSurfaceId() << "." << frame->GetFrameId());
 	JNIEnv *env = JNIHelper::GetJNIEnv(true);
 
 	auto surfaceData = frame->GetSurfaceData();

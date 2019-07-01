@@ -68,7 +68,6 @@ public class DriftFXSurface extends Node {
 	
 	public List<TransferMode> queryAvailableTransferModes() {
 		List<TransferMode> allModes = new ArrayList<>();
-		allModes.add(NO_TRANSFER);
 		allModes.addAll(NativeAPI.getTransferModes());
 		return Collections.unmodifiableList(allModes);
 	}

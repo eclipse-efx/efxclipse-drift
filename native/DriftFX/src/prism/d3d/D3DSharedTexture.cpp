@@ -11,6 +11,7 @@
 
 #include <GL/glew.h>
 #include <GL/wglew.h>
+#include <jni.h>
 
 #include "D3DSharedTexture.h"
 
@@ -24,9 +25,19 @@
 #include "win32/D3D9ExContext.h"
 #include "gl/wgl/WGLGLContext.h"
 
+#include <prism/PrismBridge.h>
+
 #include <iostream>
 
 #include "Configuration.h"
+
+#include <win32/D3D9Texture.h>
+
+#include <prism/d3d/include/java8/D3DContext.h>
+
+#include <prism/d3d/D3DPrismBridge.h>
+
+#include <FrameManager.h>
 
 using namespace std;
 
@@ -36,6 +47,7 @@ using namespace driftfx::math;
 using namespace driftfx::internal;
 using namespace driftfx::internal::gl::wgl;
 
+using namespace driftfx::internal::prism;
 using namespace driftfx::internal::prism::d3d;
 
 
@@ -44,14 +56,12 @@ map<pair<IDirect3DDevice9Ex*, HGLRC>, HANDLE> D3DSharedTexture::sharedDevices;
 map<HANDLE, int> D3DSharedTexture::sharedDevicesUsageCount;
 
 HANDLE D3DSharedTexture::OpenSharedDevice(D3D9ExContext* d3dContext, GLContext* glContext) {
-	LogDebug("OpenSharedDevice( " << d3dContext << ", " << glContext << ")");
+	//LogDebug("OpenSharedDevice( " << d3dContext << ", " << glContext << ")");
 	IDirect3DDevice9Ex* d3dDevice = d3dContext->Device();
 	HGLRC glContxtHandle = dynamic_cast<WGLGLContext*>(glContext)->GetHandle();
 
-	HGLRC curContext;
-	WERR(curContext = wglGetCurrentContext(););
-	if (glContxtHandle != curContext) {
-		LogError("OpenSharedDevice called with wrong current gl context; This is FATAL!");
+	if (!glContext->IsCurrent()) {
+		LogError("NV_DX_interop: OpenSharedDevice called with wrong current gl context; This is FATAL!");
 	}
 
 	sharedDevicesMutex.lock();
@@ -59,7 +69,7 @@ HANDLE D3DSharedTexture::OpenSharedDevice(D3D9ExContext* d3dContext, GLContext* 
 	pair<IDirect3DDevice9Ex*, HGLRC> key = make_pair(d3dDevice, glContxtHandle);
 
 	if (sharedDevices.count( key ) != 1) {
-		LogDebug("NV_DX_interop: Opening Device " << d3dDevice);
+		//LogDebug("NV_DX_interop: Opening Device " << d3dDevice);
 		HANDLE nh;
 		WERR(nh = wglDXOpenDeviceNV(d3dDevice);)
 		sharedDevices[key] = nh;
@@ -75,7 +85,7 @@ HANDLE D3DSharedTexture::OpenSharedDevice(D3D9ExContext* d3dContext, GLContext* 
 	sharedDevicesUsageCount[h] = sharedDevicesUsageCount[h] + 1;
 
 	sharedDevicesMutex.unlock();
-	LogDebug("OpenSharedDevice returns " << h);
+	//LogDebug("OpenSharedDevice returns " << h);
 	return h;
 }
 
@@ -83,10 +93,8 @@ void D3DSharedTexture::CloseSharedDevice(D3D9ExContext* d3dContext, GLContext* g
 	IDirect3DDevice9Ex* d3dDevice = d3dContext->Device();
 	HGLRC glContxtHandle = dynamic_cast<WGLGLContext*>(glContext)->GetHandle();
 
-	HGLRC curContext;
-	WERR(curContext = wglGetCurrentContext(););
-	if (glContxtHandle != curContext) {
-		LogError("CloseSharedDevice called with wrong current gl context; This is FATAL!");
+	if (!glContext->IsCurrent()) {
+		LogError("NV_DX_interop: CloseSharedDevice called with wrong current gl context; This is FATAL!");
 	}
 
 	sharedDevicesMutex.lock();
@@ -99,11 +107,11 @@ void D3DSharedTexture::CloseSharedDevice(D3D9ExContext* d3dContext, GLContext* g
 		usages -= 1;
 
 		if (usages == 0) {
-			LogDebug("NV_DX_interop: Closing Device: " << d3dDevice);
+			//LogDebug("NV_DX_interop: Closing Device: " << d3dDevice);
 			WERR(wglDXCloseDeviceNV(h););
 			sharedDevices.erase(key);
 			sharedDevicesUsageCount.erase(h);
-			LogDebug("               -> closed.");
+			//LogDebug("               -> closed.");
 		}
 		else {
 			sharedDevicesUsageCount[h] = usages;
@@ -117,74 +125,150 @@ void D3DSharedTexture::CloseSharedDevice(D3D9ExContext* d3dContext, GLContext* g
 	sharedDevicesMutex.unlock();
 }
 
-D3DSharedTexture::D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, SurfaceData surfaceData, Vec2ui textureSize) :
-	SharedTexture(glContext, surfaceData, textureSize),
+D3DSharedTexture::D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, Frame* frame) :
+	SharedTexture(glContext, frame),
 	d3dContext(d3dContext),
 	d3dTexture(nullptr),
 	hDevice(nullptr),
 	hObject(nullptr) {
 
-
+	auto textureSize = frame->GetSize();
 	d3dTexture = new D3D9Texture(d3dContext, textureSize.x, textureSize.y);
 
+	WDDMShareData* frameData = new WDDMShareData();
+	frameData->shareHandle = d3dTexture->GetShareHandle();
+	frame->SetData(frameData);
 }
 
 D3DSharedTexture::~D3DSharedTexture() {
-	LogDebug("destroy tex");
+	LogDebug("destroying d3d texture");
 
 	delete d3dTexture;
 
 }
 
-bool D3DSharedTexture::Connect() {
+bool D3DSharedTexture::BeforeRender() {
 	if (glTexture != nullptr) return false;
-	glTexture = new GLTexture(glContext, GetWidth(), GetHeight());
+	auto frame = GetFrame();
+	glTexture = new GLTexture(glContext, frame->GetWidth(), frame->GetHeight());
 	hDevice = OpenSharedDevice(d3dContext, glContext);
-	WERR( wglDXSetResourceShareHandleNV(d3dTexture->GetTexture(), d3dTexture->GetShareHandle()); );
-	WERR( hObject = wglDXRegisterObjectNV(hDevice, d3dTexture->GetTexture(), glTexture->Name(), GL_TEXTURE_2D, WGL_ACCESS_READ_WRITE_NV); );
-	return hObject != 0;
-}
+	WERR(wglDXSetResourceShareHandleNV(d3dTexture->GetTexture(), d3dTexture->GetShareHandle()); );
+	WERR(hObject = wglDXRegisterObjectNV(hDevice, d3dTexture->GetTexture(), glTexture->Name(), GL_TEXTURE_2D, WGL_ACCESS_READ_WRITE_NV); );
 
-bool D3DSharedTexture::Disconnect() {
-	WERR( wglDXUnregisterObjectNV( hDevice, hObject ); );
-	delete glTexture; glTexture = nullptr;
-	CloseSharedDevice(d3dContext, glContext);
+	bool success = false;
+	WERR(success = wglDXLockObjectsNV(hDevice, 1, &hObject); );
+	
 	return true;
 }
 
-bool D3DSharedTexture::Lock() {
+
+bool D3DSharedTexture::AfterRender() {
 	bool success = false;
-	WERR( success = wglDXLockObjectsNV( hDevice, 1, &hObject ); );
-	return success;
-}
-
-bool D3DSharedTexture::Unlock() {
-	bool success = false;
-	WERR( success = wglDXUnlockObjectsNV( hDevice, 1, &hObject ); );
-	return success;
-}
-
-FrameData* D3DSharedTexture::CreateFrameData() {
-	FrameData* data = new FrameData();
-	data->id = (long long) this;
-	data->d3dSharedHandle = (long long) d3dTexture->GetShareHandle();
-	data->textureSize = textureSize;
-	data->surfaceData = surfaceData;
-	return data;
-}
-
-#include "D3DSharedFallbackTexture.h"
-
-SharedTexture* SharedTexture::Create(GLContext* glContext, Context* fxContext, SurfaceData surfaceData, Vec2ui textureSize) {
-	D3D9ExContext* d3dContext = dynamic_cast<D3D9ExContext*>(fxContext);
+	WERR(success = wglDXUnlockObjectsNV(hDevice, 1, &hObject); );
 	
-	if (Configuration::IsUseWinFallback()) {
-		return new D3DSharedFallbackTexture(glContext, d3dContext, surfaceData, textureSize);
-	}
-	else {
-		return new D3DSharedTexture(glContext, d3dContext, surfaceData, textureSize);
-	}
-
-
+	WERR( wglDXUnregisterObjectNV( hDevice, hObject ); );
+	delete glTexture; glTexture = nullptr;
+	CloseSharedDevice(d3dContext, glContext);
+	
+	return true;
 }
+
+long long D3DSharedTexture::GetShareHandle() {
+	return (long long) d3dTexture->GetShareHandle();
+}
+
+SharedTextureFactoryId D3DSharedTexture::registered =
+	SharedTextureFactory::RegisterSharedTextureType("NV_DX_interop", 
+		[](GLContext* _context, Context* _fxContext, Frame* _frame) {
+			D3D9ExContext* d3dContext = dynamic_cast<D3D9ExContext*>(_fxContext);
+			return new D3DSharedTexture(_context, d3dContext, _frame);
+		});
+
+SharedTextureFactoryId D3DSharedTexture::registerPrism =
+	PrismBridge::Register(D3DSharedTexture::registered,
+		[](PrismBridge* _bridge, Frame* _frame, jobject _fxTexture) {
+			return D3DSharedTexture::OnTextureCreated(_bridge, _frame, _fxTexture);
+		});
+
+
+int D3DSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture) {
+	
+	ShareData* data = frame->GetData();
+	WDDMShareData* wddmData = (WDDMShareData*)data;
+
+	HANDLE shareHandle = wddmData->shareHandle;
+	
+	// recreate the javafx d3d texture as shared texture
+
+
+	auto d3dBridge = dynamic_cast<D3DPrismBridge*>(bridge);
+	auto jfxContext = d3dBridge->GetJfxContext();
+
+	// find the internal handle of the d3d resource
+	auto d3dHandle = D3DPrismBridge::GetD3DResourceHandle(fxTexture);
+
+	java8::D3DResource* d3dResource = (java8::D3DResource*) d3dHandle;
+
+	d3dResource->pSurface->Release();
+	d3dResource->pTexture->Release();
+	d3dResource->pResource->Release();
+
+	d3dResource->pSurface = nullptr;
+	d3dResource->pTexture = nullptr;
+	d3dResource->pResource = nullptr;
+
+	IDirect3DTexture9* pTexture = nullptr;
+
+	/*auto sharedTex = frame->GetSharedTexture();
+	auto d3dSharedTex = dynamic_cast<D3DSharedTexture*>(sharedTex);
+	auto shareHandle = d3dSharedTex->GetShareHandle();
+
+	HANDLE sh = (HANDLE)shareHandle;*/
+	//sh = nullptr;
+
+	int w = d3dResource->desc.Width;
+	int h = d3dResource->desc.Height;
+
+	WERR(;);
+
+	LogDebug(frame->ToString() << "recreate shared fx texture ( w: " << dec << w << ", h: " << dec << h << ", shareHandle: " << hex << shareHandle << " )")
+		HRESULT res = jfxContext->Device()->CreateTexture(
+			w, h,
+			0, D3DUSAGE_DYNAMIC,
+			D3DFMT_A8R8G8B8,
+			D3DPOOL_DEFAULT,
+			&pTexture,
+			&shareHandle);
+	LogDebug(" Handle: " << hex << pTexture);
+
+	if (FAILED(res)) {
+		LogError(HRESULT_CODE(res) << ": " << ToString(HRESULT_CODE(res)));
+		return res;
+	}
+
+	d3dResource->pResource = pTexture;
+	d3dResource->pResource->AddRef();
+	d3dResource->pTexture = (IDirect3DTexture9*)d3dResource->pResource;
+	d3dResource->pTexture->GetSurfaceLevel(0, &d3dResource->pSurface);
+	if (d3dResource->pSurface != nullptr) {
+		d3dResource->pSurface->GetDesc(&d3dResource->desc);
+	}
+
+	return 0;
+}
+//
+//#include "D3DSharedFallbackTexture.h"
+//
+//SharedTexture* SharedTexture::Create(GLContext* glContext, Context* fxContext, SurfaceData surfaceData, Vec2ui textureSize) {
+//	D3D9ExContext* d3dContext = dynamic_cast<D3D9ExContext*>(fxContext);
+//	
+//	if (Configuration::IsUseWinFallback()) {
+//		return new D3DSharedFallbackTexture(glContext, d3dContext, surfaceData, textureSize);
+//	}
+//	else {
+//		return new D3DSharedTexture(glContext, d3dContext, surfaceData, textureSize);
+//	}
+//
+//
+//}
 

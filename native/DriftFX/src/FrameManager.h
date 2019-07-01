@@ -26,6 +26,11 @@ namespace internal {
 
 class SharedTexture;
 
+class ShareData {
+public:
+	unsigned int type;
+};
+
 class Frame : public RenderTarget {
 public:
 	Frame(long surfaceId, long long frameId, SurfaceData surfaceData, math::Vec2ui size);
@@ -33,6 +38,9 @@ public:
 
 	virtual void SetSharedTexture(SharedTexture* texture);
 	virtual void SetPresentationHint(PresentationHint hint);
+
+	virtual ShareData* GetData();
+	virtual void SetData(ShareData* data);
 
 	virtual SharedTexture* GetSharedTexture();
 
@@ -48,6 +56,8 @@ public:
 	virtual math::Vec2ui GetSize();
 	virtual PresentationHint GetPresentationHint();
 
+	virtual std::string ToString();
+
 private:
 	long surfaceId;
 	long long frameId;
@@ -55,6 +65,8 @@ private:
 	math::Vec2ui size;
 	PresentationHint presentationHint;
 	SharedTexture* sharedTexture;
+
+	ShareData* frameData;
 };
 
 class FrameManager {

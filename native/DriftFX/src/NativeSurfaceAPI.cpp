@@ -25,6 +25,7 @@
 #include "Configuration.h"
 
 #include <iostream>
+#include <iomanip>
 
 #include <utils/JNIHelper.h>
 #include <utils/Logger.h>
@@ -65,7 +66,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_n
 	surface->DisposeSharedTexture((long long) frameDataId);
 }
 extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nDisposeFrame(JNIEnv* env, jclass cls, jlong surfaceId, jlong frameId) {
-	LogDebug("dispose frame " << surfaceId << "." << frameId);
+	LogDebug("dispose frame " << dec << surfaceId << "." << dec << frameId);
 	NativeSurface* surface = NativeSurfaceRegistry::Get()->Get((long) surfaceId);
 	surface->GetFrameManager()->DisposeFrame((long long) frameId);
 }
@@ -93,7 +94,7 @@ extern "C" JNIEXPORT jobjectArray JNICALL Java_org_eclipse_fx_drift_internal_Nat
 
 
 extern "C" JNIEXPORT jint JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nOnTextureCreated(JNIEnv* env, jclass cls, jlong surfaceId, jlong frameId, jobject fxTexture) {
-	LogDebug("onTextureCreated " << surfaceId << "." << frameId);
+	LogDebug("onTextureCreated " << dec << surfaceId << "." << frameId);
 
 	NativeSurface* surface = NativeSurfaceRegistry::Get()->Get((long) surfaceId);
 	Frame* frame = surface->GetFrameManager()->GetFrame((long long) frameId);

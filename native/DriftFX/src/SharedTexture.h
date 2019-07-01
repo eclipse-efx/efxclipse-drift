@@ -36,23 +36,7 @@ namespace driftfx {
 using namespace gl;
 namespace internal {
 
-struct FrameData {
 
-	SurfaceData surfaceData;
-	math::Vec2ui textureSize;
-
-	long long id;
-	long long d3dSharedHandle;
-	long long ioSurfaceHandle;
-	int glTextureName;
-	
-	int presentationHint;
-
-	long long memoryPointer;
-	unsigned long memorySize;
-
-	bool empty;
-};
 
 class SharedTexture {
 
@@ -64,11 +48,7 @@ public:
 	virtual bool BeforeRender() = 0;
 	virtual bool AfterRender() = 0;
 
-
 	virtual Frame* GetFrame();
-
-	virtual FrameData* CreateFrameData() = 0;
-
 
 protected:
 	SharedTexture(GLContext* glContext, Frame* frame);

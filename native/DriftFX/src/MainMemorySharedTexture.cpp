@@ -17,13 +17,21 @@
 
 #include <GL/glew.h>
 #include "gl/GLLog.h"
+#include <DriftFX/GL/GLContext.h>
+
+#include <FrameManager.h>
 
 #include <utils/Logger.h>
 
 #include <iostream>
 
+using namespace driftfx;
+using namespace driftfx::gl;
 using namespace driftfx::math;
 using namespace driftfx::internal;
+
+
+
 
 MainMemorySharedTexture::MainMemorySharedTexture(GLContext* context, Frame* frame)
 : SharedTexture(context, frame),
@@ -66,30 +74,16 @@ bool MainMemorySharedTexture::AfterRender() {
 	return true;
 }
 
-
-FrameData* MainMemorySharedTexture::CreateFrameData() {
-	auto data = new FrameData();
-	data->id = (long long) this;
-	data->surfaceData = frame->GetSurfaceData();
-	data->textureSize = frame->GetSize();
-	data->memoryPointer = (long long) pointer;
-	data->memorySize = size;
-	return data;
-}
-
-unsigned long MainMemorySharedTexture::GetLength() {
-	return size;
-}
-
-void* MainMemorySharedTexture::GetPointer() {
-	return pointer;
-}
-
-
-
 void DownloadToMemoryNaive(unsigned int tex, unsigned int size, void* pointer) {
+
+#ifdef WIN32
+	GLuint format = GL_BGRA;
+#else
+	GLuint format = GL_RGBA;
+#endif
+
 	GLCALL( glBindTexture(GL_TEXTURE_2D, tex) );
-	GLCALL( glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, pointer) );
+	GLCALL( glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_INT_8_8_8_8_REV, pointer) );
 	GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
 }
 
@@ -99,8 +93,14 @@ void DownloadToMemoryBuf(unsigned int tex, unsigned int size, void* pointer) {
 	GLCALL( glBindBuffer(GL_PIXEL_PACK_BUFFER, buf) );
 	GLCALL( glBufferData(GL_PIXEL_PACK_BUFFER, size, 0, GL_STATIC_READ) );
 
+#ifdef WIN32
+	GLuint format = GL_BGRA;
+#else
+	GLuint format = GL_RGBA;
+#endif
+
 	GLCALL( glBindTexture(GL_TEXTURE_2D, tex) );
-	GLCALL( glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, 0) );
+	GLCALL( glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_INT_8_8_8_8_REV, 0) );
 	GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
 
 
@@ -122,4 +122,9 @@ void MainMemorySharedTexture::DownloadToMemory() {
 	DownloadToMemoryBuf(GetTexture()->Name(), size, pointer);
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
 	std::cerr << "download frame needed " << duration.count() << "ns" << std::endl;
+
+	MainMemoryShareData* data = new MainMemoryShareData();
+	data->pointer = pointer;
+	data->length = size;
+	frame->SetData(data);
 }
