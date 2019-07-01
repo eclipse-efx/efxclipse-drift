@@ -136,6 +136,10 @@ IOSurfaceSharedTexture::IOSurfaceSharedTexture(GLContext* context, Frame* frame)
 	ioSurface = createIOSurface(textureSize.x, textureSize.y);
 	ioSurfaceID = IOSurfaceGetID(ioSurface);
 
+	IOSurfaceShareData* data = new IOSurfaceShareData();
+	data->ioSurfaceID = ioSurfaceID;
+	frame->SetData(data);
+
 	if (!glContext->IsCurrent()) {
 		std::ostringstream s;
 		s << "IOSurfaceSharedTexture: context " << glContext->GetName() << " must be current";
@@ -175,19 +179,6 @@ bool IOSurfaceSharedTexture::AfterRender() {
 	//IOSurfaceUnlock(ioSurface, kIOSurfaceLockAvoidSync, NULL);
 	delete glTexture;
 	return true;
-}
-
-FrameData* IOSurfaceSharedTexture::CreateFrameData() {
-
-	FrameData* data = new FrameData();
-	data->id = (long long) this;
-	data->surfaceData = frame->GetSurfaceData();
-	data->glTextureName = 0;
-	data->ioSurfaceHandle = (long long) ioSurface;
-	data->textureSize = frame->GetSize();
-
-	return data;
-
 }
 
 void* IOSurfaceSharedTexture::GetIOSurfaceHandle() {

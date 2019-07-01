@@ -23,6 +23,11 @@ namespace prism {
 namespace es2 {
 namespace cgl {
 
+class IOSurfaceShareData: public ShareData {
+	public:
+	IOSurfaceID ioSurfaceID;
+};
+
 class IOSurfaceSharedTexture : public SharedTexture {
 
 protected:
@@ -42,8 +47,6 @@ public:
 
 	virtual bool BeforeRender();
 	virtual bool AfterRender();
-
-	virtual FrameData* CreateFrameData();
 
 	virtual void* GetIOSurfaceHandle();
 

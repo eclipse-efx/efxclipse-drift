@@ -34,9 +34,11 @@ private:
 		if (t == nullptr) {
 			return -1;
 		}
-		LogDebug("Shared Texture is " << t);
-		MainMemorySharedTexture* sharedTex = dynamic_cast<MainMemorySharedTexture*>(t);
-		es2Bridge->UploadTexture(targetTex, frame->GetWidth(), frame->GetHeight(), sharedTex->GetPointer(), sharedTex->GetLength());
+
+		ShareData* data = frame->GetData();
+		MainMemoryShareData* memData = (MainMemoryShareData*) data;
+
+		es2Bridge->UploadTexture(targetTex, frame->GetWidth(), frame->GetHeight(), memData->pointer, memData->length);
 
 		return 0;
 	}
