@@ -129,18 +129,6 @@ bool D3DSharedFallbackTexture::AfterRender() {
 	return true;
 }
 
-
-FrameData* D3DSharedFallbackTexture::CreateFrameData() {
-	FrameData* data = new FrameData();
-	data->id = (long long) this;
-	data->d3dSharedHandle = (long long) d3dTexture->GetShareHandle();
-	data->textureSize = GetFrame()->GetSize();
-	data->surfaceData = GetFrame()->GetSurfaceData();
-
-	return data;
-}
-
-
 SharedTextureFactoryId D3DSharedFallbackTexture::registered =
 SharedTextureFactory::RegisterSharedTextureType("winfallback",
 	[](GLContext* _context, Context* _fxContext, Frame* _frame) {

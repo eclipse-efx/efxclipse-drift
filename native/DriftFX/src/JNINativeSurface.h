@@ -16,7 +16,6 @@
 namespace driftfx {
 namespace internal {
 
-	struct FrameData;
 	class Frame;
 
 namespace jni {
@@ -71,8 +70,6 @@ public:
 	JNINativeSurface(jobject javaNativeSurface);
 	virtual ~JNINativeSurface();
 
-
-	void Present(FrameData frameData);
 	void Present(Frame* frame);
 
 	static void Initialize();
