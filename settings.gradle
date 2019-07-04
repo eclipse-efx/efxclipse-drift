@@ -1,4 +1,4 @@
-rootProject.name = 'driftFx'
+rootProject.name = 'driftFX'
 
 includeOsgiProject 'org.eclipse.fx.drift.feature',
         'org.eclipse.fx.drift',

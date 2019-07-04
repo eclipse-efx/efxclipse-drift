@@ -15,8 +15,9 @@ repositories {
 dependencies {
     implementation project(':org-eclipse-fx-drift')
     implementation ('at.bestsolution.efxclipse.rt:org.eclipse.fx.core:3.3.0')
+    implementation fileTree('extJars')
 
-    nativeDep files(project(':driftFX-native').tasks.findByPath('compile'))
+    nativeDep files(project(':driftFX-native').getTasksByName('compile', false))
 }
 
 mainClassName = 'org.eclipse.fx.drift.samples.Demo'
@@ -27,7 +28,9 @@ tasks.withType(JavaCompile) {
 
 run {
     doFirst {
-        def libDirs = files(configurations.nativeDep.files.collect {it.parentFile})
+        def libDirs = files(configurations.nativeDep.files.collect {
+            it.isDirectory() ? it : it.parentFile
+        })
         systemProperty "java.library.path", libDirs.asPath
     }
 }

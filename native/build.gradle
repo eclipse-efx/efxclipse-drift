@@ -3,7 +3,7 @@ task generateBuild(type: Exec, group: 'build') {
     outputs.dir workingDir
 
     executable 'cmake'
-    args '-G', 'Ninja', "$projectDir"
+    args '-G', 'Ninja', "$projectDir", '-DCMAKE_BUILD_TYPE=Release'
     environment 'JAVA_HOME' : System.properties.'java.home'
 
     doFirst {
