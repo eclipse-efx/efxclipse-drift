@@ -117,6 +117,7 @@ if (LINUX)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/GLXES2PrismBridge)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/GLXSharedTexture)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/NativeAPI)
+	list(APPEND DriftFX-Sources src/prism/es2/glx/ES2MainMemorySharedTexture)
 endif (LINUX)
 
 

@@ -44,6 +44,10 @@ ES2PrismBridge::~ES2PrismBridge() {
 	delete fxSharedGLContext;
 }
 
+void ES2PrismBridge::EnsurePrismContext() {
+	GetFXSharedGLContext()->SetCurrent();
+}
+
 GLContext* ES2PrismBridge::GetFXSharedGLContext() {
 	return fxSharedGLContext;
 }
@@ -89,6 +93,24 @@ int ES2PrismBridge::CopyTexture(int sourceTex, int targetTex, int width, int hei
 	return 0;
 }
 
+void FenceSyncWait() {
+	GLsync frameReady;
+	GLCALL( frameReady = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0) );
+	GLenum state;
+	auto begin = std::chrono::steady_clock::now();
+	GLCALL( state = glClientWaitSync(frameReady, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000) );
+	GLCALL( glDeleteSync( frameReady ) );
+	switch (state) {
+	case GL_ALREADY_SIGNALED: LogDebug("frameDone sync already signaled"); break;
+	case GL_TIMEOUT_EXPIRED: LogError("frameDone sync timed out!"); break;
+	case GL_CONDITION_SATISFIED: LogDebug("frameDone sync awaited"); break;
+	case GL_WAIT_FAILED: LogError("frameDone sync failed!"); break;
+	}
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
+	std::cerr << "wait for frame ready needed " << duration.count() << "ns" << std::endl;
+
+}
+
 void ES2PrismBridge::UploadTexture(int targetTex, int width, int height, void* memoryPointer, unsigned long memorySize) {
 	std::cerr << "updateTexture " << targetTex << ", " << width << ", " << height << ", " << memoryPointer << ", " << memorySize << std::endl;
 	auto begin = std::chrono::steady_clock::now();
@@ -97,7 +119,10 @@ void ES2PrismBridge::UploadTexture(int targetTex, int width, int height, void* m
 	GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
 	std::cerr << "upload frame needed " << duration.count() << "ns" << std::endl;
+
+	FenceSyncWait();
 }
+
 
 NativeSurface* ES2PrismBridge::CreateNativeSurface(long surfaceId, JNINativeSurface* api) {
 	return new ES2NativeSurface(surfaceId, api);

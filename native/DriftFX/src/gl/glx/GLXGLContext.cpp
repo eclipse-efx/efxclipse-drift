@@ -88,8 +88,6 @@ void GLXGLContext::UnsetCurrent() {
 
 GLXGLContext::GLXGLContext(std::string name, GLXGLContext* shared) :
 		GLXGLContext(name, shared == nullptr ? 0 : shared->GetHandle()){
-
-	GLXContext ctx;
 }
 
 GLXGLContext::GLXGLContext(std::string name) :
@@ -113,9 +111,9 @@ GLContext* GLXGLContext::CreateSharedContext(std::string name) {
 }
 
 void GLXGLContext::SetCurrent() {
-	std::cerr << " ** Set Current " << GetName() << std::endl;
 	glXMakeContextCurrent(display, pBuffer, pBuffer, glxContext);
 }
+
 bool GLXGLContext::IsCurrent() {
 	return glXGetCurrentContext() == glxContext;
 }

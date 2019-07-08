@@ -56,27 +56,6 @@ void NativeSurface::Initialize() {
 	context = PrismBridge::Get()->GetDefaultContext()->CreateSharedContext(s.str());
 }
 
-void NativeSurface::DisposeSharedTexture(long long id) {
-	toDisposeMutex.lock();
-
-	SharedTexture* texture = (SharedTexture*) id;
-	toDispose.push_back(texture);
-
-	toDisposeMutex.unlock();
-}
-
-void NativeSurface::DisposeSharedTextures() {
-	LogDebug("Disposing shared textures");
-	toDisposeMutex.lock();
-	for (std::vector<SharedTexture*>::iterator it = toDispose.begin(); it != toDispose.end(); ++it) {
-		SharedTexture* tex = (*it);
-		LogDebug(" - " << tex);
-		delete tex;
-	}
-	toDispose.clear();
-	toDisposeMutex.unlock();
-}
-
 void NativeSurface::Cleanup() {
 //	// TODO send some kind of signal to tell FX we are going to dispose our textures
 //	FrameData* frameData = new FrameData();
@@ -175,6 +154,8 @@ void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 	frame->SetPresentationHint(hint);
 
 	api->Present(frame);
+
+	GetFrameManager()->DisposePendingFrames();
 }
 
 Context* NativeSurface::GetFxContext() {

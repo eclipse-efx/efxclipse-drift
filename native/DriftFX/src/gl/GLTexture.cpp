@@ -49,11 +49,6 @@ GLTexture::GLTexture(GLContext *context, int width, int height) : Texture(width,
 }
 
 GLTexture::~GLTexture() noexcept(false) {
-
-	if (!context->IsCurrent()) {
-		throw GLContextException("current context must match texture context");
-	}
-
 	GLCALL( glDeleteTextures(1, &textureName) );
 }
 

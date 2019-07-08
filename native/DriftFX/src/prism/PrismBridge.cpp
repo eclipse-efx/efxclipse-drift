@@ -16,6 +16,7 @@
 #include <SharedTexture.h>
 
 #include <map>
+#include <iostream>
 
 using namespace driftfx;
 using namespace driftfx::gl;
@@ -65,7 +66,12 @@ SharedTextureFactoryId PrismBridge::Register(SharedTextureFactoryId id, OnTextur
 	return id;
 }
 
+void PrismBridge::EnsurePrismContext() {
+	// NOOP here
+}
+
 int PrismBridge::OnTextureCreated(Frame* frame, jobject fxTexture) {
+	EnsurePrismContext();
 	auto mode = frame->GetSurfaceData().transferMode;
 	auto handler = handlers[mode];
 	if (handler == nullptr) {

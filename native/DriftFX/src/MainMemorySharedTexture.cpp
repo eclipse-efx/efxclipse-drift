@@ -25,6 +25,10 @@
 
 #include <iostream>
 
+#include <memory.h>
+
+using namespace std;
+
 using namespace driftfx;
 using namespace driftfx::gl;
 using namespace driftfx::math;
@@ -37,8 +41,6 @@ MainMemorySharedTexture::MainMemorySharedTexture(GLContext* context, Frame* fram
 : SharedTexture(context, frame),
   size(frame->GetSize().x * frame->GetSize().y * 4),
   pointer(nullptr) {
-
-
 
 }
 
@@ -59,6 +61,7 @@ bool MainMemorySharedTexture::BeforeRender() {
 
 	GLCALL( glBindTexture(GL_TEXTURE_2D, glTexture->Name()) );
 	GLCALL( glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize.x, textureSize.y, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0) );
+	GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
 
 	return true;
 }

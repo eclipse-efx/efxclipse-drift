@@ -42,6 +42,7 @@ protected:
 	GLContext *fxGLContext;
 	GLContext *fxSharedGLContext;
 
+	virtual void EnsurePrismContext();
 };
 
 

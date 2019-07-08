@@ -13,6 +13,7 @@
 #define DRIFTFX_INTERNAL_FRAMEMANAGER_H_
 
 #include <map>
+#include <vector>
 #include <mutex>
 
 #include <DriftFX/DriftFXSurface.h>
@@ -83,6 +84,7 @@ public:
 	void DisposeFrame(long long frameId);
 
 
+	void DisposePendingFrames();
 
 private:
 	long surfaceId;
@@ -90,6 +92,9 @@ private:
 
 	std::mutex framesMutex;
 	std::map<long long, Frame*> frames;
+
+	std::mutex toDisposeMutex;
+	std::vector<Frame*> toDispose;
 
 };
 

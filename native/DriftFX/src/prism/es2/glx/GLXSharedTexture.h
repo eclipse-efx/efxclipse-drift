@@ -25,27 +25,27 @@ namespace prism {
 namespace es2 {
 namespace glx {
 
+class GLXShareData : public ShareData {
+public:
+	GLuint textureName;
+};
 
 class GLXSharedTexture : public SharedTexture {
 
 private:
 	GLContext* fxContext;
 
-	GLsync frameDone;
-
 public:
 
-	GLXSharedTexture(GLContext* context, GLContext* fxContext, SurfaceData surfaceData, math::Vec2ui textureSize);
+	GLXSharedTexture(GLContext* context, GLContext* fxContext, Frame* frame);
 	virtual ~GLXSharedTexture();
 
-	virtual bool Connect();
-	virtual bool Disconnect();
+	virtual bool BeforeRender();
+	virtual bool AfterRender();
 
-	virtual bool Lock();
-	virtual bool Unlock();
-
-	virtual FrameData* CreateFrameData();
-
+private:
+	static SharedTextureFactoryId registered;
+	static SharedTextureFactoryId registerPrism;
 };
 
 }

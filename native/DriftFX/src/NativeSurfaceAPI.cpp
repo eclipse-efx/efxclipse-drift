@@ -60,11 +60,6 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_n
 	surface->UpdateSurface(Vec2d((double)width, (double)height), Vec2d((double)screenScaleX, (double)screenScaleY), Vec2d((double)userScaleX, (double)userScaleY), (unsigned int) transferMode);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nDisposeFrameData(JNIEnv* env, jclass cls, jlong surfaceId, jlong frameDataId) {
-	LogDebug("dispose frame data " << surfaceId << ": " << frameDataId);
-	NativeSurface* surface = NativeSurfaceRegistry::Get()->Get((long) surfaceId);
-	surface->DisposeSharedTexture((long long) frameDataId);
-}
 extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nDisposeFrame(JNIEnv* env, jclass cls, jlong surfaceId, jlong frameId) {
 	LogDebug("dispose frame " << dec << surfaceId << "." << dec << frameId);
 	NativeSurface* surface = NativeSurfaceRegistry::Get()->Get((long) surfaceId);

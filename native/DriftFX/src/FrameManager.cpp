@@ -132,7 +132,20 @@ Frame* FrameManager::GetFrame(long long frameId) {
 void FrameManager::DisposeFrame(long long frameId) {
 	framesMutex.lock();
 	Frame* frame = frames[frameId];
-	delete frame;
 	frames.erase(frameId);
+	delete frame;
+//	toDispose.push_back(frame);
 	framesMutex.unlock();
+}
+
+void FrameManager::DisposePendingFrames() {
+//	LogDebug("Disposing pending frames");
+//	toDisposeMutex.lock();
+//	for (std::vector<Frame*>::iterator it = toDispose.begin(); it != toDispose.end(); ++it) {
+//		Frame* f = (*it);
+//		LogDebug(" - " << f->ToString());
+//		delete f;
+//	}
+//	toDispose.clear();
+//	toDisposeMutex.unlock();
 }

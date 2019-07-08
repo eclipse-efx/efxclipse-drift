@@ -95,8 +95,6 @@ public:
 	 */
 	virtual void UpdateSurface(math::Vec2d size, math::Vec2d screenScale, math::Vec2d userScale, unsigned int transferMode);
 
-	virtual void DisposeSharedTexture(long long id);
-
 	static NativeSurface* Create(JNINativeSurface* api);
 
 	virtual Context* GetFxContext();
@@ -117,12 +115,6 @@ protected:
 private:
 	std::atomic<SurfaceData> surfaceData;
 
-	std::mutex toDisposeMutex;
-	std::vector<SharedTexture*> toDispose;
-
-
-
-	void DisposeSharedTextures();
 };
 
 }

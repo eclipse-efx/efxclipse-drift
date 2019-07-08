@@ -62,6 +62,8 @@ protected:
 	Context* fxContext;
 
 	static std::map<SharedTextureFactoryId, OnTextureCreatedFunc> handlers;
+
+	virtual void EnsurePrismContext();
 };
 
 }

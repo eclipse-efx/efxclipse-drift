@@ -19,67 +19,79 @@
 
 #include <DriftFX/math/Vec2.h>
 
+#include <prism/PrismBridge.h>
+#include <prism/es2/ES2PrismBridge.h>
+
+#include <gl/GLLog.h>
 
 using namespace driftfx::math;
 using namespace driftfx::internal;
+using namespace driftfx::internal::prism::es2;
 using namespace driftfx::internal::prism::es2::glx;
 
-GLXSharedTexture::GLXSharedTexture(GLContext* context, GLContext* fxContext, SurfaceData surfaceData, Vec2ui textureSize) :
-	SharedTexture(glContext, surfaceData, textureSize),
+SharedTextureFactoryId GLXSharedTexture::registered =
+		SharedTextureFactory::RegisterSharedTextureType("GLXSharedContext", [](GLContext* _context, Context* _fxContext, Frame* _frame) {
+	GLContext* fxContext = dynamic_cast<GLContext*>(_fxContext);
+	return new GLXSharedTexture(_context, fxContext, _frame);
+});
+
+SharedTextureFactoryId GLXSharedTexture::registerPrism =
+		PrismBridge::Register(GLXSharedTexture::registered, [](PrismBridge* _bridge, Frame* _frame, jobject _fxTexture) {
+
+			ES2PrismBridge* bridge = dynamic_cast<ES2PrismBridge*>(_bridge);
+
+			ShareData* data = _frame->GetData();
+			GLXShareData* shareData = (GLXShareData*) data;
+
+			auto size = _frame->GetSize();
+
+			GLuint targetTex = bridge->GetGLTextureName(_fxTexture);
+
+			ES2PrismBridge::CopyTexture(shareData->textureName, targetTex, size.x, size.y);
+
+
+			return 0;
+		});
+
+GLXSharedTexture::GLXSharedTexture(GLContext* context, GLContext* fxContext, Frame* frame) :
+	SharedTexture(context, frame),
 	fxContext(fxContext) {
 
-	context->SetCurrent();
+	auto textureSize = frame->GetSize();
+	glTexture = dynamic_cast<GLTexture*>(glContext->CreateTexture(textureSize.x, textureSize.y));
 
-	glTexture = dynamic_cast<GLTexture*>(context->CreateTexture(textureSize.x, textureSize.y));
-
-	GLERR(glBindTexture(GL_TEXTURE_2D, glTexture->Name()););
-	GLERR(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize.x, textureSize.y, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL););
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize.x, textureSize.y, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
-	GLERR(glBindTexture(GL_TEXTURE_2D, 0););
 
 }
+
 GLXSharedTexture::~GLXSharedTexture() {
 	LogDebug("destroying tex " << glTexture->Name());
 	delete glTexture;
 }
 
-bool GLXSharedTexture::Connect() {
+bool GLXSharedTexture::BeforeRender() {
+	auto textureSize = frame->GetSize();
+
+	GLCALL( glBindTexture(GL_TEXTURE_2D, glTexture->Name()) );
+	GLCALL( glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize.x, textureSize.y, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL) );
+	GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
+
+	GLXShareData* data = new GLXShareData();
+	data->textureName = glTexture->Name();
+	frame->SetData(data);
+
 	return true;
 }
 
-bool GLXSharedTexture::Disconnect() {
-	frameDone = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-	//glFinish();
-
-	GLenum state = glClientWaitSync(frameDone, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000);
-	switch (state) {
-	case GL_ALREADY_SIGNALED: LogDebug("frameDone sync already signaled"); break;
-	case GL_TIMEOUT_EXPIRED: LogError("frameDone sync timed out!"); break;
-	case GL_CONDITION_SATISFIED: LogDebug("frameDone sync awaited"); break;
-	case GL_WAIT_FAILED: LogError("frameDone sync failed!"); break;
-	}
+bool GLXSharedTexture::AfterRender() {
+	std::cout << "FOO" << std::endl << std::flush;
+	SignalFrameReady();
+	std::cout << "BAR" << std::endl << std::flush;
+	WaitForFrameReady();
 	return true;
 }
 
-bool GLXSharedTexture::Lock() {
-	return true;
-}
 
-bool GLXSharedTexture::Unlock() {
-	return true;
-}
 
-FrameData* GLXSharedTexture::CreateFrameData() {
-	FrameData* data = new FrameData();
-	data->id = (long long) this;
-	data->surfaceData = surfaceData;
-	data->textureSize = textureSize;
-	data->glTextureName = glTexture->Name();
-	return data;
-}
 
-SharedTexture* SharedTexture::Create(GLContext* context, Context* fxContext, SurfaceData surfaceData, Vec2ui textureSize) {
-	return new GLXSharedTexture(context, dynamic_cast<GLContext*>(fxContext), surfaceData, textureSize);
-}
 
 

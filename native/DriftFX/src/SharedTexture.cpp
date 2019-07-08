@@ -51,6 +51,7 @@ void SharedTexture::WaitForFrameReady() {
 	GLenum state;
 	auto begin = std::chrono::steady_clock::now();
 	GLCALL( state = glClientWaitSync(frameReady, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000) );
+	GLCALL( glDeleteSync( frameReady ));
 	switch (state) {
 	case GL_ALREADY_SIGNALED: LogDebug("frameDone sync already signaled"); break;
 	case GL_TIMEOUT_EXPIRED: LogError("frameDone sync timed out!"); break;
