@@ -61,6 +61,10 @@ public class DriftFXSurface extends Node {
 		public String toString() {
 			return name + " " + id;
 		}
+		
+		public String getKey() {
+			return name;
+		}
 	}
 	public final static TransferMode NO_TRANSFER = new TransferMode("No Transfer", 0);
 	
