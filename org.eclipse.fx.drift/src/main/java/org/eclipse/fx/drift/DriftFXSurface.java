@@ -68,7 +68,7 @@ public class DriftFXSurface extends Node {
 	}
 	public final static TransferMode NO_TRANSFER = new TransferMode("No Transfer", 0);
 	
-	public ObjectProperty<TransferMode> transferMode = new SimpleObjectProperty<>(this, "transferMode", NO_TRANSFER);
+	private ObjectProperty<TransferMode> transferMode = new SimpleObjectProperty<>(this, "transferMode", NO_TRANSFER);
 	
 	public List<TransferMode> queryAvailableTransferModes() {
 		List<TransferMode> allModes = new ArrayList<>();
@@ -82,7 +82,6 @@ public class DriftFXSurface extends Node {
 		Platform.runLater(() -> {
 			updateSurfaceData();
 		});
-		
 	}
 	
 	private AtomicReference<SurfaceData> surfaceData = new AtomicReference<>(null);
