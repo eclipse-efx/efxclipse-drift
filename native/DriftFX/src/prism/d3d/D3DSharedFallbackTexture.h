@@ -39,12 +39,8 @@ public:
 	D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, Frame* frame);
 	virtual ~D3DSharedFallbackTexture();
 
-
 	virtual bool BeforeRender();
 	virtual bool AfterRender();
-
-	virtual FrameData* CreateFrameData();
-
 
 protected:
 	D3D9ExContext* d3dContext;
