@@ -6,12 +6,14 @@ public class DriftFXConfig {
 
 	private boolean debug;
 	private boolean useWinFallback;
+	private boolean fallbackMode;
 	private int logLevel;
 	
 	public static DriftFXConfig initDefaults() {
 		DriftFXConfig config = new DriftFXConfig();
 		config.debug = false;
 		config.useWinFallback = false;
+		config.fallbackMode = false;
 		config.logLevel = 1;
 		return config;
 	}
@@ -20,6 +22,7 @@ public class DriftFXConfig {
 		DriftFXConfig config = new DriftFXConfig();
 		config.debug = Configuration.getBoolean(Configuration.KEY_DEBUG, false);
 		config.useWinFallback = Configuration.getBoolean(Configuration.KEY_USEWINFALLBACK, false);
+		config.fallbackMode = Configuration.getBoolean(Configuration.KEY_FALLBACK, false);
 		config.logLevel = Configuration.getInt(Configuration.KEY_LOGLEVEL, 1);
 		return config;
 	}
@@ -31,6 +34,11 @@ public class DriftFXConfig {
 	
 	public DriftFXConfig useWinFallback(boolean useWinFallback) {
 		this.useWinFallback = useWinFallback;
+		return this;
+	}
+	
+	public DriftFXConfig useFallback(boolean fallback) {
+		this.fallbackMode = fallback;
 		return this;
 	}
 	
@@ -48,7 +56,9 @@ public class DriftFXConfig {
 	public int getLogLevel() {
 		return logLevel;
 	}
-	
+	public boolean isFallbackMode() {
+		return fallbackMode;
+	}
 	
 	
 }

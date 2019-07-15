@@ -85,7 +85,9 @@ public class DriftFXSurface extends Node {
 		}
 	}
 	
-	private ObjectProperty<TransferMode> transferMode = new SimpleObjectProperty<>(this, "transferMode", getPlatformDefaultTransferMode());
+	 private static TransferMode defaultTransferMode;
+	
+	private ObjectProperty<TransferMode> transferMode = new SimpleObjectProperty<>(this, "transferMode", defaultTransferMode);
 	
 	public static List<TransferMode> getAvailableTransferModes() {
 		return NativeAPI.getTransferModes();
@@ -292,6 +294,8 @@ public class DriftFXSurface extends Node {
    
    private static boolean initialized = false;
    
+  
+   
    public static void initialize(DriftFXConfig config) {
 	   if (initialized) return;
 	   
@@ -314,6 +318,14 @@ public class DriftFXSurface extends Node {
 	   }
 	   
 	   Toolkit.getToolkit().addShutdownHook(DriftFXSurface::destroy);
+	   
+	   if (config.isFallbackMode()) {
+		   defaultTransferMode = NativeAPI.getFallbackTransferMode();
+	   }
+	   else {
+		   defaultTransferMode = NativeAPI.getPlatformDefaultTransferMode();
+	   }
+	   
 	   initialized = true;
    }
    
