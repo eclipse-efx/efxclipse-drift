@@ -29,7 +29,7 @@ using namespace std::placeholders;
 class D3DMainMemorySharedTexture {
 
 
-private:
+public:
 	static int OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture) {
 		LogDebug("OnTextureCreated(" << bridge << ", " << frame << ", " << fxTexture << ")");
 
