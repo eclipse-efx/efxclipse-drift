@@ -143,7 +143,7 @@ IOSurfaceSharedTexture::IOSurfaceSharedTexture(GLContext* context, Frame* frame)
 	if (!glContext->IsCurrent()) {
 		std::ostringstream s;
 		s << "IOSurfaceSharedTexture: context " << glContext->GetName() << " must be current";
-		throw GLContextException(s.str());
+		LogError(s.str());
 	}
 
 
