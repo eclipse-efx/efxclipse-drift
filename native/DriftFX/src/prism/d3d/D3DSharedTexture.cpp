@@ -177,20 +177,6 @@ long long D3DSharedTexture::GetShareHandle() {
 	return (long long) d3dTexture->GetShareHandle();
 }
 
-SharedTextureFactoryId D3DSharedTexture::registered =
-	SharedTextureFactory::RegisterSharedTextureType("NV_DX_interop", 
-		[](GLContext* _context, Context* _fxContext, Frame* _frame) {
-			D3D9ExContext* d3dContext = dynamic_cast<D3D9ExContext*>(_fxContext);
-			return new D3DSharedTexture(_context, d3dContext, _frame);
-		});
-
-SharedTextureFactoryId D3DSharedTexture::registerPrism =
-	PrismBridge::Register(D3DSharedTexture::registered,
-		[](PrismBridge* _bridge, Frame* _frame, jobject _fxTexture) {
-			return D3DSharedTexture::OnTextureCreated(_bridge, _frame, _fxTexture);
-		});
-
-
 int D3DSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture) {
 	
 	ShareData* data = frame->GetData();

@@ -29,30 +29,6 @@ using namespace driftfx::internal;
 using namespace driftfx::internal::prism::es2;
 using namespace driftfx::internal::prism::es2::glx;
 
-SharedTextureFactoryId GLXSharedTexture::registered =
-		SharedTextureFactory::RegisterSharedTextureType("GLXSharedContext", [](GLContext* _context, Context* _fxContext, Frame* _frame) {
-	GLContext* fxContext = dynamic_cast<GLContext*>(_fxContext);
-	return new GLXSharedTexture(_context, fxContext, _frame);
-});
-
-SharedTextureFactoryId GLXSharedTexture::registerPrism =
-		PrismBridge::Register(GLXSharedTexture::registered, [](PrismBridge* _bridge, Frame* _frame, jobject _fxTexture) {
-
-			ES2PrismBridge* bridge = dynamic_cast<ES2PrismBridge*>(_bridge);
-
-			ShareData* data = _frame->GetData();
-			GLXShareData* shareData = (GLXShareData*) data;
-
-			auto size = _frame->GetSize();
-
-			GLuint targetTex = bridge->GetGLTextureName(_fxTexture);
-
-			ES2PrismBridge::CopyTexture(shareData->textureName, targetTex, size.x, size.y);
-
-
-			return 0;
-		});
-
 GLXSharedTexture::GLXSharedTexture(GLContext* context, GLContext* fxContext, Frame* frame) :
 	SharedTexture(context, frame),
 	fxContext(fxContext) {

@@ -28,6 +28,8 @@
 
 #include <prism/PrismBridge.h>
 
+#include <TransferModeManager.h>
+
 
 namespace driftfx {
 namespace internal {
@@ -69,7 +71,6 @@ protected:
 	static std::mutex sharedDevicesMutex;
 	static std::map<std::pair<IDirect3DDevice9Ex*, HGLRC>, HANDLE> sharedDevices;
 	static std::map<HANDLE, int> sharedDevicesUsageCount;
-
 
 };
 

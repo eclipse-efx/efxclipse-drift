@@ -30,10 +30,6 @@ class IOSurfaceShareData: public ShareData {
 
 class IOSurfaceSharedTexture : public SharedTexture {
 
-protected:
-	static SharedTextureFactoryId registered;
-	static SharedTextureFactoryId registerPrism;
-
 private:
 	IOSurfaceRef ioSurface;
 	IOSurfaceID ioSurfaceID;

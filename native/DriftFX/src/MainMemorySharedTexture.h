@@ -15,6 +15,8 @@
 #include <DriftFX/GL/GLContext.h>
 #include <DriftFX/math/Vec2.h>
 
+#include <TransferModeManager.h>
+
 #include "SharedTexture.h"
 
 #include <GL/glew.h>
@@ -37,7 +39,6 @@ public:
 	virtual bool BeforeRender();
 	virtual bool AfterRender();
 
-	static SharedTextureFactoryId registered;
 protected:
 
 

@@ -15,11 +15,13 @@ namespace es2 {
 
 using namespace std::placeholders;
 
-class ES2MainMemorySharedTexture {
 
-
-private:
-	static int OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture) {
+class MainMemoryTransferMode : TransferMode {
+public:
+	SharedTexture* CreateSharedTexture(GLContext* glContext, Context* fxContext, Frame* frame) {
+    	return new MainMemorySharedTexture(glContext, frame);
+	}
+	int OnTextureCreated(prism::PrismBridge* bridge, Frame* frame, jobject fxTexture) {
 		LogDebug("OnTextureCreated(" << bridge << ", " << frame << ", " << fxTexture << ")");
 
 		ES2PrismBridge* es2Bridge = dynamic_cast<ES2PrismBridge*>(bridge);
@@ -41,18 +43,16 @@ private:
 		es2Bridge->UploadTexture(targetTex, frame->GetWidth(), frame->GetHeight(), memData->pointer, memData->length);
 
 		return 0;
+    }
+	virtual bool isFallback() {
+		return true;
 	}
-
-	static SharedTextureFactoryId registered;
-
+protected:
+	MainMemoryTransferMode() : TransferMode("MainMemory") {}
+	static TransferModeId registered;
 };
 
-SharedTextureFactoryId ES2MainMemorySharedTexture::registered = PrismBridge::Register(MainMemorySharedTexture::registered,
-		[](PrismBridge* bridge, Frame* frame, jobject fxTexture) {
-			return ES2MainMemorySharedTexture::OnTextureCreated(bridge, frame, fxTexture);
-		});
-
-		//std::bind((int(*)(PrismBridge*, Frame*, jobject))&ES2MainMemorySharedTexture::OnTextureCreated, _1, _2, _3));
+TransferModeId MainMemoryTransferMode::registered = TransferModeManager::Instance()->RegisterTransferMode(new MainMemoryTransferMode());
 
 }
 }

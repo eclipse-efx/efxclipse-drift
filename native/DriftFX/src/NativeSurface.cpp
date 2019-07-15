@@ -25,6 +25,8 @@
 
 #include <cmath>
 
+#include <TransferModeManager.h>
+
 
 using namespace std;
 
@@ -131,7 +133,12 @@ RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
 
 	LogDebug("Acquire " << frame->ToString() << "(" << dec << width << " x " << dec << height << ")");
 
-	auto tex = SharedTextureFactory::CreateSharedTexture(currentSurfaceData.transferMode, GetContext(), GetFxContext(), frame);
+	auto modeId = currentSurfaceData.transferMode;
+	auto mode = TransferModeManager::Instance()->GetTransferMode(modeId);
+
+	auto tex = mode->CreateSharedTexture(GetContext(), GetFxContext(), frame);
+	frame->SetSharedTexture(tex);
+	//auto tex = SharedTextureFactory::CreateSharedTexture(currentSurfaceData.transferMode, GetContext(), GetFxContext(), frame);
 
 	tex->BeforeRender();
 

@@ -26,6 +26,8 @@
 
 #include <DriftFX/math/Vec2.h>
 
+#include <TransferModeManager.h>
+
 namespace driftfx {
 namespace internal {
 namespace prism {
@@ -47,9 +49,6 @@ protected:
 	D3D9Texture* d3dTexture;
 
 	void DownloadPixels(GLTexture * texture, byte * pixles);
-
-	static SharedTextureFactoryId D3DSharedFallbackTexture::registered;
-	static SharedTextureFactoryId D3DSharedFallbackTexture::registerPrism;
 };
 
 }

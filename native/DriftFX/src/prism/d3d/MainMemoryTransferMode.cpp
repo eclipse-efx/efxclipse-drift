@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2019 BestSolution.at and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
+ */
 
 #include <functional>
 #include <iostream>
@@ -12,26 +22,24 @@
 
 #include "D3DPrismBridge.h"
 
-
 #include <win32/Error.h>
 
-
 #include <prism/d3d/include/java8/D3DContext.h>
+
+#include <TransferModeManager.h>
 
 namespace driftfx {
 namespace internal {
 namespace prism {
 namespace d3d {
 
-
-using namespace std::placeholders;
-
-class D3DMainMemorySharedTexture {
-
-
+class MainMemoryTransferMode : public TransferMode {
 public:
-	static int OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture) {
-		LogDebug("OnTextureCreated(" << bridge << ", " << frame << ", " << fxTexture << ")");
+	SharedTexture* CreateSharedTexture(GLContext* glContext, Context* fxContext, Frame* frame) {
+		return new MainMemorySharedTexture(glContext, frame);
+	}
+	int OnTextureCreated(prism::PrismBridge* bridge, Frame* frame, jobject fxTexture) {
+				LogDebug("OnTextureCreated(" << bridge << ", " << frame << ", " << fxTexture << ")");
 
 		ShareData* data = frame->GetData();
 		MainMemoryShareData* mmdata = (MainMemoryShareData*)data;
@@ -67,48 +75,25 @@ public:
 		auto end = std::chrono::steady_clock::now();
 		LogDebug("Uploading " << std::dec << size.x * size.y << "px needed " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << "ns");
 
-		// it seems if we lock the texture again in readonly it gets ready...
-		// if we do not do this here it sometimes won't have any content..
 		auto startSync = std::chrono::steady_clock::now();
 		WERR(texture->LockRect(0, &tmp, NULL, D3DLOCK_READONLY));
-
-		//byte* data = (byte*) tmp.pBits;
-		//LogDebug("1st D3D pixel: " << hex << (int)data[0] << (int)data[1] << (int)data[2] << (int)data[3]);
 
 		WERR(texture->UnlockRect(0));
 		auto endSync = std::chrono::steady_clock::now();
 		LogDebug("Relocking d3d tex for sync needed " << std::chrono::duration_cast<std::chrono::nanoseconds>(endSync - startSync).count() << "ns");
 
-
-
-
-		//LogDebug("Context is " << es2Bridge->GetFXSharedGLContext());
-
-		//// context is important
-		//es2Bridge->GetFXSharedGLContext()->SetCurrent();
-
-		//GLuint targetTex = es2Bridge->GetGLTextureName(fxTexture);
-		//auto t = frame->GetSharedTexture();
-		//if (t == nullptr) {
-		//	return -1;
-		//}
-		//LogDebug("Shared Texture is " << t);
-		//MainMemorySharedTexture* sharedTex = dynamic_cast<MainMemorySharedTexture*>(t);
-		//es2Bridge->UploadTexture(targetTex, frame->GetWidth(), frame->GetHeight(), sharedTex->GetPointer(), sharedTex->GetLength());
-
 		return 0;
 	}
-
-	static SharedTextureFactoryId registered;
-
+	virtual bool isFallback() {
+		return true;
+	}
+protected:
+	MainMemoryTransferMode() : TransferMode("MainMemory") {}
+	static TransferModeId registered;
 };
 
-SharedTextureFactoryId D3DMainMemorySharedTexture::registered = PrismBridge::Register(MainMemorySharedTexture::registered,
-		[](PrismBridge* bridge, Frame* frame, jobject fxTexture) {
-			return D3DMainMemorySharedTexture::OnTextureCreated(bridge, frame, fxTexture);
-		});
+TransferModeId MainMemoryTransferMode::registered = TransferModeManager::Instance()->RegisterTransferMode(new MainMemoryTransferMode());
 
-		//std::bind((int(*)(PrismBridge*, Frame*, jobject))&ES2MainMemorySharedTexture::OnTextureCreated, _1, _2, _3));
 
 }
 }

@@ -26,10 +26,10 @@ using namespace driftfx::gl;
 using namespace driftfx::internal;
 
 SharedTexture::SharedTexture(GLContext* glContext, Frame* frame) :
-		frame(frame),
-		glContext(glContext),
-		glTexture(nullptr),
-		frameReady(nullptr) {
+	frame(frame),
+	glContext(glContext),
+	glTexture(nullptr),
+	frameReady(nullptr) {
 }
 
 SharedTexture::~SharedTexture() {
@@ -44,14 +44,14 @@ Frame* SharedTexture::GetFrame() {
 }
 
 void SharedTexture::SignalFrameReady() {
-	GLCALL( frameReady = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0) );
+	GLCALL(frameReady = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
 }
 
 void SharedTexture::WaitForFrameReady() {
 	GLenum state;
 	auto begin = std::chrono::steady_clock::now();
-	GLCALL( state = glClientWaitSync(frameReady, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000) );
-	GLCALL( glDeleteSync( frameReady ));
+	GLCALL(state = glClientWaitSync(frameReady, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000));
+	GLCALL(glDeleteSync(frameReady));
 	switch (state) {
 	case GL_ALREADY_SIGNALED: LogDebug("frameDone sync already signaled"); break;
 	case GL_TIMEOUT_EXPIRED: LogError("frameDone sync timed out!"); break;
@@ -63,7 +63,12 @@ void SharedTexture::WaitForFrameReady() {
 
 }
 
-SharedTextureFactoryId SharedTextureFactory::nextType = 0;
+SharedTextureFactoryId SharedTextureFactory::NOOP = 0;
+SharedTextureFactoryId SharedTextureFactory::PLATFORM_DEFAULT = 1;
+SharedTextureFactoryId SharedTextureFactory::FALLBACK = 2;
+
+
+SharedTextureFactoryId SharedTextureFactory::nextType = 10;
 std::map<SharedTextureFactoryId, SharedTextureFactoryData> SharedTextureFactory::factories;
 
 SharedTexture* SharedTextureFactory::CreateSharedTexture(SharedTextureFactoryId type, GLContext* context, Context* fxContext, Frame* frame) {
@@ -96,6 +101,22 @@ SharedTextureFactoryId SharedTextureFactory::RegisterSharedTextureType(SharedTex
 	data.func = factory;
 	factories[id] = data;
 	return id;
+}
+SharedTextureFactoryId SharedTextureFactory::RegisterSharedTextureTypeAlias(SharedTextureFactoryId aliasId, SharedTextureFactoryId id) {
+	LogInfo("Registering Shared Texture Factory Alias " << aliasId << " -> " << id);
+	if (factories.find(aliasId) != factories.end() ) {
+		LogError("Already registerd! " << aliasId);
+		return -1;
+	}
+	else {
+		SharedTextureFactoryData origData = factories[id];
+		SharedTextureFactoryData data;
+		data.id = aliasId;
+		data.name = origData.name;
+		data.func = origData.func;
+		factories[aliasId] = data;
+		return aliasId;
+	}
 }
 
 std::string SharedTextureFactory::GetFactoryName(SharedTextureFactoryId id) {

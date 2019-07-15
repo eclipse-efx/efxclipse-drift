@@ -50,10 +50,6 @@ MainMemorySharedTexture::~MainMemorySharedTexture() {
 	pointer = nullptr;
 }
 
-SharedTextureFactoryId MainMemorySharedTexture::registered =
-		SharedTextureFactory::RegisterSharedTextureType("MainMemory",
-				[](GLContext* context, Context* fxContext, Frame* frame) { return new MainMemorySharedTexture(context, frame); });
-
 bool MainMemorySharedTexture::BeforeRender() {
 	// prepare the texture
 	auto textureSize = frame->GetSize();

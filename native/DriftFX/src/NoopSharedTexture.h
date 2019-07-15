@@ -29,9 +29,6 @@ public:
 
 	virtual bool BeforeRender();
 	virtual bool AfterRender();
-
-private:
-	static SharedTextureFactoryId registered;
 };
 
 }

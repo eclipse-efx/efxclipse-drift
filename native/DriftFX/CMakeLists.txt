@@ -75,6 +75,11 @@ set(DriftFX-Sources
     
     src/FrameManager.h
     src/FrameManager.cpp
+    
+    src/TransferModeManager.h
+	src/TransferModeManager.cpp
+	
+	src/NoOpTransferMode.cpp
 )
 
 if (WIN32)
@@ -104,7 +109,10 @@ if (WIN32)
 	list(APPEND DriftFX-Sources src/win32/Error.h)
 	list(APPEND DriftFX-Sources src/win32/Error.cpp)
 	
-	list(APPEND DriftFX-Sources src/prism/d3d/D3DMainMemorySharedTexture.cpp)
+	list(APPEND DriftFX-Sources src/prism/d3d/MainMemoryTransferMode.cpp)
+	list(APPEND DriftFX-Sources src/prism/d3d/NVDXInteropTransferMode.cpp)
+	list(APPEND DriftFX-Sources src/prism/d3d/LegacyWinFallbackTransferMode.cpp)
+
 endif (WIN32)
 
 if (LINUX)
@@ -118,6 +126,9 @@ if (LINUX)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/GLXSharedTexture)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/NativeAPI)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/ES2MainMemorySharedTexture)
+
+	list(APPEND DriftFX-Sources src/prism/es2/MainMemoryTransferMode.cpp)
+	list(APPEND DriftFX-Sources src/prism/es2/glx/SharedContextTransferMode.cpp)
 endif (LINUX)
 
 
@@ -138,6 +149,9 @@ if (APPLE)
 	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.cpp)
 	
 	list(APPEND DriftFX-Sources src/prism/es2/ES2MainMemorySharedTexture.cpp)
+
+	list(APPEND DriftFX-Sources src/prism/es2/MainMemoryTransferMode.cpp)
+	list(APPEND DriftFX-Sources src/prism/es2/cgl/IOSurfaceTransferMode.cpp)
 endif (APPLE)
 
 

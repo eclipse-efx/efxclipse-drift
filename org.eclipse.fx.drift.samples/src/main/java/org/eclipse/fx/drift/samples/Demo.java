@@ -37,12 +37,13 @@ public class Demo extends Application {
 	Node create() {
 		DriftFXSurface surface0 = new DriftFXSurface();
 		HBox bb = new HBox();
-		for( TransferMode mode : surface0.queryAvailableTransferModes() ) {
-			Button b = new Button(mode.toString());
-			b.setOnAction(e -> surface0.setTransferMode(mode));
-			bb.getChildren().add(b);
-		}
+
+		ComboBox<TransferMode> fxTransferMode = new ComboBox<>();
+		fxTransferMode.getItems().setAll(DriftFXSurface.getAvailableTransferModes());
+		fxTransferMode.valueProperty().bindBidirectional(surface0.transferModeProperty());
+	
 		
+		bb.getChildren().addAll(new Label("Transfer Mode: "), fxTransferMode);
 		
 		Rectangle clip = new Rectangle();
 		clip.widthProperty().bind(surface0.widthProperty());
@@ -52,6 +53,7 @@ public class Demo extends Application {
 		BorderPane dummy = new BorderPane();
 		dummy.setStyle("-fx-padding: 20");
 		dummy.setCenter(surface0);
+		
 		dummy.setTop(bb);
 
 		ComboBox<ARenderer> renderers = new ComboBox<>();

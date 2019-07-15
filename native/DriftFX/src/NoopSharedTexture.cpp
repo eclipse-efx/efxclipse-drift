@@ -28,11 +28,6 @@ using namespace driftfx::gl;
 using namespace driftfx::math;
 using namespace driftfx::internal;
 
-SharedTextureFactoryId NoopSharedTexture::registered =
-		SharedTextureFactory::RegisterSharedTextureType(0, "NoOp", [](GLContext* _context, Context* fxContext, Frame* _frame) {
-	return new NoopSharedTexture(_context, _frame);
-});
-
 NoopSharedTexture::NoopSharedTexture(GLContext* context, Frame* frame) : SharedTexture(context, frame) {
 
 }

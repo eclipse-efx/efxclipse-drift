@@ -116,18 +116,6 @@ int IOSurfaceSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, 
 	return -1;
 }
 
-SharedTextureFactoryId IOSurfaceSharedTexture::registered =
-		SharedTextureFactory::RegisterSharedTextureType("IOSurface",
-				[](GLContext* context, Context* fxContext, Frame* frame) { return new IOSurfaceSharedTexture(context, frame); });
-
-
-SharedTextureFactoryId IOSurfaceSharedTexture::registerPrism = PrismBridge::Register(IOSurfaceSharedTexture::registered,
-		[](PrismBridge* bridge, Frame* frame, jobject fxTexture) {
-			return IOSurfaceSharedTexture::OnTextureCreated(bridge, frame, fxTexture);
-		});
-
-
-
 
 IOSurfaceSharedTexture::IOSurfaceSharedTexture(GLContext* context, Frame* frame) :
 	SharedTexture(context, frame)

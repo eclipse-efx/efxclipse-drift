@@ -75,15 +75,21 @@ struct SharedTextureFactoryData {
 };
 
 
+
 class SharedTextureFactory {
 public:
+	static SharedTextureFactoryId NOOP;
+	static SharedTextureFactoryId FALLBACK;
+	static SharedTextureFactoryId PLATFORM_DEFAULT;
 
 	static SharedTexture* CreateSharedTexture(SharedTextureFactoryId id, GLContext* context, Context* fxContext, Frame* frame);
 
 	static SharedTextureFactoryId RegisterSharedTextureType(std::string name, SharedTextureFactoryFunc factory);
 	static SharedTextureFactoryId RegisterSharedTextureType(SharedTextureFactoryId id, std::string name, SharedTextureFactoryFunc factory);
+	static SharedTextureFactoryId RegisterSharedTextureTypeAlias(SharedTextureFactoryId aliasId, SharedTextureFactoryId id);
 	static std::string GetFactoryName(SharedTextureFactoryId id);
 
+	
 
 	static std::map<SharedTextureFactoryId, SharedTextureFactoryData> factories;
 private:

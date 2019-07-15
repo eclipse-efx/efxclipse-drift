@@ -14,6 +14,7 @@
 #include "PrismBridge.h"
 #include <utils/Logger.h>
 #include <SharedTexture.h>
+#include <TransferModeManager.h>
 
 #include <map>
 #include <iostream>
@@ -72,14 +73,13 @@ void PrismBridge::EnsurePrismContext() {
 
 int PrismBridge::OnTextureCreated(Frame* frame, jobject fxTexture) {
 	EnsurePrismContext();
-	auto mode = frame->GetSurfaceData().transferMode;
-	auto handler = handlers[mode];
-	if (handler == nullptr) {
-		LogError("No handler available for " << mode << "!!");
+	auto modeId = frame->GetSurfaceData().transferMode;
+	auto mode = TransferModeManager::Instance()->GetTransferMode(modeId);
+	if (mode == nullptr) {
+		LogError("TransferMode not available " << modeId);
 		return 0;
 	}
 	else {
-		return handler(this, frame, fxTexture);
+		return mode->OnTextureCreated(this, frame, fxTexture);
 	}
-
 }

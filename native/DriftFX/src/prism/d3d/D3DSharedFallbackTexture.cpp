@@ -128,16 +128,3 @@ bool D3DSharedFallbackTexture::AfterRender() {
 
 	return true;
 }
-
-SharedTextureFactoryId D3DSharedFallbackTexture::registered =
-SharedTextureFactory::RegisterSharedTextureType("winfallback",
-	[](GLContext* _context, Context* _fxContext, Frame* _frame) {
-	D3D9ExContext* d3dContext = dynamic_cast<D3D9ExContext*>(_fxContext);
-	return new D3DSharedFallbackTexture(_context, d3dContext, _frame);
-});
-
-SharedTextureFactoryId D3DSharedFallbackTexture::registerPrism =
-PrismBridge::Register(D3DSharedFallbackTexture::registered,
-	[](PrismBridge* _bridge, Frame* _frame, jobject _fxTexture) {
-	return D3DSharedTexture::OnTextureCreated(_bridge, _frame, _fxTexture);
-});
