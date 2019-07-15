@@ -87,6 +87,49 @@ extern "C" JNIEXPORT void JNICALL Java_DriftFXDemo_nRun(JNIEnv* env, jclass cls,
 
 ```
 
+### TransferModes
+
+The different ways to transfer the texture to JavaFX are now implemented as `TransferMode`s. There is an API on the `DriftFXSurface` to query the available transfer modes (`DriftFXSurface.getAvailableTransferModes()`), the platform default transfer mode (`DriftFXSurface.getPlatformDefaultTransferMode()`) and the fallback transfer mode (`DriftFXSurface.getFallbackTransferMode()`). Each instance of `DriftFXSurface` has a transfer mode property. It is initialized with the default transfer mode, which is either the platform default or, if the configuration is set to fallback the fallback transfer mode.
+
+```
+DriftFXSurface.getAvailableTransferModes(); // returns a list of available transfer modes.
+DriftFXSurface.getPlatformDefaultTransferMode(); // returns the platform default transfer mode.
+DriftFXSurface.getFallbackTransferMode(); // returns the fallback transfer mode.
+
+DriftFXSurface surface = new DriftFXSurface();
+surface.setTransferMode(mode); // sets the transfer mode on the instance
+```
+
+At the moment the following implementations exist:    
+
+ * **NoOp**: *(available in Windows, Linux and MacOS)*    
+   As its name says it does nothing, however a valid texture is generated on acquire so your render loop will still work.    
+       
+       
+ * **MainMemory**: *(available in Windows, Linux and MacOS)*    
+   downloads the texture to main memory and uploads it again to the javafx texture.    
+   *Fallback for all platforms*    
+       
+    
+ * **IOSurface**: *(available in MacOS)*    
+   shares the texture on the graphics card via the IOSurface system.    
+   *MacOS Platform Default*    
+    
+    
+ * **NVDXInterop**: *(available in Windows)*    
+   shares the texture via the NV_DX_Interop extension with DirectX and via a direct x shared resource with javafx.    
+   *Windows Platform Default*   
+    
+    
+ * **SharedContext**: *(available in Linux)*    
+   shares the texture via a shared gl context with javafx.    
+   *Linux Platform Default*    
+    
+    
+ * **LegacyWinFallback**: *(available in Windows)*    
+   downloads the texture from gl to main memory and uploads it again to direct x, then it is shared via a dx shared resource with javafx.
+   
+
 ### Requirements
 
  * **Java 8**
