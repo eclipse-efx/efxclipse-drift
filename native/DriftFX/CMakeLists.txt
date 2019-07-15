@@ -125,7 +125,6 @@ if (LINUX)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/GLXES2PrismBridge)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/GLXSharedTexture)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/NativeAPI)
-	list(APPEND DriftFX-Sources src/prism/es2/glx/ES2MainMemorySharedTexture)
 
 	list(APPEND DriftFX-Sources src/prism/es2/MainMemoryTransferMode.cpp)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/SharedContextTransferMode.cpp)
@@ -148,7 +147,6 @@ if (APPLE)
 	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.h)
 	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.cpp)
 	
-	list(APPEND DriftFX-Sources src/prism/es2/ES2MainMemorySharedTexture.cpp)
 
 	list(APPEND DriftFX-Sources src/prism/es2/MainMemoryTransferMode.cpp)
 	list(APPEND DriftFX-Sources src/prism/es2/cgl/IOSurfaceTransferMode.cpp)

@@ -9,9 +9,11 @@
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  */
 
+#include <TransferModeManager.h>
+
 #include <GL/glew.h>
 
-#include "GLXSharedTexture.h"
+#include <prism/es2/glx/GLXSharedTexture.h>
 
 #include <utils/Logger.h>
 
@@ -27,7 +29,7 @@
 
 namespace driftfx {
 namespace internal {
-namespace prims {
+namespace prism {
 namespace es2 {
 namespace glx {
 	
@@ -38,11 +40,11 @@ class SharedContextTransferMode : public TransferMode {
 		return new GLXSharedTexture(glContext, fxGlContext, frame);
 	}
 	int OnTextureCreated(prism::PrismBridge* bridge, Frame* frame, jobject fxTexture) {
-			ES2PrismBridge* bridge = dynamic_cast<ES2PrismBridge*>(_bridge);
-			ShareData* data = _frame->GetData();
+			ES2PrismBridge* es2Bridge = dynamic_cast<ES2PrismBridge*>(bridge);
+			ShareData* data = frame->GetData();
 			GLXShareData* shareData = (GLXShareData*) data;
-			auto size = _frame->GetSize();
-			GLuint targetTex = bridge->GetGLTextureName(_fxTexture);
+			auto size = frame->GetSize();
+			GLuint targetTex = es2Bridge->GetGLTextureName(fxTexture);
 			ES2PrismBridge::CopyTexture(shareData->textureName, targetTex, size.x, size.y);
 			return 0;
 	}
@@ -52,7 +54,7 @@ class SharedContextTransferMode : public TransferMode {
 	protected:
 	SharedContextTransferMode() : TransferMode("SharedContext") {}
 	static TransferModeId registered;
-}
+};
 
 TransferModeId SharedContextTransferMode::registered = TransferModeManager::Instance()->RegisterTransferMode(new SharedContextTransferMode());
 

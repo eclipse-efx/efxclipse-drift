@@ -5,9 +5,12 @@
 
 using namespace driftfx::internal;
 
+TransferMode::~TransferMode() {
+}
 
 TransferMode::TransferMode(std::string name) :
-	name(name) {
+	name(name),
+	id(-1) {
 	
 }
 

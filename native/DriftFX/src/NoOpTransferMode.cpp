@@ -24,7 +24,7 @@ public:
 		return new NoopSharedTexture(glContext, frame);
 	}
 	int OnTextureCreated(prism::PrismBridge* bridge, Frame* frame, jobject fxTexture) {
-			return -1;
+		return 0;
 	}
 protected:
 	NoOpTransferMode() : TransferMode("NoOp") {}

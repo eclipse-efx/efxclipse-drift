@@ -30,6 +30,7 @@ namespace internal {
 
 	class TransferMode {
 	public:
+		virtual ~TransferMode();
 		std::string Name();
 		TransferModeId Id();
 		virtual SharedTexture* CreateSharedTexture(GLContext*, Context*, Frame*) = 0;
