@@ -17,6 +17,8 @@
 #include <list>
 #include <string>
 
+#include <DriftFX/TransferMode.h>
+
 #include <SharedTexture.h>
 
 namespace driftfx {
@@ -28,7 +30,7 @@ namespace internal {
 
 	typedef unsigned int TransferModeId;
 
-	class TransferMode {
+	class TransferMode : public ::driftfx::TransferMode {
 	public:
 		virtual ~TransferMode();
 		std::string Name();

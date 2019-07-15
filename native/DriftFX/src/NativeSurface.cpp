@@ -108,15 +108,35 @@ RenderTarget* NativeSurface::Acquire() {
 	return Acquire(GetWidth(), GetHeight());
 }
 
+RenderTarget* NativeSurface::Acquire(driftfx::TransferMode* transferMode) {
+	return Acquire(GetWidth(), GetHeight(), transferMode);
+}
+
+
 RenderTarget* NativeSurface::Acquire(Vec2ui size) {
-	return Acquire(size.x, size.y);
+	return Acquire(size, surfaceData.load());
+}
+
+RenderTarget* NativeSurface::Acquire(Vec2ui size, driftfx::TransferMode* transferMode) {
+	auto data = surfaceData.load();
+	auto copy = data;
+	copy.transferMode = transferMode->Id();
+	return Acquire(size, copy);
 }
 
 RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
-	auto currentSurfaceData = surfaceData.load();
-	//LogDebug(" " << dec << currentSurfaceData.size.x << " / " << currentSurfaceData.screenScale.x << " / " << currentSurfaceData.userScale.x);
-//	DisposeSharedTextures();
+	return Acquire(Vec2ui(width, height), surfaceData.load());
+}
 
+
+RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height, driftfx::TransferMode* transferMode) {
+	auto data = surfaceData.load();
+	auto copy = data;
+	copy.transferMode = transferMode->Id();
+	return Acquire(Vec2ui(width, height), copy);
+}
+
+RenderTarget* NativeSurface::Acquire(math::Vec2ui size, SurfaceData surfaceData) {
 	PrismBridge* bridge = PrismBridge::Get();
 	// in case the system was destroyed
 	if (bridge == nullptr) {
@@ -129,21 +149,23 @@ RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
 		GetContext()->SetCurrent();
 	}
 
-	auto frame = frameManager.CreateFrame(currentSurfaceData, Vec2ui(width, height));
+	auto frame = frameManager.CreateFrame(surfaceData, size);
 
-	LogDebug("Acquire " << frame->ToString() << "(" << dec << width << " x " << dec << height << ")");
+	LogDebug("Acquire " << frame->ToString() << "(" << size.x << ", " << size.y << ")");
 
-	auto modeId = currentSurfaceData.transferMode;
-	auto mode = TransferModeManager::Instance()->GetTransferMode(modeId);
+	auto mode = TransferModeManager::Instance()->GetTransferMode(surfaceData.transferMode);
+
+	LogDebug("Creating it with " << mode->Name());
 
 	auto tex = mode->CreateSharedTexture(GetContext(), GetFxContext(), frame);
 	frame->SetSharedTexture(tex);
-	//auto tex = SharedTextureFactory::CreateSharedTexture(currentSurfaceData.transferMode, GetContext(), GetFxContext(), frame);
 
 	tex->BeforeRender();
 
 	return frame;
 }
+
+
 
 void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 	if (target == nullptr) {
@@ -164,6 +186,15 @@ void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 
 	GetFrameManager()->DisposePendingFrames();
 }
+
+driftfx::TransferMode* NativeSurface::GetTransferMode() {
+	return nullptr;
+}
+
+void NativeSurface::SetTransferMode(driftfx::TransferMode* transferMode) {
+
+}
+
 
 Context* NativeSurface::GetFxContext() {
 	return PrismBridge::Get()->GetFxContext();

@@ -49,20 +49,20 @@ public:
 	 */
 	virtual void Cleanup();
 
-	/*
-	 * Acquires a RenderTarget with the current width / height.
-	 * delegates to Acquire(GetWidth(), GetHeight()).
-	 */
-	virtual RenderTarget* Acquire();
 
-	/*
-	 * Acquires a new RenderTarget with the given size.
-	 * Should be called from your render thread.
-	 *
-	 */
+	virtual RenderTarget* Acquire();
+	virtual RenderTarget* Acquire(driftfx::TransferMode* transferMode);
+
 	virtual RenderTarget* Acquire(unsigned int width, unsigned int height);
+	virtual RenderTarget* Acquire(unsigned int width, unsigned int height, driftfx::TransferMode* transferMode);
 
 	virtual RenderTarget* Acquire(math::Vec2ui size);
+	virtual RenderTarget* Acquire(math::Vec2ui size, driftfx::TransferMode* transferMode);
+
+	virtual RenderTarget* Acquire(math::Vec2ui size, SurfaceData surfaceData);
+
+	virtual driftfx::TransferMode* GetTransferMode();
+	virtual void SetTransferMode(driftfx::TransferMode* transferMode);
 
 	/*
 	 * Presents a previously acquired RenderTarget.
