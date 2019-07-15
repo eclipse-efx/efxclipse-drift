@@ -11,6 +11,7 @@
 package org.eclipse.fx.drift.internal;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.fx.drift.DriftFXSurface.TransferMode;
@@ -28,9 +29,33 @@ public class NativeAPI {
 		Initialize();
 	}
 	
-	public static native TransferMode[] nGetTransferModes();
+	
+	
+	private static native TransferMode[] nGetTransferModes();
+	private static List<TransferMode> transferModes;
 	public static List<TransferMode> getTransferModes() {
-		return Arrays.asList(nGetTransferModes());
+		if (transferModes == null) {
+			transferModes = Collections.unmodifiableList(Arrays.asList(nGetTransferModes()));
+		}
+		return transferModes;
+	}
+	
+	private static native TransferMode nGetFallbackTransferMode();
+	private static TransferMode fallbackTransferMode;
+	public static TransferMode getFallbackTransferMode() {
+		if (fallbackTransferMode == null) {
+			fallbackTransferMode = nGetFallbackTransferMode();
+		}
+		return fallbackTransferMode;
+	}
+	
+	private static native TransferMode nGetPlatformDefaultTransferMode();
+	private static TransferMode platformDefaultTransferMode;
+	public static TransferMode getPlatformDefaultTransferMode() {
+		if (platformDefaultTransferMode == null) {
+			platformDefaultTransferMode = nGetPlatformDefaultTransferMode();
+		}
+		return platformDefaultTransferMode;
 	}
 	
 	

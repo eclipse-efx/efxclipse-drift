@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.fx.drift; 
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -31,7 +29,6 @@ import com.sun.javafx.jmx.MXNodeAlgorithm;
 import com.sun.javafx.jmx.MXNodeAlgorithmContext;
 import com.sun.javafx.scene.DirtyBits;
 import com.sun.javafx.sg.prism.NGNode;
-import com.sun.javafx.stage.ScreenHelper;
 import com.sun.javafx.tk.Toolkit;
 
 import javafx.application.Platform;
@@ -42,7 +39,6 @@ import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
-import javafx.stage.Screen;
 
 //Note: this implementation is against internal JavafX API
 @SuppressWarnings({"restriction", "deprecation"})
@@ -65,23 +61,52 @@ public class DriftFXSurface extends Node {
 		public String getKey() {
 			return name;
 		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + id;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			TransferMode other = (TransferMode) obj;
+			if (id != other.id)
+				return false;
+			return true;
+		}
 	}
-	public final static TransferMode NO_TRANSFER = new TransferMode("No Transfer", 0);
 	
-	private ObjectProperty<TransferMode> transferMode = new SimpleObjectProperty<>(this, "transferMode", NO_TRANSFER);
+	private ObjectProperty<TransferMode> transferMode = new SimpleObjectProperty<>(this, "transferMode", getPlatformDefaultTransferMode());
 	
-	public List<TransferMode> queryAvailableTransferModes() {
-		List<TransferMode> allModes = new ArrayList<>();
-		allModes.addAll(NativeAPI.getTransferModes());
-		return Collections.unmodifiableList(allModes);
+	public static List<TransferMode> getAvailableTransferModes() {
+		return NativeAPI.getTransferModes();
+	}
+	public static TransferMode getPlatformDefaultTransferMode() {
+		return NativeAPI.getPlatformDefaultTransferMode();
+	}
+	public static TransferMode getFallbackTransferMode() {
+		return NativeAPI.getFallbackTransferMode();
+	}
+	
+	public ObjectProperty<TransferMode> transferModeProperty() {
+		return transferMode;
 	}
 	
 	public void setTransferMode(TransferMode mode) {
 		transferMode.set(mode);
-		
-		Platform.runLater(() -> {
-			updateSurfaceData();
-		});
+	}
+	
+	public TransferMode getTransferMode() {
+		return transferMode.get();
 	}
 	
 	private AtomicReference<SurfaceData> surfaceData = new AtomicReference<>(null);
@@ -137,6 +162,13 @@ public class DriftFXSurface extends Node {
 		// observe current screen render factor
 		screenScaleFactor.bind(screenObserver.currentRenderScaleProperty());
 		screenScaleFactor.addListener((x, o, n) -> updateSurfaceData());
+		
+		
+		transferMode.addListener((x, o, n) -> {
+			Platform.runLater(() -> {
+				updateSurfaceData();
+			});
+		});
 	}
 
 	@Override
@@ -295,7 +327,8 @@ public class DriftFXSurface extends Node {
 	   GraphicsPipelineUtil.destroy();
    }
    
-   private int getTransferMode() {
+   
+   private int getTransferModeId() {
 	   return transferMode.get().id;
    }
 
@@ -303,7 +336,7 @@ public class DriftFXSurface extends Node {
 	   return new SurfaceData(
 			   (float) getWidth(), (float) getHeight(), 
 			   (float) getScreenScaleFactor(), (float) getScreenScaleFactor(), 
-			   (float) getUserScaleFactor(), (float) getUserScaleFactor(), getTransferMode());
+			   (float) getUserScaleFactor(), (float) getUserScaleFactor(), getTransferModeId());
 	   
    }
    
