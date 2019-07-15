@@ -211,7 +211,7 @@ public:
 		jclass jChestRenderer = env->FindClass("org/eclipse/fx/drift/samples/SimpleTriangleRenderer");
 		jmethodID jChestRenderer_getNativeSurfaceId = env->GetMethodID(jChestRenderer, "getNativeSurfaceId", "()J");
 
-		jlong surfaceId = env->CallLongMethod(renderer, jChestRenderer_getNativeSurfaceId);
+		long surfaceId = (long) env->CallLongMethod(renderer, jChestRenderer_getNativeSurfaceId);
 
 		surface = DriftFX::Get()->GetSurface(surfaceId);
 
@@ -299,7 +299,7 @@ public:
 
 
 
-		angle += 0.1;
+		angle += 0.1f;
 
 
 		glViewport(0, 0, width, height);

@@ -43,7 +43,7 @@ public:
 		jclass jChestRenderer = env->FindClass("org/eclipse/fx/drift/samples/SimpleColorRenderer");
 		jmethodID jChestRenderer_getNativeSurfaceId = env->GetMethodID(jChestRenderer, "getNativeSurfaceId", "()J");
 
-		jlong surfaceId = env->CallLongMethod(renderer, jChestRenderer_getNativeSurfaceId);
+		long surfaceId = (long) env->CallLongMethod(renderer, jChestRenderer_getNativeSurfaceId);
 
 		surface = DriftFX::Get()->GetSurface(surfaceId);
 
@@ -77,8 +77,8 @@ public:
 		b = b0 * d + b1 * (1-d);
 	}
 
-	float red0 = 0, green0 = 0.5, blue0 = 0.7;
-	float red1 = 1, green1 = 1, blue1 = 0;
+	float red0 = 0.f, green0 = 0.5f, blue0 = 0.7f;
+	float red1 = 1.f, green1 = 1.f, blue1 = 0.f;
 
 	void sw(float &a, float &b) {
 		float t = a;
@@ -87,7 +87,7 @@ public:
 	}
 
 	void renderFrame(GLuint textureId, int width, int height) {
-		pow += 0.01;
+		pow += 0.01f;
 		if (pow > 1) {
 			pow -= 1;
 			sw(red0, red1);

@@ -73,7 +73,7 @@ extern "C" JNIEXPORT jobjectArray JNICALL Java_org_eclipse_fx_drift_internal_Nat
 	jclass jTransferModeCls = env->FindClass("org/eclipse/fx/drift/DriftFXSurface$TransferMode");
 	jmethodID jNew = env->GetMethodID(jTransferModeCls, "<init>", "(Ljava/lang/String;I)V");
 
-	auto count = SharedTextureFactory::factories.size();
+	auto count = (jsize) SharedTextureFactory::factories.size();
 
 	jobjectArray result = env->NewObjectArray(count, jTransferModeCls, 0);
 	int i = 0;

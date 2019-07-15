@@ -35,9 +35,9 @@ GLTexture::GLTexture(GLContext *context, int width, int height) : Texture(width,
 	context(context),
 	textureName(0) {
 
-	if (!context->IsCurrent()) {
-		throw GLContextException("current context must match texture context ");
-	}
+	//if (!context->IsCurrent()) {
+	//	throw GLContextException("current context must match texture context ");
+	//}
 
 	GLCALL( glGenTextures(1, &textureName) );
 
