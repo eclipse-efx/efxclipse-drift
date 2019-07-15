@@ -34,9 +34,9 @@ private:
 	IOSurfaceRef ioSurface;
 	IOSurfaceID ioSurfaceID;
 
-	static int OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture);
 
 public:
+	static int OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture);
 
 	IOSurfaceSharedTexture(gl::GLContext* context, Frame* frame);
 	virtual ~IOSurfaceSharedTexture();
