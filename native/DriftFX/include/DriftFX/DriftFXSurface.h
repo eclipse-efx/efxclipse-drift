@@ -11,11 +11,15 @@
 #ifndef DRIFTFX_DRIFTFXSURFACE_H_
 #define DRIFTFX_DRIFTFXSURFACE_H_
 
+#include <list>
+
 #include <DriftFX/Common.h>
 #include <DriftFX/RenderTarget.h>
 #include <DriftFX/Context.h>
 #include <DriftFX/GL/GLContext.h>
 #include <DriftFX/math/Vec2.h>
+
+#include <DriftFX/TransferMode.h>
 
 namespace driftfx {
 
@@ -55,6 +59,7 @@ public:
 	 * delegates to Acquire(GetWidth(), GetHeight()).
 	 */
 	virtual RenderTarget* Acquire() = 0;
+	virtual RenderTarget* Acquire(TransferMode* transferMode) = 0;
 
 	/*
 	 * Acquires a new RenderTarget with the given size.
@@ -62,8 +67,10 @@ public:
 	 *
 	 */
 	virtual RenderTarget* Acquire(unsigned int width, unsigned int height) = 0;
+	virtual RenderTarget* Acquire(unsigned int width, unsigned int height, TransferMode* transferMode) = 0;
 
 	virtual RenderTarget* Acquire(math::Vec2ui size) = 0;
+	virtual RenderTarget* Acquire(math::Vec2ui size, TransferMode* transferMode) = 0;
 
 	/*
 	 * Presents a previously acquired RenderTarget.
@@ -104,6 +111,9 @@ public:
 	 */
 	virtual math::Vec2ui GetScaledSize() = 0;
 
+	static std::list<TransferMode*> GetAvailableTransferModes();
+	static TransferMode* GetPlatformDefaultTransferMode();
+	static TransferMode* GetFallbackTransferMode();
 
 protected:
 	virtual ~DriftFXSurface() = 0;

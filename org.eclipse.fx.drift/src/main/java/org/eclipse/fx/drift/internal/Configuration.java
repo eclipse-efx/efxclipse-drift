@@ -10,6 +10,7 @@ public class Configuration {
 	public static final String KEY_DEBUG = "driftfx.debug";
 	public static final String KEY_LOGLEVEL = "driftfx.loglevel";
 	public static final String KEY_USEWINFALLBACK = "driftfx.winfallback";
+	public static final String KEY_FALLBACK = "driftfx.fallback";
 	
 	public static boolean DEBUG;
 	public static boolean USEWINFALLBACK;

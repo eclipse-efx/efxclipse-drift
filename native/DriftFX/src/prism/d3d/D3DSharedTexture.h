@@ -14,6 +14,7 @@
 
 #define D3D_DEBUG_INFO
 #include <d3d9.h>
+#include <jni.h>
 
 #include <mutex>
 #include <map>
@@ -25,6 +26,10 @@
 #include <DriftFX/GL/GLContext.h>
 #include <DriftFX/math/Vec2.h>
 
+#include <prism/PrismBridge.h>
+
+#include <TransferModeManager.h>
+
 
 namespace driftfx {
 namespace internal {
@@ -32,25 +37,30 @@ namespace prism {
 namespace d3d {
 using namespace win32;
 
+class WDDMShareData : public ShareData {
+public:
+	HANDLE shareHandle;
+};
 
 class D3DSharedTexture : public SharedTexture {
 
 public:
-	D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, SurfaceData surfaceData, math::Vec2ui textureSize);
+	D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, Frame* frame);
 	virtual ~D3DSharedTexture();
 
+	virtual bool BeforeRender();
+	virtual bool AfterRender();
 
-	virtual bool Connect();
-	virtual bool Disconnect();
-
-	virtual bool Lock();
-	virtual bool Unlock();
-
-	virtual FrameData* CreateFrameData();
-
+	virtual long long GetShareHandle();
 
 	static HANDLE OpenSharedDevice(D3D9ExContext* d3dContext, GLContext* glContext);
 	static void CloseSharedDevice(D3D9ExContext* d3dContext, GLContext* glContext);
+
+	static SharedTextureFactoryId registered;
+	static SharedTextureFactoryId registerPrism;
+
+	static int OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture);
+
 protected:
 	D3D9ExContext* d3dContext;
 	D3D9Texture* d3dTexture;
@@ -61,7 +71,6 @@ protected:
 	static std::mutex sharedDevicesMutex;
 	static std::map<std::pair<IDirect3DDevice9Ex*, HGLRC>, HANDLE> sharedDevices;
 	static std::map<HANDLE, int> sharedDevicesUsageCount;
-
 
 };
 

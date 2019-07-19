@@ -9,26 +9,26 @@
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  */
 
-#ifndef DRIFTFX_INTERNAL_SURFACEDATA_H_
-#define DRIFTFX_INTERNAL_SURFACEDATA_H_
+#ifndef DRIFTFX_INTERNAL_NOOPSHAREDTEXTURE_H_
+#define DRIFTFX_INTERNAL_NOOPSHAREDTEXTURE_H_
 
+#include <DriftFX/GL/GLContext.h>
 #include <DriftFX/math/Vec2.h>
+
+#include "SharedTexture.h"
+
+#include <GL/glew.h>
 
 namespace driftfx {
 namespace internal {
 
-struct SurfaceData {
-	math::Vec2d size;
-	math::Vec2d screenScale;
-	math::Vec2d userScale;
-	unsigned int transferMode;
+class NoopSharedTexture : public SharedTexture {
+public:
+	NoopSharedTexture(GLContext* context, Frame* frame);
+	virtual ~NoopSharedTexture();
 
-	SurfaceData() noexcept :
-		size(1, 1),
-		screenScale(1, 1),
-		userScale(1, 1),
-		transferMode(0) {}
-	SurfaceData(const SurfaceData& s) noexcept = default;
+	virtual bool BeforeRender();
+	virtual bool AfterRender();
 };
 
 }

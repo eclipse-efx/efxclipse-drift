@@ -7,8 +7,9 @@ public class SurfaceData {
 	public final float renderScaleY;
 	public final float userScaleX;
 	public final float userScaleY;
+	public final int transferMode;
 	
-	public SurfaceData(float width, float height, float renderScaleX, float renderScaleY, float userScaleX, float userScaleY) {
+	public SurfaceData(float width, float height, float renderScaleX, float renderScaleY, float userScaleX, float userScaleY, int transferMode) {
 		super();
 		this.width = width;
 		this.height = height;
@@ -16,6 +17,7 @@ public class SurfaceData {
 		this.renderScaleY = renderScaleY;
 		this.userScaleX = userScaleX;
 		this.userScaleY = userScaleY;
+		this.transferMode = transferMode;
 	}
 	
 	@Override

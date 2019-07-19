@@ -13,12 +13,15 @@
 #include <jni.h>
 #include <iomanip>
 
+#include <chrono>
+
 #include "ES2PrismBridge.h"
 #include "ES2NativeSurface.h"
 
 #include <DriftFX/GL/GLContext.h>
 #include <DriftFX/GL/GLDebug.h>
 #include <utils/Logger.h>
+#include <utils/JNIHelper.h>
 
 #include <gl/GLLog.h>
 
@@ -39,6 +42,29 @@ ES2PrismBridge::ES2PrismBridge(GLContext* fxContext) :
 
 ES2PrismBridge::~ES2PrismBridge() {
 	delete fxSharedGLContext;
+}
+
+void ES2PrismBridge::EnsurePrismContext() {
+	GetFXSharedGLContext()->SetCurrent();
+}
+
+GLContext* ES2PrismBridge::GetFXSharedGLContext() {
+	return fxSharedGLContext;
+}
+
+GLuint ES2PrismBridge::GetGLTextureName(jobject fxTexture) {
+	// TODO we could handle this purely in native code via jni calls
+	JNIEnv* env = JNIHelper::GetJNIEnv(true);
+
+	jclass cls = env->FindClass("org/eclipse/fx/drift/internal/GraphicsPipelineUtil$ES2");
+	cls = (jclass)env->NewGlobalRef(cls);
+
+	jmethodID getTextureName = env->GetStaticMethodID(cls, "getTextureName", "(Lcom/sun/prism/Texture;)I");
+
+	//LogDebug("Calling now with " << cls << " / " << getTextureName << " / " << fxTexture);
+	jint val = env->CallStaticIntMethod(cls, getTextureName, fxTexture);
+	//LogDebug(" Got " << val);
+	return (GLuint) val;
 }
 
 
@@ -66,6 +92,37 @@ int ES2PrismBridge::CopyTexture(int sourceTex, int targetTex, int width, int hei
 
 	return 0;
 }
+
+void FenceSyncWait() {
+	GLsync frameReady;
+	GLCALL( frameReady = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0) );
+	GLenum state;
+	auto begin = std::chrono::steady_clock::now();
+	GLCALL( state = glClientWaitSync(frameReady, GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000) );
+	GLCALL( glDeleteSync( frameReady ) );
+	switch (state) {
+	case GL_ALREADY_SIGNALED: LogDebug("frameDone sync already signaled"); break;
+	case GL_TIMEOUT_EXPIRED: LogError("frameDone sync timed out!"); break;
+	case GL_CONDITION_SATISFIED: LogDebug("frameDone sync awaited"); break;
+	case GL_WAIT_FAILED: LogError("frameDone sync failed!"); break;
+	}
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
+	std::cerr << "wait for frame ready needed " << duration.count() << "ns" << std::endl;
+
+}
+
+void ES2PrismBridge::UploadTexture(int targetTex, int width, int height, void* memoryPointer, unsigned long memorySize) {
+	std::cerr << "updateTexture " << targetTex << ", " << width << ", " << height << ", " << memoryPointer << ", " << memorySize << std::endl;
+	auto begin = std::chrono::steady_clock::now();
+	GLCALL( glBindTexture(GL_TEXTURE_2D, targetTex) );
+	GLCALL( glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, memoryPointer) );
+	GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
+	std::cerr << "upload frame needed " << duration.count() << "ns" << std::endl;
+
+	FenceSyncWait();
+}
+
 
 NativeSurface* ES2PrismBridge::CreateNativeSurface(long surfaceId, JNINativeSurface* api) {
 	return new ES2NativeSurface(surfaceId, api);

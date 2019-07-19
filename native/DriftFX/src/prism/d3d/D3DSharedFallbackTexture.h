@@ -26,6 +26,8 @@
 
 #include <DriftFX/math/Vec2.h>
 
+#include <TransferModeManager.h>
+
 namespace driftfx {
 namespace internal {
 namespace prism {
@@ -36,24 +38,16 @@ using namespace win32;
 class D3DSharedFallbackTexture : public SharedTexture {
 
 public:
-	D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, SurfaceData surfaceData, math::Vec2ui textureSize);
+	D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, Frame* frame);
 	virtual ~D3DSharedFallbackTexture();
 
-
-	virtual bool Connect();
-	virtual bool Disconnect();
-
-	virtual bool Lock();
-	virtual bool Unlock();
-
-	virtual FrameData* CreateFrameData();
-
+	virtual bool BeforeRender();
+	virtual bool AfterRender();
 
 protected:
 	D3D9ExContext* d3dContext;
 	D3D9Texture* d3dTexture;
 
-	void UploadPixels(D3D9Texture * texture, byte * pixels);
 	void DownloadPixels(GLTexture * texture, byte * pixles);
 };
 

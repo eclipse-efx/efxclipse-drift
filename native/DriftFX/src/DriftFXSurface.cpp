@@ -9,10 +9,29 @@
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  */
 
+#include <DriftFX/TransferMode.h>
 #include <DriftFX/DriftFXSurface.h>
+
+#include <TransferModeManager.h>
+
 using namespace driftfx;
 
 DriftFXSurface::~DriftFXSurface() {
 
 }
 
+
+std::list<TransferMode*> DriftFXSurface::GetAvailableTransferModes() {
+	std::list<TransferMode*> result;
+	std::list<internal::TransferMode*> modes = internal::TransferModeManager::Instance()->GetAvailableModes();
+	for (auto it = modes.begin(); it != modes.end(); it++) {
+		result.push_back(*it);
+	}
+	return result;
+}
+TransferMode* DriftFXSurface::GetPlatformDefaultTransferMode() {
+	return internal::TransferModeManager::Instance()->GetPlatformDefault();
+}
+TransferMode* DriftFXSurface::GetFallbackTransferMode() {
+	return internal::TransferModeManager::Instance()->GetFallback();
+}

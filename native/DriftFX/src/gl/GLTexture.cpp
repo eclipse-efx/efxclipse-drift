@@ -35,9 +35,9 @@ GLTexture::GLTexture(GLContext *context, int width, int height) : Texture(width,
 	context(context),
 	textureName(0) {
 
-	if (!context->IsCurrent()) {
-		throw GLContextException("current context must match texture context ");
-	}
+	//if (!context->IsCurrent()) {
+	//	throw GLContextException("current context must match texture context ");
+	//}
 
 	GLCALL( glGenTextures(1, &textureName) );
 
@@ -49,11 +49,6 @@ GLTexture::GLTexture(GLContext *context, int width, int height) : Texture(width,
 }
 
 GLTexture::~GLTexture() noexcept(false) {
-
-	if (!context->IsCurrent()) {
-		throw GLContextException("current context must match texture context");
-	}
-
 	GLCALL( glDeleteTextures(1, &textureName) );
 }
 

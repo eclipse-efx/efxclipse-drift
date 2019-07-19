@@ -22,6 +22,7 @@
 
 #include "SurfaceData.h"
 #include "JNINativeSurface.h"
+#include "FrameManager.h"
 
 namespace driftfx {
 	using namespace gl;
@@ -48,20 +49,20 @@ public:
 	 */
 	virtual void Cleanup();
 
-	/*
-	 * Acquires a RenderTarget with the current width / height.
-	 * delegates to Acquire(GetWidth(), GetHeight()).
-	 */
-	virtual RenderTarget* Acquire();
 
-	/*
-	 * Acquires a new RenderTarget with the given size.
-	 * Should be called from your render thread.
-	 *
-	 */
+	virtual RenderTarget* Acquire();
+	virtual RenderTarget* Acquire(driftfx::TransferMode* transferMode);
+
 	virtual RenderTarget* Acquire(unsigned int width, unsigned int height);
+	virtual RenderTarget* Acquire(unsigned int width, unsigned int height, driftfx::TransferMode* transferMode);
 
 	virtual RenderTarget* Acquire(math::Vec2ui size);
+	virtual RenderTarget* Acquire(math::Vec2ui size, driftfx::TransferMode* transferMode);
+
+	virtual RenderTarget* Acquire(math::Vec2ui size, SurfaceData surfaceData);
+
+	virtual driftfx::TransferMode* GetTransferMode();
+	virtual void SetTransferMode(driftfx::TransferMode* transferMode);
 
 	/*
 	 * Presents a previously acquired RenderTarget.
@@ -92,13 +93,13 @@ public:
 	/**
 	 * Internal API.
 	 */
-	virtual void UpdateSurface(math::Vec2d size, math::Vec2d screenScale, math::Vec2d userScale);
-
-	virtual void DisposeSharedTexture(long long id);
+	virtual void UpdateSurface(math::Vec2d size, math::Vec2d screenScale, math::Vec2d userScale, unsigned int transferMode);
 
 	static NativeSurface* Create(JNINativeSurface* api);
 
 	virtual Context* GetFxContext();
+
+	FrameManager* GetFrameManager();
 
 protected:
 	NativeSurface(long surfaceId, JNINativeSurface* api);
@@ -109,13 +110,11 @@ protected:
 
 	long surfaceId;
 
+	FrameManager frameManager;
+
 private:
 	std::atomic<SurfaceData> surfaceData;
 
-	std::mutex toDisposeMutex;
-	std::vector<SharedTexture*> toDispose;
-
-	void DisposeSharedTextures();
 };
 
 }

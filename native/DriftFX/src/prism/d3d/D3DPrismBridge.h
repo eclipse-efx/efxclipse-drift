@@ -41,6 +41,12 @@ public:
 	static void Initialize(jlong pContext);
 	static void Destroy();
 
+	static void* GetD3DResourceHandle(jobject fxTexture);
+
+
+	static void UploadPixels(D3D9Texture* texture, byte* pixels);
+
+
 protected:
 	D3DPrismBridge(jlong pContext);
 	virtual ~D3DPrismBridge();

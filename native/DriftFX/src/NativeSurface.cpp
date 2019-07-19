@@ -25,6 +25,8 @@
 
 #include <cmath>
 
+#include <TransferModeManager.h>
+
 
 using namespace std;
 
@@ -39,7 +41,8 @@ NativeSurface::NativeSurface(long surfaceId, JNINativeSurface* api) :
 	surfaceId(surfaceId),
 	api(api),
 	context(nullptr),
-	surfaceData(SurfaceData()) {
+	surfaceData(SurfaceData()),
+	frameManager(surfaceId) {
 	LogDebug("NativeSurface constructor")
 
 }
@@ -55,41 +58,20 @@ void NativeSurface::Initialize() {
 	context = PrismBridge::Get()->GetDefaultContext()->CreateSharedContext(s.str());
 }
 
-void NativeSurface::DisposeSharedTexture(long long id) {
-	toDisposeMutex.lock();
-
-	SharedTexture* texture = (SharedTexture*) id;
-	toDispose.push_back(texture);
-
-	toDisposeMutex.unlock();
-}
-
-void NativeSurface::DisposeSharedTextures() {
-	LogDebug("Disposing shared textures");
-	toDisposeMutex.lock();
-	for (std::vector<SharedTexture*>::iterator it = toDispose.begin(); it != toDispose.end(); ++it) {
-		SharedTexture* tex = (*it);
-		LogDebug(" - " << tex);
-		delete tex;
-	}
-	toDispose.clear();
-	toDisposeMutex.unlock();
-}
-
 void NativeSurface::Cleanup() {
 //	// TODO send some kind of signal to tell FX we are going to dispose our textures
-	FrameData* frameData = new FrameData();
-	frameData->d3dSharedHandle = 0;
-	frameData->ioSurfaceHandle = 0;
-	frameData->glTextureName = 0;
-	frameData->textureSize = Vec2ui();
+//	FrameData* frameData = new FrameData();
+//	frameData->d3dSharedHandle = 0;
+//	frameData->ioSurfaceHandle = 0;
+//	frameData->glTextureName = 0;
+//	frameData->textureSize = Vec2ui();
+//
+//	api->Present(*frameData);
+//
+//	delete frameData;
 
-	api->Present(*frameData);
-
-	delete frameData;
-
-	LogDebug("clean textures");
-	DisposeSharedTextures();
+	//LogDebug("clean textures");
+	//DisposeSharedTextures();
 
 	// NOTE: since textures know their context and set it current upon deletion
 	// we must ensure that all textures from a context are deleted before the context is deleted!
@@ -104,11 +86,12 @@ GLContext* NativeSurface::GetContext() {
 	return context;
 }
 
-void NativeSurface::UpdateSurface(Vec2d size, Vec2d screenScale, Vec2d userScale) {
+void NativeSurface::UpdateSurface(Vec2d size, Vec2d screenScale, Vec2d userScale, unsigned int transferMode) {
 	SurfaceData newSurfaceData;
 	newSurfaceData.size = size;
 	newSurfaceData.screenScale = screenScale;
 	newSurfaceData.userScale = userScale;
+	newSurfaceData.transferMode = transferMode;
 
 	surfaceData = newSurfaceData;
 }
@@ -125,16 +108,35 @@ RenderTarget* NativeSurface::Acquire() {
 	return Acquire(GetWidth(), GetHeight());
 }
 
+RenderTarget* NativeSurface::Acquire(driftfx::TransferMode* transferMode) {
+	return Acquire(GetWidth(), GetHeight(), transferMode);
+}
+
+
 RenderTarget* NativeSurface::Acquire(Vec2ui size) {
-	return Acquire(size.x, size.y);
+	return Acquire(size, surfaceData.load());
+}
+
+RenderTarget* NativeSurface::Acquire(Vec2ui size, driftfx::TransferMode* transferMode) {
+	auto data = surfaceData.load();
+	auto copy = data;
+	copy.transferMode = transferMode->Id();
+	return Acquire(size, copy);
 }
 
 RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
-	auto currentSurfaceData = surfaceData.load();
-	LogDebug("Acquire " << dec << width << " x " << dec << height);
-	LogDebug(" " << dec << currentSurfaceData.size.x << " / " << currentSurfaceData.screenScale.x << " / " << currentSurfaceData.userScale.x);
-	DisposeSharedTextures();
+	return Acquire(Vec2ui(width, height), surfaceData.load());
+}
 
+
+RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height, driftfx::TransferMode* transferMode) {
+	auto data = surfaceData.load();
+	auto copy = data;
+	copy.transferMode = transferMode->Id();
+	return Acquire(Vec2ui(width, height), copy);
+}
+
+RenderTarget* NativeSurface::Acquire(math::Vec2ui size, SurfaceData surfaceData) {
 	PrismBridge* bridge = PrismBridge::Get();
 	// in case the system was destroyed
 	if (bridge == nullptr) {
@@ -147,34 +149,52 @@ RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height) {
 		GetContext()->SetCurrent();
 	}
 
-	SharedTexture* tex = SharedTexture::Create(GetContext(), GetFxContext(), currentSurfaceData, Vec2ui(width, height));
+	auto frame = frameManager.CreateFrame(surfaceData, size);
 
-	tex->Connect();
-	tex->Lock();
+	LogDebug("Acquire " << frame->ToString() << "(" << size.x << ", " << size.y << ")");
 
-	return tex;
+	auto mode = TransferModeManager::Instance()->GetTransferMode(surfaceData.transferMode);
+
+	LogDebug("Creating it with " << mode->Name());
+
+	auto tex = mode->CreateSharedTexture(GetContext(), GetFxContext(), frame);
+	frame->SetSharedTexture(tex);
+
+	tex->BeforeRender();
+
+	return frame;
 }
+
+
 
 void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 	if (target == nullptr) {
 		LogDebug("Cannot present nullptr; doing nothing.");
 		return;
 	}
-	SharedTexture* texture = dynamic_cast<SharedTexture*>(target);
 
-	texture->Unlock();
-	texture->Disconnect();
+	auto frame = dynamic_cast<Frame*>(target);
+	LogDebug("Present " << frame->ToString());
 
+	auto tex = frame->GetSharedTexture();
 
-	FrameData* frameData = texture->CreateFrameData();
-	LogDebug("PRESENT " << frameData->ioSurfaceHandle << " " << frameData->glTextureName);
-	frameData->presentationHint = hint;
+	tex->AfterRender();
 
+	frame->SetPresentationHint(hint);
 
-	api->Present(*frameData);
+	api->Present(frame);
 
-	delete frameData;
+	GetFrameManager()->DisposePendingFrames();
 }
+
+driftfx::TransferMode* NativeSurface::GetTransferMode() {
+	return nullptr;
+}
+
+void NativeSurface::SetTransferMode(driftfx::TransferMode* transferMode) {
+
+}
+
 
 Context* NativeSurface::GetFxContext() {
 	return PrismBridge::Get()->GetFxContext();
@@ -198,4 +218,8 @@ Vec2ui NativeSurface::GetScaledSize() {
 	r.x = (unsigned int) ceil((long double) data.size.x * data.screenScale.x * data.userScale.x);
 	r.y = (unsigned int) ceil((long double) data.size.y * data.screenScale.y * data.userScale.y);
 	return r;
+}
+
+FrameManager* NativeSurface::GetFrameManager() {
+	return &frameManager;
 }

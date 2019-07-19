@@ -25,6 +25,11 @@ public:
 
 	static JNIEnv* GetJNIEnv(bool autoAttach);
 
+
+	static jclass ResolveClass(JNIEnv* env, const char* name);
+	static jmethodID ResolveMethod(JNIEnv* env, jclass cls, const char* name, const char* sig);
+	static jfieldID ResolveField(JNIEnv* env, jclass cls, const char* name, const char* sig);
+
 private:
 	static JavaVM* jvm;
 	

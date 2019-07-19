@@ -12,6 +12,7 @@ package org.eclipse.fx.drift.samples;
 
 import org.eclipse.fx.drift.DriftFXConfig;
 import org.eclipse.fx.drift.DriftFXSurface;
+import org.eclipse.fx.drift.DriftFXSurface.TransferMode;
 
 import javafx.application.Application;
 import javafx.scene.Node;
@@ -35,6 +36,15 @@ public class Demo extends Application {
 
 	Node create() {
 		DriftFXSurface surface0 = new DriftFXSurface();
+		HBox bb = new HBox();
+
+		ComboBox<TransferMode> fxTransferMode = new ComboBox<>();
+		fxTransferMode.getItems().setAll(DriftFXSurface.getAvailableTransferModes());
+		fxTransferMode.valueProperty().bindBidirectional(surface0.transferModeProperty());
+	
+		
+		bb.getChildren().addAll(new Label("Transfer Mode: "), fxTransferMode);
+		
 		Rectangle clip = new Rectangle();
 		clip.widthProperty().bind(surface0.widthProperty());
 		clip.heightProperty().bind(surface0.heightProperty());
@@ -43,6 +53,8 @@ public class Demo extends Application {
 		BorderPane dummy = new BorderPane();
 		dummy.setStyle("-fx-padding: 20");
 		dummy.setCenter(surface0);
+		
+		dummy.setTop(bb);
 
 		ComboBox<ARenderer> renderers = new ComboBox<>();
 		renderers.setButtonCell(new CellImpl());

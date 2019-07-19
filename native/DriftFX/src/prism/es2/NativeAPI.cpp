@@ -43,4 +43,10 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_n
 	glDeleteTextures(1, &tex);
 }
 
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nES2UploadTexture(JNIEnv *env, jclass cls, jint targetTexture, jint width, jint height, jlong memoryPointer, jlong memorySize) {
+	ES2PrismBridge* bridge = dynamic_cast<ES2PrismBridge*>(PrismBridge::Get());
+	bridge->GetFXSharedGLContext()->SetCurrent();
+	bridge->UploadTexture((unsigned int) targetTexture, (unsigned int) width, (unsigned int) height, (void*) memoryPointer, (unsigned long) memorySize);
+}
+
 

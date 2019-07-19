@@ -11,6 +11,8 @@
 #ifndef PRISM_ES2_CGL_IOSURFACESHAREDTEXTURE_H_
 #define PRISM_ES2_CGL_IOSURFACESHAREDTEXTURE_H_
 
+#include <jni.h>
+#include <prism/PrismBridge.h>
 #include "../../../SharedTexture.h"
 #include <IOSurface/IOSurface.h>
 #include <DriftFX/math/Vec2.h>
@@ -21,23 +23,30 @@ namespace prism {
 namespace es2 {
 namespace cgl {
 
+class IOSurfaceShareData: public ShareData {
+	public:
+	IOSurfaceID ioSurfaceID;
+};
+
 class IOSurfaceSharedTexture : public SharedTexture {
 
 private:
 	IOSurfaceRef ioSurface;
+	IOSurfaceID ioSurfaceID;
+
 
 public:
+	static int OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture);
 
-	IOSurfaceSharedTexture(gl::GLContext* context, SurfaceData surfaceData, math::Vec2ui textureSize);
+	IOSurfaceSharedTexture(gl::GLContext* context, Frame* frame);
 	virtual ~IOSurfaceSharedTexture();
 
-	virtual bool Connect();
-	virtual bool Disconnect();
+	virtual bool BeforeRender();
+	virtual bool AfterRender();
 
-	virtual bool Lock();
-	virtual bool Unlock();
+	virtual void* GetIOSurfaceHandle();
 
-	virtual FrameData* CreateFrameData();
+	virtual IOSurfaceID GetIOSurfaceID();
 
 };
 

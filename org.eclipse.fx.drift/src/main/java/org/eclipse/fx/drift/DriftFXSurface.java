@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.fx.drift; 
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.fx.drift.impl.NGDriftFXSurface;
@@ -28,20 +29,87 @@ import com.sun.javafx.jmx.MXNodeAlgorithm;
 import com.sun.javafx.jmx.MXNodeAlgorithmContext;
 import com.sun.javafx.scene.DirtyBits;
 import com.sun.javafx.sg.prism.NGNode;
-import com.sun.javafx.stage.ScreenHelper;
 import com.sun.javafx.tk.Toolkit;
 
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
-import javafx.stage.Screen;
 
 //Note: this implementation is against internal JavafX API
 @SuppressWarnings({"restriction", "deprecation"})
 public class DriftFXSurface extends Node {
+	
+	public static class TransferMode {
+		private String name;
+		private int id;
+		
+		protected TransferMode(String name, int id) {
+			this.name = name;
+			this.id = id;
+		}
+		
+		@Override
+		public String toString() {
+			return name + " " + id;
+		}
+		
+		public String getKey() {
+			return name;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + id;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			TransferMode other = (TransferMode) obj;
+			if (id != other.id)
+				return false;
+			return true;
+		}
+	}
+	
+	 private static TransferMode defaultTransferMode;
+	
+	private ObjectProperty<TransferMode> transferMode = new SimpleObjectProperty<>(this, "transferMode", defaultTransferMode);
+	
+	public static List<TransferMode> getAvailableTransferModes() {
+		return NativeAPI.getTransferModes();
+	}
+	public static TransferMode getPlatformDefaultTransferMode() {
+		return NativeAPI.getPlatformDefaultTransferMode();
+	}
+	public static TransferMode getFallbackTransferMode() {
+		return NativeAPI.getFallbackTransferMode();
+	}
+	
+	public ObjectProperty<TransferMode> transferModeProperty() {
+		return transferMode;
+	}
+	
+	public void setTransferMode(TransferMode mode) {
+		transferMode.set(mode);
+	}
+	
+	public TransferMode getTransferMode() {
+		return transferMode.get();
+	}
 	
 	private AtomicReference<SurfaceData> surfaceData = new AtomicReference<>(null);
 	
@@ -83,12 +151,26 @@ public class DriftFXSurface extends Node {
 			Platform.runLater(() -> {
 				impl_markDirty(DirtyBits.NODE_CONTENTS);
 			});
+		},
+		(frame) -> {
+			NGDriftFXSurface ngSurface = impl_getPeer();
+			ngSurface.present(frame);
+			Platform.runLater(() -> {
+				impl_markDirty(DirtyBits.NODE_CONTENTS);
+			});
 		});
 		nativeSurfaceId = NativeAPI.createNativeSurface(jni);
 		
 		// observe current screen render factor
 		screenScaleFactor.bind(screenObserver.currentRenderScaleProperty());
 		screenScaleFactor.addListener((x, o, n) -> updateSurfaceData());
+		
+		
+		transferMode.addListener((x, o, n) -> {
+			Platform.runLater(() -> {
+				updateSurfaceData();
+			});
+		});
 	}
 
 	@Override
@@ -212,6 +294,8 @@ public class DriftFXSurface extends Node {
    
    private static boolean initialized = false;
    
+  
+   
    public static void initialize(DriftFXConfig config) {
 	   if (initialized) return;
 	   
@@ -234,6 +318,14 @@ public class DriftFXSurface extends Node {
 	   }
 	   
 	   Toolkit.getToolkit().addShutdownHook(DriftFXSurface::destroy);
+	   
+	   if (config.isFallbackMode()) {
+		   defaultTransferMode = NativeAPI.getFallbackTransferMode();
+	   }
+	   else {
+		   defaultTransferMode = NativeAPI.getPlatformDefaultTransferMode();
+	   }
+	   
 	   initialized = true;
    }
    
@@ -246,12 +338,17 @@ public class DriftFXSurface extends Node {
 	   Log.debug("Destroying NativeSurface system");
 	   GraphicsPipelineUtil.destroy();
    }
+   
+   
+   private int getTransferModeId() {
+	   return transferMode.get().id;
+   }
 
    private SurfaceData computeSurfaceData() {
 	   return new SurfaceData(
 			   (float) getWidth(), (float) getHeight(), 
 			   (float) getScreenScaleFactor(), (float) getScreenScaleFactor(), 
-			   (float) getUserScaleFactor(), (float) getUserScaleFactor());
+			   (float) getUserScaleFactor(), (float) getUserScaleFactor(), getTransferModeId());
 	   
    }
    

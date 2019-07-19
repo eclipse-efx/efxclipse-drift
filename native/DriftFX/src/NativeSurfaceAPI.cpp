@@ -25,6 +25,9 @@
 #include "Configuration.h"
 
 #include <iostream>
+#include <iomanip>
+
+#include <TransferModeManager.h>
 
 #include <utils/JNIHelper.h>
 #include <utils/Logger.h>
@@ -54,15 +57,88 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_n
 	NativeSurfaceRegistry::Get()->Destroy((long) surfaceId);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nUpdateSurface(JNIEnv *env, jclass cls, jlong surfaceId, jdouble width, jdouble height, jdouble screenScaleX, jdouble screenScaleY, jdouble userScaleX, jdouble userScaleY) {
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nUpdateSurface(JNIEnv *env, jclass cls, jlong surfaceId, jdouble width, jdouble height, jdouble screenScaleX, jdouble screenScaleY, jdouble userScaleX, jdouble userScaleY, jint transferMode) {
 	NativeSurface* surface = NativeSurfaceRegistry::Get()->Get((long)surfaceId);
-	surface->UpdateSurface(Vec2d((double)width, (double)height), Vec2d((double)screenScaleX, (double)screenScaleY), Vec2d((double)userScaleX, (double)userScaleY));
+	surface->UpdateSurface(Vec2d((double)width, (double)height), Vec2d((double)screenScaleX, (double)screenScaleY), Vec2d((double)userScaleX, (double)userScaleY), (unsigned int) transferMode);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nDisposeFrameData(JNIEnv* env, jclass cls, jlong surfaceId, jlong frameDataId) {
-	LogDebug("dispose frame data " << surfaceId << ": " << frameDataId);
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nDisposeFrame(JNIEnv* env, jclass cls, jlong surfaceId, jlong frameId) {
+	LogDebug("dispose frame " << dec << surfaceId << "." << dec << frameId);
 	NativeSurface* surface = NativeSurfaceRegistry::Get()->Get((long) surfaceId);
-	surface->DisposeSharedTexture((long long) frameDataId);
+	surface->GetFrameManager()->DisposeFrame((long long) frameId);
 }
 
+
+jobject convert(JNIEnv* env, TransferMode* mode) {
+	jclass jTransferModeCls = env->FindClass("org/eclipse/fx/drift/DriftFXSurface$TransferMode");
+	jmethodID jNew = env->GetMethodID(jTransferModeCls, "<init>", "(Ljava/lang/String;I)V");
+	jstring name = env->NewStringUTF(mode->Name().c_str());
+	jobject type = env->NewObject(jTransferModeCls, jNew, name, (jint) mode->Id());
+	return type;
+}
+
+
+extern "C" JNIEXPORT jobject JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nGetPlatformDefaultTransferMode(JNIEnv* env, jclass cls) {
+	auto platformDefault = TransferModeManager::Instance()->GetPlatformDefault();
+	return convert(env, platformDefault);
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nGetFallbackTransferMode(JNIEnv* env, jclass cls) {
+	auto fallback = TransferModeManager::Instance()->GetFallback();
+	return convert(env, fallback);
+}
+
+extern "C" JNIEXPORT jobjectArray JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nGetTransferModes(JNIEnv* env, jclass cls) {
+	LogDebug("getting transfer modes");
+
+	auto modes = TransferModeManager::Instance()->GetAvailableModes();
+
+	auto count = (jsize)modes.size();
+
+	jclass jTransferModeCls = env->FindClass("org/eclipse/fx/drift/DriftFXSurface$TransferMode");
+	jobjectArray result = env->NewObjectArray(count, jTransferModeCls, 0);
+
+	int idx = 0;
+	for (auto it = modes.begin(); it != modes.end(); it++) {
+		jobject mode = convert(env, *it);
+		env->SetObjectArrayElement(result, idx++, mode);
+	}
+
+	return result;
+
+	//jclass jTransferModeCls = env->FindClass("org/eclipse/fx/drift/DriftFXSurface$TransferMode");
+	//jmethodID jNew = env->GetMethodID(jTransferModeCls, "<init>", "(Ljava/lang/String;I)V");
+
+	//auto count = (jsize) SharedTextureFactory::factories.size();
+
+	//jobjectArray result = env->NewObjectArray(count, jTransferModeCls, 0);
+	//int i = 0;
+	//for (const auto& el : SharedTextureFactory::factories) {
+	//	auto data = el.second;
+	//	jstring name = env->NewStringUTF(data.name.c_str());
+	//	jobject type = env->NewObject(jTransferModeCls, jNew, name, (jint) data.id);
+	//	env->SetObjectArrayElement(result, i++, type);
+	//}
+
+	//return result;
+}
+
+
+extern "C" JNIEXPORT jint JNICALL Java_org_eclipse_fx_drift_internal_NativeAPI_nOnTextureCreated(JNIEnv* env, jclass cls, jlong surfaceId, jlong frameId, jobject fxTexture) {
+	LogDebug("onTextureCreated " << dec << surfaceId << "." << frameId);
+
+	NativeSurface* surface = NativeSurfaceRegistry::Get()->Get((long) surfaceId);
+	Frame* frame = surface->GetFrameManager()->GetFrame((long long) frameId);
+
+	if (frame == nullptr) {
+		LogWarning("Frame " << surfaceId << "." << frameId << " does not exist!");
+		return -1;
+	}
+
+	SurfaceData surfaceData = frame->GetSurfaceData();
+
+	LogDebug(" -> surfaceData.transferMode = " << surfaceData.transferMode );
+
+	return prism::PrismBridge::Get()->OnTextureCreated(frame, fxTexture);
+}
 

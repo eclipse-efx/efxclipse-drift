@@ -66,14 +66,31 @@ set(DriftFX-Sources
     src/gl/GLLog.h
     src/gl/GLLog.cpp
     
+    
+    src/MainMemorySharedTexture.h
+    src/MainMemorySharedTexture.cpp
+    
+    src/NoopSharedTexture.h
+    src/NoopSharedTexture.cpp
+    
+    src/FrameManager.h
+    src/FrameManager.cpp
+    
+    src/TransferModeManager.h
+	src/TransferModeManager.cpp
+	
+	src/NoOpTransferMode.cpp
 )
 
 if (WIN32)
 	list(APPEND DriftFX-Sources src/gl/wgl/WGLGLContext.h)
 	list(APPEND DriftFX-Sources src/gl/wgl/WGLGLContext.cpp)
 	
-	list(APPEND DriftFX-Sources src/prism/d3d/D3DPrismBridge)
-	list(APPEND DriftFX-Sources src/prism/d3d/D3DNativeSurface)
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DPrismBridge.h)
+	list(APPEND DriftFX-Sources src/prism/d3d/D3dPrismBridge.cpp)
+
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DNativeSurface.h)
+	list(APPEND DriftFX-Sources src/prism/d3d/D3DNativeSurface.cpp)
 	
 	list(APPEND DriftFX-Sources src/prism/d3d/D3DSharedTexture.h)
 	list(APPEND DriftFX-Sources src/prism/d3d/D3DSharedTexture.cpp)
@@ -89,7 +106,13 @@ if (WIN32)
 	list(APPEND DriftFX-Sources src/win32/D3D9Texture.h)
 	list(APPEND DriftFX-Sources src/win32/D3D9Texture.cpp)
 
-	list(APPEND DriftFX-Sources src/win32/Error)
+	list(APPEND DriftFX-Sources src/win32/Error.h)
+	list(APPEND DriftFX-Sources src/win32/Error.cpp)
+	
+	list(APPEND DriftFX-Sources src/prism/d3d/MainMemoryTransferMode.cpp)
+	list(APPEND DriftFX-Sources src/prism/d3d/NVDXInteropTransferMode.cpp)
+	list(APPEND DriftFX-Sources src/prism/d3d/LegacyWinFallbackTransferMode.cpp)
+
 endif (WIN32)
 
 if (LINUX)
@@ -102,6 +125,9 @@ if (LINUX)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/GLXES2PrismBridge)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/GLXSharedTexture)
 	list(APPEND DriftFX-Sources src/prism/es2/glx/NativeAPI)
+
+	list(APPEND DriftFX-Sources src/prism/es2/MainMemoryTransferMode.cpp)
+	list(APPEND DriftFX-Sources src/prism/es2/glx/SharedContextTransferMode.cpp)
 endif (LINUX)
 
 
@@ -120,6 +146,10 @@ if (APPLE)
 	
 	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.h)
 	list(APPEND DriftFX-Sources src/gl/cgl/CGLLog.cpp)
+	
+
+	list(APPEND DriftFX-Sources src/prism/es2/MainMemoryTransferMode.cpp)
+	list(APPEND DriftFX-Sources src/prism/es2/cgl/IOSurfaceTransferMode.cpp)
 endif (APPLE)
 
 

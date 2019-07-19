@@ -25,57 +25,75 @@
 
 #include "NativeSurface.h"
 #include "SurfaceData.h"
+#include "FrameManager.h"
+
+#include <map>
+#include <functional>
+
+#include <GL/glew.h>
 
 namespace driftfx {
 using namespace gl;
 namespace internal {
 
-struct FrameData {
 
-	SurfaceData surfaceData;
-	math::Vec2ui textureSize;
 
-	long long id;
-	long long d3dSharedHandle;
-	long long ioSurfaceHandle;
-	int glTextureName;
-	
-	int presentationHint;
-};
-
-class SharedTexture : public RenderTarget {
+class SharedTexture {
 
 public:
 	virtual ~SharedTexture();
 
 	virtual GLTexture* GetTexture();
 
+	virtual bool BeforeRender() = 0;
+	virtual bool AfterRender() = 0;
 
-
-	virtual bool Connect() = 0;
-	virtual bool Disconnect() = 0;
-
-	virtual bool Lock() = 0;
-	virtual bool Unlock() = 0;
-
-	virtual FrameData* CreateFrameData() = 0;
-
-
-	static SharedTexture* Create(GLContext* context, Context* fxContext, SurfaceData surfaceData, math::Vec2ui textureSize);
-
-	// RenderTarget
-	virtual unsigned int GetGLTexture();
-	virtual unsigned int GetWidth();
-	virtual unsigned int GetHeight();
+	virtual Frame* GetFrame();
 
 protected:
-	SharedTexture(GLContext* glContext, SurfaceData surfaceData, math::Vec2ui textureSize);
+	SharedTexture(GLContext* glContext, Frame* frame);
 
 	GLContext* glContext;
 	GLTexture* glTexture;
 
-	math::Vec2ui textureSize;
-	SurfaceData surfaceData;
+	Frame* frame;
+
+	virtual void SignalFrameReady();
+	virtual void WaitForFrameReady();
+
+private:
+	GLsync frameReady;
+};
+
+typedef unsigned int SharedTextureFactoryId;
+typedef std::function<SharedTexture*(GLContext*, Context*, Frame*)> SharedTextureFactoryFunc;
+
+struct SharedTextureFactoryData {
+	unsigned int id;
+	std::string name;
+	SharedTextureFactoryFunc func;
+};
+
+
+
+class SharedTextureFactory {
+public:
+	static SharedTextureFactoryId NOOP;
+	static SharedTextureFactoryId FALLBACK;
+	static SharedTextureFactoryId PLATFORM_DEFAULT;
+
+	static SharedTexture* CreateSharedTexture(SharedTextureFactoryId id, GLContext* context, Context* fxContext, Frame* frame);
+
+	static SharedTextureFactoryId RegisterSharedTextureType(std::string name, SharedTextureFactoryFunc factory);
+	static SharedTextureFactoryId RegisterSharedTextureType(SharedTextureFactoryId id, std::string name, SharedTextureFactoryFunc factory);
+	static SharedTextureFactoryId RegisterSharedTextureTypeAlias(SharedTextureFactoryId aliasId, SharedTextureFactoryId id);
+	static std::string GetFactoryName(SharedTextureFactoryId id);
+
+	
+
+	static std::map<SharedTextureFactoryId, SharedTextureFactoryData> factories;
+private:
+	static SharedTextureFactoryId nextType;
 };
 
 }

@@ -20,6 +20,8 @@
 #include "gl/wgl/WGLGLContext.h"
 #include "win32/Error.h"
 
+#include <utils/JNIHelper.h>
+
 #include <iostream>
 using namespace std;
 
@@ -36,6 +38,58 @@ void D3DPrismBridge::Initialize(jlong pContext) {
 
 void D3DPrismBridge::Destroy() {
 	delete dynamic_cast<D3DPrismBridge*>(PrismBridge::bridge);
+}
+
+void * driftfx::internal::prism::d3d::D3DPrismBridge::GetD3DResourceHandle(jobject fxTexture)
+{
+	// TODO we could handle this purely in native code via jni calls
+	JNIEnv* env = JNIHelper::GetJNIEnv(true);
+
+	jclass cls = env->FindClass("org/eclipse/fx/drift/internal/GraphicsPipelineUtil$D3D");
+	cls = (jclass)env->NewGlobalRef(cls);
+
+	jmethodID getTextureHandle = env->GetStaticMethodID(cls, "getTextureHandle", "(Lcom/sun/prism/Texture;)J");
+
+	//LogDebug("Calling now with " << cls << " / " << getTextureName << " / " << fxTexture);
+	jlong val = env->CallStaticLongMethod(cls, getTextureHandle, fxTexture);
+	//LogDebug(" Got " << val);
+	return (void*)val;
+}
+
+
+void driftfx::internal::prism::d3d::D3DPrismBridge::UploadPixels(D3D9Texture* texture, byte* pixels) {
+	auto width = texture->GetWidth();
+	auto height = texture->GetHeight();
+
+	//LogDebug("Upload Pixels " << hex << texture->GetShareHandle() << " w: " << dec << texture->GetWidth() << ", h: " << dec << texture->GetHeight());
+	D3DLOCKED_RECT tmp;
+	auto start = chrono::steady_clock::now();
+	WERR(texture->GetTexture()->LockRect(0, &tmp, NULL, D3DLOCK_DISCARD));
+
+	byte* rowBits = (byte*)tmp.pBits;
+	int sourcePitch = width * 4 * sizeof(byte);
+	for (unsigned int h = 0; h < height; h++) {
+
+		int offset = h * sourcePitch;
+		memcpy(rowBits, (pixels + offset), sourcePitch);
+		rowBits += tmp.Pitch;
+	}
+
+	WERR(texture->GetTexture()->UnlockRect(0));
+	auto end = chrono::steady_clock::now();
+	LogDebug("Uploading " << dec << texture->GetWidth() * texture->GetHeight() << "px needed " << chrono::duration_cast<chrono::nanoseconds>(end - start).count() << "ns");
+
+	// it seems if we lock the texture again in readonly it gets ready...
+	// if we do not do this here it sometimes won't have any content..
+	auto startSync = chrono::steady_clock::now();
+	WERR(texture->GetTexture()->LockRect(0, &tmp, NULL, D3DLOCK_READONLY));
+
+	//byte* data = (byte*) tmp.pBits;
+	//LogDebug("1st D3D pixel: " << hex << (int)data[0] << (int)data[1] << (int)data[2] << (int)data[3]);
+
+	WERR(texture->GetTexture()->UnlockRect(0));
+	auto endSync = chrono::steady_clock::now();
+	LogDebug("Relocking d3d tex for sync needed " << chrono::duration_cast<chrono::nanoseconds>(endSync - startSync).count() << "ns");
 }
 
 D3DPrismBridge::D3DPrismBridge(jlong pContext) :

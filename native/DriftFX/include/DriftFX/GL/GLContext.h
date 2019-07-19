@@ -39,14 +39,14 @@ public:
 
 };
 
-struct DRIFT_API GLContextException : public std::exception {
-	std::string message;
-	const char* what() const throw () {
-		return message.c_str();
-	}
-	GLContextException(std::string msg) : message(msg) {
-	}
-};
+//struct DRIFT_API GLContextException : public std::exception {
+//	std::string message;
+//	inline const char* what() const throw () {
+//		return message.c_str();
+//	}
+//	GLContextException(std::string msg) : message(msg) {
+//	}
+//};
 
 }
 }

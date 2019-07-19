@@ -73,9 +73,22 @@ public class GraphicsPipelineUtil {
 		static long getContextHandle(Object iD3DContext) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 			return (Long) mD3DContextGetContextHandle.invoke(iD3DContext);
 		}
+		
+		static long getTextureHandle(Texture texture) {
+			try {
+				// TODO move class and method to members
+				Class<?> d3dTexture = Class.forName("com.sun.prism.d3d.D3DTexture");
+				Method mD3DTextureGetNativeSourceHandle = d3dTexture.getMethod("getNativeSourceHandle");
+				mD3DTextureGetNativeSourceHandle.setAccessible(true);
+				return (long) mD3DTextureGetNativeSourceHandle.invoke(texture);
+			}
+			catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 	
-	static class ES2 {
+	public static class ES2 {
 		
 		private static boolean isMac;
 		private static boolean isX11;
@@ -286,7 +299,22 @@ public class GraphicsPipelineUtil {
 		return (ResourceFactory) iDefaultResourceFactory;
 	}
 
+	
+	
+	public static int onTextureCreated(Texture texture, Frame frame) {
+		return NativeAPI.nOnTextureCreated(frame.surfaceId, frame.frameId, texture);
+	}
+	
 	public static int onTextureCreated(Texture texture, FrameData currentFrameData) {
+		
+		if (currentFrameData.memoryPointer != 0) {
+			int textureName = ES2.getTextureName(texture);
+	
+			NativeAPI.nES2UploadTexture(textureName, currentFrameData.width, currentFrameData.height, currentFrameData.memoryPointer, currentFrameData.memorySize);
+
+			return 0;
+		}
+		
 		if (isD3D()) {
 			return NativeAPI.d3dRecreateTextureAsShared(texture, currentFrameData.d3dShareHandle);
 		}
