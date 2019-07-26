@@ -75,6 +75,21 @@ std::string cut(std::string str, size_t size) {
 	else return str.substr(len-size, size);
 }
 
+void Log(LogLevel level, std::string file, int line, std::string func, std::string message) {
+
+	switch (level) {
+	case Debug: if (!debugEnabled) return;
+	case Error: if (!errorEnabled) return;
+	case Info: if (!infoEnabled) return;
+	case Warning: if (!warnEnabled) return;
+	}
+	std::string fname = filename(file);
+	std::ostringstream os;
+	os << "[C] [" << std::setw(5) << level << "] " << std::setw(40) << std::right << cut(fname, 40) << ":" << std::dec << std::setw(3) << line << " - " << std::setw(100) << std::left << cut(func, 100) << " " << message;
+	std::cout << os.str();
+}
+
+
 std::ostream& Log(LogLevel level, std::string file, int line, std::string func) {
 
 

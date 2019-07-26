@@ -23,8 +23,7 @@ import com.sun.prism.Texture;
 public class NativeAPI {
 
 	static {
-		System.err.println("Loading driftfx " + System.getProperty("java.library.path"));
-		String lib = "driftfx";
+		Log.info("Loading driftfx " + System.getProperty("java.library.path"));
 		System.loadLibrary("driftfx");
 		Initialize();
 	}

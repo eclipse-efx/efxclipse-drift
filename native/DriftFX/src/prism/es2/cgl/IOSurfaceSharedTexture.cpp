@@ -50,33 +50,22 @@ using namespace driftfx::internal::prism::es2::cgl;
 
 int IOSurfaceSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture) {
 
-	std::cout << "Bridge: " << bridge << std::endl;
-
 	ES2PrismBridge* es2Bridge = dynamic_cast<ES2PrismBridge*>(bridge);
 
 	GLContext* fxShared = es2Bridge->GetFXSharedGLContext();
-
-	std::cout << "Context: " << fxShared << std::endl;
 
 	if (!fxShared->IsCurrent()) {
 		fxShared->SetCurrent();
 	}
 
-
-
 	GLuint textureName = es2Bridge->GetGLTextureName(fxTexture);
 
-	std::cout << "textureName: " << textureName << std::endl;
-
-
 	CGLGLContext* fx = dynamic_cast<CGLGLContext*>(fxShared);
-	std::cout << "fx: " << fx << std::endl;
 
 	unsigned int width = frame->GetSize().x;
 	unsigned int height = frame->GetSize().y;
 
 	SharedTexture* sharedTex = frame->GetSharedTexture();
-	std::cout << "sharedTex: " << sharedTex << std::endl;
 
 	IOSurfaceSharedTexture* sharedTexture = dynamic_cast<IOSurfaceSharedTexture*>(sharedTex);
 	//void* ioSurfaceHandle = sharedTexture->GetIOSurfaceHandle();
@@ -84,15 +73,12 @@ int IOSurfaceSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, 
 	//IOSurfaceRef ioSurface = (IOSurfaceRef) (void*) ioSurfaceHandle;
 
 	// CONNECT ioSurface to temporary texture
-	std::cout << " sharedTexture: " << sharedTexture << std::endl;
 
 	IOSurfaceID surfaceID = sharedTexture->GetIOSurfaceID();
-
-	std::cout << " surfaceID: " << surfaceID << std::endl;
-
 	IOSurfaceRef ioSurface = IOSurfaceLookup(surfaceID);
 
-	std::cout << " ioSurface: " << ioSurface << std::endl;
+	LogDebug("Connecting to ioSurface: id=" << surfaceID << ", pointer=" << ioSurface);
+
 	if (ioSurface != nullptr) {
 
 		GLuint tmpTex;
@@ -108,6 +94,9 @@ int IOSurfaceSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, 
 		ES2PrismBridge::CopyTexture(tmpTex, textureName, width, height);
 
 		GLCALL( glDeleteTextures(1, &tmpTex) );
+
+		LogDebug("Releasing IOSurface id=" << surfaceID);
+		releaseIOSurface(ioSurface);
 
 		return 0;
 
@@ -138,8 +127,13 @@ IOSurfaceSharedTexture::IOSurfaceSharedTexture(GLContext* context, Frame* frame)
 }
 
 IOSurfaceSharedTexture::~IOSurfaceSharedTexture() {
-	LogDebug("Destroying IOSurface " << ioSurfaceID);
-	releaseIOSurface(ioSurface);
+	LogDebug("Releasing IOSurface id: " << ioSurfaceID << ", handle: " << ioSurface);
+
+	if (ioSurface != nullptr) {
+		releaseIOSurface(ioSurface);
+		ioSurface = nullptr;
+	}
+
 
 //	if (!glContext->IsCurrent()) {
 //		LogInfo("Forcing context switch to " << glContext->GetName());
@@ -155,17 +149,20 @@ bool IOSurfaceSharedTexture::BeforeRender() {
 
 	CGLGLContext* cglCtx = dynamic_cast<CGLGLContext*>(glContext);
 
+	CGLError success;
 	GLCALL( glBindTexture(GL_TEXTURE_RECTANGLE, glTexture->Name()) );
-	CGLCALL( CGLTexImageIOSurface2D(cglCtx->GetCGLContextObj(), GL_TEXTURE_RECTANGLE, GL_RGBA, textureSize.x, textureSize.y, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0) );
+	CGLCALL( success = CGLTexImageIOSurface2D(cglCtx->GetCGLContextObj(), GL_TEXTURE_RECTANGLE, GL_RGBA, textureSize.x, textureSize.y, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0) );
 	GLCALL( glBindTexture(GL_TEXTURE_RECTANGLE, 0) );
 	//IOSurfaceLock(ioSurface, kIOSurfaceLockAvoidSync, NULL);
-	return true;
+	return success == kCGLNoError;
 }
 bool IOSurfaceSharedTexture::AfterRender() {
 	SignalFrameReady();
 	WaitForFrameReady();
 	//IOSurfaceUnlock(ioSurface, kIOSurfaceLockAvoidSync, NULL);
 	delete glTexture;
+//	releaseIOSurface(ioSurface);
+//	ioSurface = nullptr;
 	return true;
 }
 

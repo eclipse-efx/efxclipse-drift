@@ -120,7 +120,7 @@ void MainMemorySharedTexture::DownloadToMemory() {
 	auto begin = std::chrono::steady_clock::now();
 	DownloadToMemoryBuf(GetTexture()->Name(), size, pointer);
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
-	std::cerr << "download frame needed " << duration.count() << "ns" << std::endl;
+	LogDebug("download frame needed " << duration.count() << "ns");
 
 	MainMemoryShareData* data = new MainMemoryShareData();
 	data->pointer = pointer;

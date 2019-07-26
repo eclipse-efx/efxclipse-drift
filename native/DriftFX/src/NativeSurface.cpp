@@ -160,7 +160,9 @@ RenderTarget* NativeSurface::Acquire(math::Vec2ui size, SurfaceData surfaceData)
 	auto tex = mode->CreateSharedTexture(GetContext(), GetFxContext(), frame);
 	frame->SetSharedTexture(tex);
 
-	tex->BeforeRender();
+	if (!tex->BeforeRender()) {
+		LogError("Failed to acquire surface!");
+	}
 
 	return frame;
 }

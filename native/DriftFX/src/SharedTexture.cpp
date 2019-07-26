@@ -59,7 +59,7 @@ void SharedTexture::WaitForFrameReady() {
 	case GL_WAIT_FAILED: LogError("frameDone sync failed!"); break;
 	}
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
-	std::cerr << "wait for frame ready needed " << duration.count() << "ns" << std::endl;
+	LogDebug("wait for frame ready needed " << duration.count() << "ns");
 
 }
 

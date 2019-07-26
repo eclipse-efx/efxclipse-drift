@@ -14,12 +14,14 @@
 
 #include <iostream>
 #include <ostream>
+#include <sstream>
 #include <string>
 
 enum LogLevel { Debug, Error, Warning, Info };
 
 std::ostream& operator<<(std::ostream& ostr, const LogLevel& level);
 std::ostream& Log(LogLevel level, std::string file, int line, std::string func);
+void Log(LogLevel level, std::string file, int line, std::string func, std::string message);
 
 void LogSetEnabled(LogLevel level, bool enable);
 
@@ -31,10 +33,16 @@ void LogSetEnabled(LogLevel level, bool enable);
 
 #ifdef WITH_LOGGING
 
-#define LogDebug(msg) Log(Debug, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
-#define LogError(msg) Log(Error, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
-#define LogInfo(msg) Log(Info, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
-#define LogWarning(msg) Log(Warning, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
+#define LogDebug(msg) { std::ostringstream logmsg; logmsg << msg << std::endl; Log(Debug, __FILE__, __LINE__, __PRETTY_FUNCTION__, logmsg.str()); }
+#define LogError(msg) { std::ostringstream logmsg; logmsg << msg << std::endl; Log(Error, __FILE__, __LINE__, __PRETTY_FUNCTION__, logmsg.str()); }
+#define LogInfo(msg) { std::ostringstream logmsg; logmsg << msg << std::endl; Log(Info, __FILE__, __LINE__, __PRETTY_FUNCTION__, logmsg.str()); }
+#define LogWarning(msg) { std::ostringstream logmsg; logmsg << msg << std::endl; Log(Warning, __FILE__, __LINE__, __PRETTY_FUNCTION__, logmsg.str()); }
+
+//#define LogDebug(msg) Log(Debug, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
+//#define LogError(msg) Log(Error, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
+//#define LogInfo(msg) Log(Info, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
+//#define LogWarning(msg) Log(Warning, __FILE__, __LINE__, __PRETTY_FUNCTION__) << msg << std::endl;
+
 #else
 #define LogDebug(msg)
 #define LogError(msg)

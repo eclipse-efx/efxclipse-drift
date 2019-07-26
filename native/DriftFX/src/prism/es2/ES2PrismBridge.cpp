@@ -107,18 +107,18 @@ void FenceSyncWait() {
 	case GL_WAIT_FAILED: LogError("frameDone sync failed!"); break;
 	}
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
-	std::cerr << "wait for frame ready needed " << duration.count() << "ns" << std::endl;
+	LogDebug( "wait for frame ready needed " << duration.count() << "ns" );
 
 }
 
 void ES2PrismBridge::UploadTexture(int targetTex, int width, int height, void* memoryPointer, unsigned long memorySize) {
-	std::cerr << "updateTexture " << targetTex << ", " << width << ", " << height << ", " << memoryPointer << ", " << memorySize << std::endl;
+	LogDebug( "updateTexture " << targetTex << ", " << width << ", " << height << ", " << memoryPointer << ", " << memorySize );
 	auto begin = std::chrono::steady_clock::now();
 	GLCALL( glBindTexture(GL_TEXTURE_2D, targetTex) );
 	GLCALL( glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, memoryPointer) );
 	GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
-	std::cerr << "upload frame needed " << duration.count() << "ns" << std::endl;
+	LogDebug( "upload frame needed " << duration.count() << "ns" );
 
 	FenceSyncWait();
 }
