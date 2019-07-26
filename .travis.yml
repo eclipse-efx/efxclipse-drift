@@ -32,6 +32,7 @@ jobs:
       after_success:
         - aws s3 cp DriftFX/Debug/driftfx.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.dll
         - aws s3 cp DriftFX/Debug/driftfx.lib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.lib
+        - aws s3 cp DriftFX/Debug/driftfx.pdb s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.pdb
         - aws s3 cp samples/Debug/samples.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/samples.dll
     - name: "MacOS GCC Natives"
       os: osx
@@ -126,6 +127,7 @@ jobs:
         - cp -R native/DriftFX/include/* dist/include/
         - mkdir dist/libs
         - cp org.eclipse.fx.drift/native/* dist/libs/
+        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.pdb dist/libs/driftfx.pdb
         - cp git_commit dist/git_commit
         - zip -r dist.zip dist/*
         - aws s3 cp dist.zip s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/dist.zip
