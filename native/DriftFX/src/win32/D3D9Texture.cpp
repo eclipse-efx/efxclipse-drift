@@ -16,7 +16,6 @@
 
 #include "D3D9ExContext.h"
 
-
 using namespace std;
 
 using namespace driftfx::internal::win32;
@@ -35,10 +34,10 @@ D3D9Texture::D3D9Texture(D3D9ExContext *context, int width, int height) :
 			D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, &textureShareHandle);
 
 	switch (hr) {
-	case D3D_OK: // nice
-		LogDebug("Created D3D9Texture " << dec << width << "x" << dec << height << ", shareHandle: " << hex << textureShareHandle)
-		texture->AddRef();
+	case D3D_OK: { // nice
+		LogDebug("Created D3D9Texture " << hex << texture << ", shareHandle: " << hex << textureShareHandle << " (" << dec << width << "x" << dec << height << ")");
 		break;
+	}
 	case D3DERR_INVALIDCALL: LogError( "D3DERR_INVALIDCALL" ); break;
 	case D3DERR_OUTOFVIDEOMEMORY: LogError( "D3DERR_OUTOFVIDEOMEMORY" ); break;
 	case E_OUTOFMEMORY: LogError( "E_OUTOFMEMORY" ); break;
@@ -53,23 +52,14 @@ D3D9Texture::D3D9Texture(D3D9ExContext *context, int width, int height) :
 
 
 D3D9Texture::~D3D9Texture() {
-	LogDebug("Disposing D3D9Texture: " << texture << ", shareHandle: " << textureShareHandle);
-	//int count = texture->Release();
-	//LogDebug("~D3D9Texture texture "<<texture<<" count after Release: " << count);
+	LogDebug("Disposing D3D9Texture on thread " << texture << ", shareHandle: " << textureShareHandle);
 
-	// cheat
-	LogDebug("  CHEAT RELEASE " << texture);
-	int count;
-	int max = 100;
-	while (true) {
-		count = texture->Release();
-		LogDebug("   count = " << count);
-		if (count == 0) break;
-		max--;
-		if (max == 0) break;
+	// we only call release once! sometimes a second call causes an EXCEPTION_ACCESS_VIOLATION
+	// drivers which mess up the AddRef in their DX_interop calls will cause issues here
+	int count = texture->Release();
+	if (count != 0) {
+		LogError("After releasing the D3D Texture the refcount was " << count << ". Most likely your driver messed up the ref count within the DX_interop extension. Consider to use another transfer mode");
 	}
-
-	//while (0 != texture->Release());
 
 	texture = NULL;
 	textureShareHandle = NULL;
