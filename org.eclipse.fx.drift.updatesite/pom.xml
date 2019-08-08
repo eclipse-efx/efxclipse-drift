@@ -33,12 +33,36 @@
 									<artifactId>org.eclipse.fx.drift</artifactId>
 									<version>${project.version}</version>
 								</artifactItem>
-								<!-- rtifactItem>
+								<artifactItem>
 									<groupId>org.eclipse.fx.drift</groupId>
-									<artifactId>org.eclipse.fx.drift</artifactId>
+									<artifactId>org.eclipse.fx.drift.native.win32</artifactId>
 									<version>${project.version}</version>
-									<classifier>sources</classifier>
-								</artifactItem -->
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.fx.drift</groupId>
+									<artifactId>org.eclipse.fx.drift.native.win32.debug</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.fx.drift</groupId>
+									<artifactId>org.eclipse.fx.drift.native.macos</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.fx.drift</groupId>
+									<artifactId>org.eclipse.fx.drift.native.macos.debug</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.fx.drift</groupId>
+									<artifactId>org.eclipse.fx.drift.native.linux</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.fx.drift</groupId>
+									<artifactId>org.eclipse.fx.drift.native.linux.debug</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
 								<artifactItem>
 									<groupId>org.eclipse.fx.drift</groupId>
 									<artifactId>org.eclipse.fx.drift.samples</artifactId>
@@ -65,6 +89,16 @@
 								<artifactItem>
 									<groupId>org.eclipse.fx.drift</groupId>
 									<artifactId>org.eclipse.fx.drift.feature</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.fx.drift</groupId>
+									<artifactId>org.eclipse.fx.drift.native.feature</artifactId>
+									<version>${project.version}</version>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.fx.drift</groupId>
+									<artifactId>org.eclipse.fx.drift.native.debug.feature</artifactId>
 									<version>${project.version}</version>
 								</artifactItem>
 								<artifactItem>

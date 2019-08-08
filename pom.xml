@@ -23,8 +23,19 @@
 
 	<modules>
 		<module>org.eclipse.fx.drift</module>
-		<module>org.eclipse.fx.drift.samples</module>
 		<module>org.eclipse.fx.drift.feature</module>
+		
+		<module>org.eclipse.fx.drift.native.win32</module>
+		<module>org.eclipse.fx.drift.native.linux</module>
+		<module>org.eclipse.fx.drift.native.macos</module>
+		<module>org.eclipse.fx.drift.native.feature</module>
+		
+		<module>org.eclipse.fx.drift.native.win32.debug</module>
+		<module>org.eclipse.fx.drift.native.linux.debug</module>
+		<module>org.eclipse.fx.drift.native.macos.debug</module>
+		<module>org.eclipse.fx.drift.native.debug.feature</module>
+		
+		<module>org.eclipse.fx.drift.samples</module>
 		<module>org.eclipse.fx.drift.samples.feature</module>
 		<module>org.eclipse.fx.drift.updatesite</module>
 	</modules>

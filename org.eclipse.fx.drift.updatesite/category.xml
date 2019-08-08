@@ -1,18 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-	<feature id="org.eclipse.fx.drift.feature">
-		<category name="drift"/>
-	</feature>
-	<feature id="org.eclipse.fx.drift.samples.feature">
-		<category name="drift-samples" />
-	</feature>
-	<bundle id="org.eclipse.fx.drift">
-		<category name="drift" />
-	</bundle>
-	<bundle id="org.eclipse.fx.drift.samples">
-		<category name="drift-samples" />
-	</bundle>
-
-	<category-def name="drift" label="e(fx)clipse Drift" />
-	<category-def name="drift-samples" label="e(fx)clipse Drift Samples" />
+   <feature id="org.eclipse.fx.drift.feature">
+      <category name="drift"/>
+   </feature>
+     <feature id="org.eclipse.fx.drift.native.feature">
+      <category name="drift"/>
+   </feature>
+     <feature id="org.eclipse.fx.drift.native.debug.feature">
+      <category name="drift"/>
+   </feature>
+   <feature id="org.eclipse.fx.drift.samples.feature">
+      <category name="drift-samples"/>
+   </feature>
+   <bundle id="org.eclipse.fx.drift">
+      <category name="drift-single"/>
+   </bundle>
+   <bundle id="org.eclipse.fx.drift.native.win32">
+      <category name="drift-single"/>
+   </bundle>
+   <bundle id="org.eclipse.fx.drift.native.win32.debug">
+      <category name="drift-single"/>
+   </bundle>
+   <bundle id="org.eclipse.fx.drift.native.linux">
+      <category name="drift-single"/>
+   </bundle>
+   <bundle id="org.eclipse.fx.drift.native.linux.debug">
+      <category name="drift-single"/>
+   </bundle>
+   <bundle id="org.eclipse.fx.drift.native.macos">
+      <category name="drift-single"/>
+   </bundle>
+   <bundle id="org.eclipse.fx.drift.native.macos.debug">
+      <category name="drift-single"/>
+   </bundle>
+   
+   <bundle id="org.eclipse.fx.drift.samples">
+      <category name="drift-samples"/>
+   </bundle>
+   <category-def name="drift" label="e(fx)clipse Drift - Features">
+   	 <description>You need core and one of the binary features</description>
+   </category-def>
+   <category-def name="drift-single" label="e(fx)clipse Drift - Single components">
+     <description></description>
+   </category-def>
+   <category-def name="drift-samples" label="e(fx)clipse Drift - Samples">
+     <description>Samples</description>
+   </category-def>
 </site>

@@ -7,9 +7,8 @@
 		<artifactId>parent</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>org.eclipse.fx.drift</artifactId>
-	<name>e(fx)clipse drift - core</name>
-	
+	<artifactId>org.eclipse.fx.drift.native.win32.debug</artifactId>
+	<name>e(fx)clipse drift - Windows Binaries (Debug Build)</name>
 
 	<dependencies>
 		

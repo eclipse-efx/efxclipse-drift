@@ -7,15 +7,26 @@
 		<artifactId>parent</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>org.eclipse.fx.drift.feature</artifactId>
-	<name>e(fx)clipse drift - Core Feature</name>
+	<artifactId>org.eclipse.fx.drift.native.feature</artifactId>
+	<name>e(fx)clipse drift - Binaries Feature (Release Build)</name>
+	
 	
 	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.eclipse.fx.drift</groupId>
-			<artifactId>org.eclipse.fx.drift</artifactId>
+			<artifactId>org.eclipse.fx.drift.native.win32</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.fx.drift</groupId>
+			<artifactId>org.eclipse.fx.drift.native.linux</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.fx.drift</groupId>
+			<artifactId>org.eclipse.fx.drift.native.macos</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

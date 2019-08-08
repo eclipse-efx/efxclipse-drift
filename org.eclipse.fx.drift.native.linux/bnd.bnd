@@ -1,8 +1,8 @@
 Bundle-Version:${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${osgi.qualifier}
 -snapshot: ${osgi.qualifier}
--exportcontents: \
- org.eclipse.fx.drift
-Import-Package: \
- !javafx.*, \
- !com.sun.javafx.* \
- *
+ 
+ Include-Resource: \
+ native/libdriftfx.so=native/libdriftfx.so
+ 
+ Bundle-NativeCode: \
+ native/libdriftfx.so;osname=Linux;processor=x86-64
