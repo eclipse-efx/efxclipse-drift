@@ -7,7 +7,7 @@ jobs:
     - stage: build-natives
       env: CMAKE_BUILD_TYPE=Release
       filter_secrets: false
-      name: "Windows Release MSVC Natives"
+      name: "Windows MSVC Release Natives"
       os: windows
       language: shell
       before_install:
@@ -28,8 +28,8 @@ jobs:
         - echo "Building Windows MSVC ${CMAKE_BUILD_TYPE} Natives"
         - mkdir build
         - cd build
-        - cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
-        - msbuild -verbosity:minimal releng.sln
+        - cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
+        - msbuild -verbosity:minimal -property:Configuration=${CMAKE_BUILD_TYPE} releng.sln
       after_success:
         - aws s3 cp DriftFX/${CMAKE_BUILD_TYPE}/driftfx.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/driftfx.dll
         - aws s3 cp DriftFX/${CMAKE_BUILD_TYPE}/driftfx.lib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/driftfx.lib
@@ -58,8 +58,8 @@ jobs:
         - echo "Building Windows MSVC ${CMAKE_BUILD_TYPE} Natives"
         - mkdir build
         - cd build
-        - cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
-        - msbuild -verbosity:minimal releng.sln
+        - cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
+        - msbuild -verbosity:minimal -property:Configuration=${CMAKE_BUILD_TYPE} releng.sln
       after_success:
         - aws s3 cp DriftFX/${CMAKE_BUILD_TYPE}/driftfx.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/driftfx.dll
         - aws s3 cp DriftFX/${CMAKE_BUILD_TYPE}/driftfx.lib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/driftfx.lib
