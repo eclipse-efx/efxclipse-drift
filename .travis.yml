@@ -210,8 +210,8 @@ jobs:
         - cp downloads/native/linux/Release/libdriftfx.so org.eclipse.fx.drift.native.linux/native/
         - cp downloads/native/macos/Debug/libdriftfx.dylib org.eclipse.fx.drift.native.macos.debug/native/
         - cp downloads/native/macos/Release/libdriftfx.dylib org.eclipse.fx.drift.native.macos/native/
-        - cp downloads/native/win32/Debug/libdriftfx.so org.eclipse.fx.drift.native.win32.debug/native/
-        - cp downloads/native/win32/Release/libdriftfx.so org.eclipse.fx.drift.native.win32/native/
+        - cp downloads/native/win32/Debug/driftfx.dll org.eclipse.fx.drift.native.win32.debug/native/
+        - cp downloads/native/win32/Release/driftfx.dll org.eclipse.fx.drift.native.win32/native/
         - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/libsamples.so org.eclipse.fx.drift.samples/native/libsamples.so
         - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/libsamples.dylib org.eclipse.fx.drift.samples/native/libsamples.dylib
         - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/samples.dll org.eclipse.fx.drift.samples/native/samples.dll
