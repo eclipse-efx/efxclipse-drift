@@ -139,6 +139,7 @@ jobs:
       compiler:
         - gcc
       before_install:
+        - sudo apt-get install -y freeglut3-dev
         - pip install --user awscli
         - pip install --user cmake==3.13.0
           #      install:
@@ -165,6 +166,7 @@ jobs:
       compiler:
         - gcc
       before_install:
+        - sudo apt-get install -y freeglut3-dev
         - pip install --user awscli
         - pip install --user cmake==3.13.0
           #      install:
