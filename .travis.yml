@@ -63,6 +63,7 @@ jobs:
       after_success:
         - aws s3 cp DriftFX/${CMAKE_BUILD_TYPE}/driftfx.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/driftfx.dll
         - aws s3 cp DriftFX/${CMAKE_BUILD_TYPE}/driftfx.lib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/driftfx.lib
+        - aws s3 cp DriftFX/${CMAKE_BUILD_TYPE}/driftfx.pdb s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/driftfx.pdb
         - aws s3 cp samples/${CMAKE_BUILD_TYPE}/samples.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/samples.dll
     - name: "MacOS GCC Release Natives"
       env: CMAKE_BUILD_TYPE=Release
@@ -131,6 +132,7 @@ jobs:
         - make
       after_success:
         - aws s3 cp DriftFX/libdriftfx.dylib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/${CMAKE_BUILD_TYPE}/libdriftfx.dylib
+        - aws s3 cp DriftFX/libdriftfx.dylib.sym s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/${CMAKE_BUILD_TYPE}/libdriftfx.dylib.sym
         - aws s3 cp samples/libsamples.dylib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/${CMAKE_BUILD_TYPE}/libsamples.dylib
     - name: "Linux GCC Release Natives"
       env: CMAKE_BUILD_TYPE=Release
@@ -185,6 +187,7 @@ jobs:
         - make
       after_success:
         - aws s3 cp DriftFX/libdriftfx.so s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/${CMAKE_BUILD_TYPE}/libdriftfx.so
+        - aws s3 cp DriftFX/libdriftfx.so.sym s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/${CMAKE_BUILD_TYPE}/libdriftfx.so.sym
         - aws s3 cp samples/libsamples.so s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/${CMAKE_BUILD_TYPE}/libsamples.so
     - stage: build-java
       name: "Java Build"

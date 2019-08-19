@@ -140,4 +140,6 @@ if (LINUX)
 endif (LINUX)
 target_include_directories(driftfx PRIVATE ${IncludeDirectories})
 
+EXTRACT_DEBUG_SYMBOLS(driftfx)
+
 

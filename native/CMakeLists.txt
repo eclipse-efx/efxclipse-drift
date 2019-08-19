@@ -19,6 +19,25 @@ if (MSVC)
 	set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /VERBOSE:LIB /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:libcd.lib /NODEFAULTLIB:msvcrtd.lib")
 endif (MSVC)
 
+
+function(EXTRACT_DEBUG_SYMBOLS target)
+	if (UNIX)
+	add_custom_command(
+		TARGET ${target}
+		POST_BUILD
+		COMMAND ${CMAKE_OBJCOPY} ARGS --only-keep-debug $<TARGET_FILE:${target}> $<TARGET_FILE:${target}>.sym)
+	add_custom_command(
+		TARGET ${target}
+		POST_BUILD
+		COMMAND ${CMAKE_OBJCOPY} ARGS --add-gnu-debuglink $<TARGET_FILE:${target}> $<TARGET_FILE:${target}>.sym)
+	add_custom_command(
+		TARGET ${target}
+		POST_BUILD
+		COMMAND ${CMAKE_STRIP} ARGS --strip-unneeded $<TARGET_FILE:${target}>)
+	endif (UNIX)
+endfunction(EXTRACT_DEBUG_SYMBOLS)
+
+
 #if (WIN32)
 #set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,$$ORIGIN -Wl,--export-all-symbols -static-libgcc -static-libstdc++ -static -lpthread")
 #endif (WIN32)
