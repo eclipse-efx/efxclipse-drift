@@ -189,6 +189,7 @@ jobs:
     - stage: build-java
       name: "Java Build"
       os: linux
+      dist: trusty
       language: java
       cache:
         directories:
