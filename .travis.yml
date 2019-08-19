@@ -196,7 +196,7 @@ jobs:
       before_install:
         - pip install --user awscli
       install:
-        - mkdir -p downloads/{win32,macos,linux}/{release,debug}
+        - mkdir -p downloads/{win32,macos,linux}/{Release,Debug}
         - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/Debug/libdriftfx.so downloads/native/linux/Debug/libdriftfx.so
         - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/Release/libdriftfx.so downloads/native/linux/Release/libdriftfx.so
         - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/Debug/libdriftfx.dylib downloads/native/macos/Debug/libdriftfx.dylib
@@ -212,9 +212,10 @@ jobs:
         - cp downloads/native/macos/Release/libdriftfx.dylib org.eclipse.fx.drift.native.macos/native/
         - cp downloads/native/win32/Debug/driftfx.dll org.eclipse.fx.drift.native.win32.debug/native/
         - cp downloads/native/win32/Release/driftfx.dll org.eclipse.fx.drift.native.win32/native/
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/libsamples.so org.eclipse.fx.drift.samples/native/libsamples.so
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/libsamples.dylib org.eclipse.fx.drift.samples/native/libsamples.dylib
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/samples.dll org.eclipse.fx.drift.samples/native/samples.dll
+        - mkdir -p org.eclipse.fx.drift.samples/native
+        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/Debug/libsamples.so org.eclipse.fx.drift.samples/native/libsamples.so
+        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/Debug/libsamples.dylib org.eclipse.fx.drift.samples/native/libsamples.dylib
+        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/Debug/samples.dll org.eclipse.fx.drift.samples/native/samples.dll
         - ls -al org.eclipse.fx.drift.samples/native
       script: 
         - mkdir dist
