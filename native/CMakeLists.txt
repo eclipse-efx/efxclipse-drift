@@ -10,7 +10,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	set(MSVC TRUE)
 endif ()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 if (MSVC)
 	# in windows we want to always include the msvc runtime in the dll
@@ -20,7 +22,7 @@ if (MSVC)
 endif (MSVC)
 
 
-if(UNIX)
+if(LINUX)
   
   # create files with debug symobls
   set(CMAKE_CXX_CREATE_SHARED_LIBRARY
