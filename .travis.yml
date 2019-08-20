@@ -29,7 +29,7 @@ jobs:
         - mkdir build
         - cd build
         - cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
-        - cmake --build --config ${CMAKE_BUILD_TYPE}
+        - cmake --build . --config ${CMAKE_BUILD_TYPE}
         #- msbuild -verbosity:minimal -property:Configuration=${CMAKE_BUILD_TYPE} releng.sln
       after_success:
         - aws s3 cp DriftFX/${CMAKE_BUILD_TYPE}/driftfx.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/driftfx.dll
@@ -60,7 +60,7 @@ jobs:
         - mkdir build
         - cd build
         - cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
-        - cmake --build --config ${CMAKE_BUILD_TYPE}
+        - cmake --build . --config ${CMAKE_BUILD_TYPE}
         #- msbuild -verbosity:minimal -property:Configuration=${CMAKE_BUILD_TYPE} releng.sln
       after_success:
         - aws s3 cp DriftFX/${CMAKE_BUILD_TYPE}/driftfx.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/driftfx.dll
@@ -90,7 +90,7 @@ jobs:
         - mkdir build
         - cd build
         - cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
-        - cmake --build --config ${CMAKE_BUILD_TYPE}
+        - cmake --build . --config ${CMAKE_BUILD_TYPE}
         #- make
       after_success:
         - aws s3 cp DriftFX/libdriftfx.dylib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/${CMAKE_BUILD_TYPE}/libdriftfx.dylib
@@ -118,7 +118,7 @@ jobs:
         - mkdir build
         - cd build
         - cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
-        - cmake --build --config ${CMAKE_BUILD_TYPE}
+        - cmake --build . --config ${CMAKE_BUILD_TYPE}
         #- make
       after_success:
         - aws s3 cp DriftFX/libdriftfx.dylib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/${CMAKE_BUILD_TYPE}/libdriftfx.dylib
@@ -139,7 +139,7 @@ jobs:
         - mkdir build
         - cd build
         - cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
-        - cmake --build --config ${CMAKE_BUILD_TYPE}
+        - cmake --build . --config ${CMAKE_BUILD_TYPE}
         #- make
       after_success:
         - aws s3 cp DriftFX/libdriftfx.so s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/${CMAKE_BUILD_TYPE}/libdriftfx.so
@@ -159,7 +159,7 @@ jobs:
         - mkdir build
         - cd build
         - cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
-        - cmake --build --config ${CMAKE_BUILD_TYPE}
+        - cmake --build . --config ${CMAKE_BUILD_TYPE}
         #- make
       after_success:
         - aws s3 cp DriftFX/libdriftfx.so s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/${CMAKE_BUILD_TYPE}/libdriftfx.so
