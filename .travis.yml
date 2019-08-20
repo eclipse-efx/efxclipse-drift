@@ -29,7 +29,7 @@ jobs:
         - mkdir build
         - cd build
         - cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
-	- cmake --build --config ${CMAKE_BUILD_TYPE}
+        - cmake --build --config ${CMAKE_BUILD_TYPE}
         #- msbuild -verbosity:minimal -property:Configuration=${CMAKE_BUILD_TYPE} releng.sln
       after_success:
         - aws s3 cp DriftFX/${CMAKE_BUILD_TYPE}/driftfx.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/${CMAKE_BUILD_TYPE}/driftfx.dll
@@ -84,13 +84,6 @@ jobs:
         - tools/install_cmake_macos.sh
         - echo $PATH
         - PATH=${TRAVIS_BUILD_DIR}/cmake.portable/CMake.app/Contents/bin:${PATH}
-              #        - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-              #        - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
-              #        - travis_retry wget --no-check-certificate -nv https://cmake.org/files/v3.13/cmake-3.13.0-Darwin-x86_64.tar.gz
-              #        - tar -xvf cmake-3.13.0-Darwin-x86_64.tar.gz > /dev/null 2> /dev/null
-              #        - mv cmake-3.13.0-Darwin-x86_64 cmake-install
-              #        - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/CMake.app/Contents/bin:$PATH
-              #        - cd ${TRAVIS_BUILD_DIR}
       script: 
         - echo $PATH
         - echo "Building MacOS GCC ${CMAKE_BUILD_TYPE} Natives"
@@ -119,13 +112,6 @@ jobs:
         - tools/install_cmake_macos.sh
         - echo $PATH
         - PATH=${TRAVIS_BUILD_DIR}/cmake.portable/CMake.app/Contents/bin:${PATH}
-              #        - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-              #        - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
-              #        - travis_retry wget --no-check-certificate -nv https://cmake.org/files/v3.13/cmake-3.13.0-Darwin-x86_64.tar.gz
-              #        - tar -xvf cmake-3.13.0-Darwin-x86_64.tar.gz > /dev/null 2> /dev/null
-              #        - mv cmake-3.13.0-Darwin-x86_64 cmake-install
-              #        - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/CMake.app/Contents/bin:$PATH
-              #        - cd ${TRAVIS_BUILD_DIR}
       script: 
         - echo $PATH
         - echo "Building MacOS GCC ${CMAKE_BUILD_TYPE} Natives"
@@ -148,14 +134,6 @@ jobs:
         - sudo apt-get install -y freeglut3-dev
         - pip install --user awscli
         - pip install --user cmake==3.13.0
-          #      install:
-          #        - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-          #        - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
-          #        - travis_retry wget --no-check-certificate -nv Uttps://cmake.org/files/v3.13/cmake-3.13.0-Linux-x86_64.tar.gz
-          #        - tar -xvf cmake-3.13.0-Linux-x86_64.tar.gz > /dev/null
-          #        - mv cmake-3.13.0-Linux-x86_64 cmake-install
-          #        - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
-          #        - cd ${TRAVIS_BUILD_DIR}
       script:
         - echo "Building Linux GCC ${CMAKE_BUILD_TYPE} Natives"
         - mkdir build
@@ -176,14 +154,6 @@ jobs:
         - sudo apt-get install -y freeglut3-dev
         - pip install --user awscli
         - pip install --user cmake==3.13.0
-          #      install:
-          #        - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-          #        - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
-          #        - travis_retry wget --no-check-certificate -nv Uttps://cmake.org/files/v3.13/cmake-3.13.0-Linux-x86_64.tar.gz
-          #        - tar -xvf cmake-3.13.0-Linux-x86_64.tar.gz > /dev/null
-          #        - mv cmake-3.13.0-Linux-x86_64 cmake-install
-          #        - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
-          #        - cd ${TRAVIS_BUILD_DIR}
       script:
         - echo "Building Linux GCC ${CMAKE_BUILD_TYPE} Natives"
         - mkdir build
