@@ -1,5 +1,7 @@
 Bundle-Version:${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${osgi.qualifier}
 -snapshot: ${osgi.qualifier}
+-exportcontents: \
+ org.eclipse.fx.drift.lib
  
  Include-Resource: \
  native/libdriftfx.so=native/libdriftfx.so
