@@ -93,7 +93,7 @@ jobs:
           mkdir org.eclipse.fx.drift/native || rm org.eclipse.fx.drift/native/*
           cp natives/libdriftfx.{so,dylib} natives/driftfx.dll org.eclipse.fx.drift/native/
           mkdir org.eclipse.fx.drift.samples/native || rm org.eclipse.fx.drift.samples/native/*
-          cp naitves/libsamples.{so,dylib} natives/samples.dll org.eclipse.fx.drift.samples/native/
+          cp natives/libsamples.{so,dylib} natives/samples.dll org.eclipse.fx.drift.samples/native/
           
           ls -al org.eclipse.fx.drift/native
           ls -al org.eclipse.fx.drift.samples/native
