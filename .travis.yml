@@ -21,10 +21,9 @@ jobs:
           choco install visualstudio2017-workload-vctools
           choco install visualstudio2017-workload-nativedesktop
       script:
-        - |
-          mkdir build && cd build
-          cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
-          cmake --build . --config RelWithDebInfo
+        - mkdir build && cd build
+        - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=RelWithDebInfo ../native || cat CMakeFiles/CMakeOutput.log
+        - cmake --build .
       after_success:
         - |
           mkdir -p artifacts/windows
@@ -45,11 +44,10 @@ jobs:
           tools/install_cmake_macos.sh
           PATH=${TRAVIS_BUILD_DIR}/cmake.portable/CMake.app/Contents/bin:${PATH}
           echo $PATH
-      script: 
-        - |
-          mkdir build && cd build
-          cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
-          cmake --build . --config RelWithDebInfo
+      script:
+        - mkdir build && cd build
+        - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo ../native || cat CMakeFiles/CMakeOutput.log
+        - cmake --build .
       after_success:
         - |
           mkdir -p artifacts/macos
@@ -69,10 +67,9 @@ jobs:
           pip install --user awscli
           pip install --user cmake==3.13.0
       script:
-        - |
-          mkdir build && cd build
-          cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
-          cmake --build . --config RelWithDebInfo
+        - mkdir build && cd build
+        - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo ../native || cat CMakeFiles/CMakeOutput.log
+        - cmake --build .
       after_success:
         - |
           mkdir -p artifacts/linux
