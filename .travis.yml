@@ -22,8 +22,8 @@ jobs:
           choco install visualstudio2017-workload-nativedesktop
       script:
         - mkdir build && cd build
-        - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=RelWithDebInfo ../native || cat CMakeFiles/CMakeOutput.log
-        - cmake --build .
+        - cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
+        - cmake --build . --config RelWithDebInfo
       after_success:
         - |
           mkdir -p artifacts/windows
