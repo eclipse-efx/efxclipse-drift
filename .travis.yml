@@ -91,9 +91,9 @@ jobs:
           mkdir natives
           aws s3 cp --recursive s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives natives/
           mkdir org.eclipse.fx.drift/native || rm org.eclipse.fx.drift/native/*
-          cp natives/libdriftfx.{so,dylib} driftfx.dll org.eclipse.fx.drift/native/
+          cp natives/libdriftfx.{so,dylib} natives/driftfx.dll org.eclipse.fx.drift/native/
           mkdir org.eclipse.fx.drift.samples/native || rm org.eclipse.fx.drift.samples/native/*
-          cp naitves/libsamples.{so,dylib} samples.dll org.eclipse.fx.drift.samples/native/
+          cp naitves/libsamples.{so,dylib} natives/samples.dll org.eclipse.fx.drift.samples/native/
           
           ls -al org.eclipse.fx.drift/native
           ls -al org.eclipse.fx.drift.samples/native
