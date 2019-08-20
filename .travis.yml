@@ -12,28 +12,25 @@ jobs:
       before_install:
         - shopt -s expand_aliases
       install:
-        - choco install awscli
-        - alias aws="/c/Program\ Files/Amazon/AWSCLI/bin/aws.exe "
-        - aws --version
-        - choco install cmake --version 3.13.0
-        - cmake -version
-        - choco install jdk8
-        - choco install visualstudio2017buildtools
-        - choco install visualstudio2017-workload-vctools
-        - choco install visualstudio2017-workload-nativedesktop
-        - alias msbuild="/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/MSBuild/15.0/Bin/MSBuild.exe "
-        - msbuild -version
+        - |
+          choco install awscli
+          alias aws="/c/Program\ Files/Amazon/AWSCLI/bin/aws.exe "
+          choco install cmake --version 3.13.0
+          choco install jdk8
+          choco install visualstudio2017buildtools
+          choco install visualstudio2017-workload-vctools
+          choco install visualstudio2017-workload-nativedesktop
       script:
-        - echo "Building Windows MSVC Natives"
-        - mkdir build
-        - cd build
-        - cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
-        - msbuild -verbosity:minimal releng.sln
+        - |
+          mkdir build && cd build
+          cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
+          cmake --build . --config RelWithDebInfo
       after_success:
-        - aws s3 cp DriftFX/Debug/driftfx.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.dll
-        - aws s3 cp DriftFX/Debug/driftfx.lib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.lib
-        - aws s3 cp DriftFX/Debug/driftfx.pdb s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.pdb
-        - aws s3 cp samples/Debug/samples.dll s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/samples.dll
+        - |
+          mkdir -p artifacts/windows
+          cp DriftFX/RelWithDebInfo/driftfx.{dll,lib,pdb} artifacts/windows
+          cp samples/RelWithDebInfo/samples.{dll,lib,pdb} artifacts/windows
+          aws s3 cp --recursive artifacts/windows s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/
     - name: "MacOS GCC Natives"
       os: osx
       language: cpp
@@ -43,55 +40,44 @@ jobs:
             - awscli
           update: true
       install:
-        - cmake -version
-        - brew desc cmake
-        - brew info cmake
-        - chmod +x tools/install_cmake_macos.sh
-        - tools/install_cmake_macos.sh
-        - echo $PATH
-        - PATH=${TRAVIS_BUILD_DIR}/cmake.portable/CMake.app/Contents/bin:${PATH}
-              #        - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-              #        - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
-              #        - travis_retry wget --no-check-certificate -nv https://cmake.org/files/v3.13/cmake-3.13.0-Darwin-x86_64.tar.gz
-              #        - tar -xvf cmake-3.13.0-Darwin-x86_64.tar.gz > /dev/null 2> /dev/null
-              #        - mv cmake-3.13.0-Darwin-x86_64 cmake-install
-              #        - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/CMake.app/Contents/bin:$PATH
-              #        - cd ${TRAVIS_BUILD_DIR}
+        - |
+          chmod +x tools/install_cmake_macos.sh
+          tools/install_cmake_macos.sh
+          PATH=${TRAVIS_BUILD_DIR}/cmake.portable/CMake.app/Contents/bin:${PATH}
+          echo $PATH
       script: 
-        - echo $PATH
-        - echo "Building MacOS GCC Natives"
-        - mkdir build
-        - cd build
-        - cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
-        - make
+        - |
+          mkdir build && cd build
+          cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
+          cmake --build . --config RelWithDebInfo
       after_success:
-        - aws s3 cp DriftFX/libdriftfx.dylib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/libdriftfx.dylib
-        - aws s3 cp samples/libsamples.dylib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/libsamples.dylib
+        - |
+          mkdir -p artifacts/macos
+          cp DriftFX/libdriftfx.dylib artifacts/macos
+          cp -r DriftFX/libdriftfx.dylib.dSYM artifacts/macos
+          cp samples/libsamples.dylib artifacts/macos
+          cp samples/libsamples.dylib.dSYM artifacts/macos
+          aws s3 cp --recursive artifacts/macos s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/
     - name: "Linux GCC Natives"
       os: linux
       language: cpp
       compiler:
         - gcc
       before_install:
-        - pip install --user awscli
-        - pip install --user cmake==3.13.0
-          #      install:
-          #        - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-          #        - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
-          #        - travis_retry wget --no-check-certificate -nv Uttps://cmake.org/files/v3.13/cmake-3.13.0-Linux-x86_64.tar.gz
-          #        - tar -xvf cmake-3.13.0-Linux-x86_64.tar.gz > /dev/null
-          #        - mv cmake-3.13.0-Linux-x86_64 cmake-install
-          #        - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
-          #        - cd ${TRAVIS_BUILD_DIR}
+        - |
+          pip install --user awscli
+          pip install --user cmake==3.13.0
       script:
-        - echo "Building Linux GCC Natives"
-        - mkdir build
-        - cd build
-        - cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
-        - make
+        - |
+          mkdir build && cd build
+          cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
+          cmake --build . --config RelWithDebInfo
       after_success:
-        - aws s3 cp DriftFX/libdriftfx.so s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/libdriftfx.so
-        - aws s3 cp samples/libsamples.so s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/libsamples.so
+        - |
+          mkdir -p artifacts/linux
+          cp DriftFX/libdriftfx.so{,.debug} artifacts/linux
+          cp samples/libsamples.so{,.debug} artifacts/linux
+          aws s3 cp --recursive artifacts/linux s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/
     - stage: build-java
       name: "Java Build"
       os: linux
@@ -102,33 +88,32 @@ jobs:
       before_install:
         - pip install --user awscli
       install:
-        - rm org.eclipse.fx.drift/native/*
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/libdriftfx.so org.eclipse.fx.drift/native/libdriftfx.so
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/libdriftfx.dylib org.eclipse.fx.drift/native/libdriftfx.dylib
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.dll org.eclipse.fx.drift/native/driftfx.dll
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.lib org.eclipse.fx.drift/native/driftfx.lib
-        - ls -al org.eclipse.fx.drift/native
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/linux/libsamples.so org.eclipse.fx.drift.samples/native/libsamples.so
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/libsamples.dylib org.eclipse.fx.drift.samples/native/libsamples.dylib
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/samples.dll org.eclipse.fx.drift.samples/native/samples.dll
-        - ls -al org.eclipse.fx.drift.samples/native
+        - |
+          aws s3 cp --recursive s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives .
+          rm org.eclipse.fx.drift/native/*
+          cp natives/libdriftfx.{so,dylib} driftfx.dll org.eclipse.fx.drift/native/
+          rm org.eclipse.fx.drift.samples/native/*
+          cp naitves/libsamples.{so,dylib} samples.dll org.eclipse.fx.drift.samples/native/
+          
+          ls -al org.eclipse.fx.drift/native
+          ls -al org.eclipse.fx.drift.samples/native
       script: 
-        - mkdir dist
-        - zip -r dist/sources.zip native org.eclipse.fx.drift org.eclipse.fx.drift.feature org.eclipse.fx.drift.samples org.eclipse.fx.drift.samples.feature org.eclipse.fx.drift.updatesite 
-        - echo "executing Maven"
-        - mvn clean package
-        - ls -al org.eclipse.fx.drift.updatesite/target
+        - |
+          mkdir dist
+          zip -r dist/sources.zip native org.eclipse.fx.drift org.eclipse.fx.drift.feature org.eclipse.fx.drift.samples org.eclipse.fx.drift.samples.feature org.eclipse.fx.drift.updatesite 
+        - |
+          mvn clean package
       after_success:
-        - aws s3 cp org.eclipse.fx.drift.updatesite/target/org.eclipse.fx.drift.updatesite-0.1.0-SNAPSHOT.zip s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/updatesite.zip
-        - echo "$TRAVIS_COMMIT" > git_commit
-        - aws s3 cp git_commit s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/git_commit
-        - mkdir dist
-        - mkdir dist/include
-        - cp -R native/DriftFX/include/* dist/include/
-        - mkdir dist/libs
-        - cp org.eclipse.fx.drift/native/* dist/libs/
-        - aws s3 cp s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/windows/driftfx.pdb dist/libs/driftfx.pdb
-        - cp git_commit dist/git_commit
-        - zip -r dist.zip dist/*
-        - aws s3 cp dist.zip s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/dist.zip
-        - wget "$WEBHOOK_URL?token=$WEBHOOK_TOKEN&token0=$AWS_ACCESS_KEY_ID&token1=$AWS_SECRET_ACCESS_KEY&travisBuildNumber=$TRAVIS_BUILD_NUMBER&branch_name=$TRAVIS_BRANCH"
+        - |
+          aws s3 cp org.eclipse.fx.drift.updatesite/target/org.eclipse.fx.drift.updatesite-0.1.0-SNAPSHOT.zip s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/updatesite.zip
+          echo "$TRAVIS_COMMIT" > git_commit
+          aws s3 cp git_commit s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/git_commit
+          mkdir dist
+          mkdir dist/include
+          cp -R native/DriftFX/include/* dist/include/
+          mkdir dist/libs
+          cp -r natives/* dist/libs/
+          cp git_commit dist/git_commit
+          zip -r dist.zip dist/*
+          aws s3 cp dist.zip s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/dist.zip
+          wget "$WEBHOOK_URL?token=$WEBHOOK_TOKEN&token0=$AWS_ACCESS_KEY_ID&token1=$AWS_SECRET_ACCESS_KEY&travisBuildNumber=$TRAVIS_BUILD_NUMBER&branch_name=$TRAVIS_BRANCH"

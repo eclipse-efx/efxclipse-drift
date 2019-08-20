@@ -10,7 +10,24 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	set(MSVC TRUE)
 endif ()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_STANDARD 11)
+
+# configure debug symbols
+if (LINUX)
+  set(CMAKE_CXX_CREATE_SHARED_LIBRARY
+  	"${CMAKE_CXX_CREATE_SHARED_LIBRARY}"
+  	"${CMAKE_OBJCOPY} --only-keep-debug <TARGET> <TARGET>.debug"
+  	"${CMAKE_OBJCOPY} --add-gnu-debuglink=<TARGET>.debug <TARGET>"
+  	"${CMAKE_STRIP} --strip-unneeded <TARGET>"
+  )
+endif (LINUX)
+if (APPLE)
+  set(CMAKE_CXX_CREATE_SHARED_LIBRARY
+  	"${CMAKE_CXX_CREATE_SHARED_LIBRARY}"
+  	"dsymutil <TARGET>"
+  	"${CMAKE_STRIP} -S <TARGET>"
+  )
+endif (APPLE)
 
 if (MSVC)
 	# in windows we want to always include the msvc runtime in the dll
@@ -19,26 +36,18 @@ if (MSVC)
 	set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /VERBOSE:LIB /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:libcd.lib /NODEFAULTLIB:msvcrtd.lib")
 endif (MSVC)
 
-#if (WIN32)
-#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,$$ORIGIN -Wl,--export-all-symbols -static-libgcc -static-libstdc++ -static -lpthread")
-#endif (WIN32)
 
-#if (APPLE)
-#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,$$ORIGIN  -static-libgcc -static-libstdc++ -static -lpthread")
-#endif (APPLE)
 
-#enable_testing()
-
-if (APPLE)
-  # since apple deprecated OpenGL we do not want to see this during the build
-  add_compile_definitions(GL_SILENCE_DEPRECATION)
-endif (APPLE)
 
 
 # JNI
 find_package(JNI REQUIRED)
 # OpenGL
 find_package(OpenGL REQUIRED)
+if (APPLE)
+  # since apple deprecated OpenGL we do not want to see this during the build
+  add_compile_definitions(GL_SILENCE_DEPRECATION)
+endif (APPLE)
 
 if (WIN32)
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -101,11 +110,3 @@ add_subdirectory(lib/glew)
 add_subdirectory(lib/utils)
 add_subdirectory(DriftFX)
 add_subdirectory(samples)
-
-#add_custom_command(TARGET driftfx POST_BUILD
-#	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#		"$<TARGET_FILE:driftfx>"
-#		"${PROJECT_SOURCE_DIR}/../native/${LIB_NAME}")
-#		
-
-		
