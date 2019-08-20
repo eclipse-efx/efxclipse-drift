@@ -24,6 +24,12 @@ endif (MSVC)
 
 if(UNIX)
   
+  if (APPLE)
+  
+  	set(CMAKE_OBJCOPY "/usr/local/opt/binutils/bin/objcopy")
+  
+  endif (APPLE)
+  
   # create files with debug symobls
   set(CMAKE_CXX_CREATE_SHARED_LIBRARY
   	"${CMAKE_CXX_CREATE_SHARED_LIBRARY}"
