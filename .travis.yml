@@ -72,6 +72,7 @@ jobs:
           update: true
       install:
         - brew install binutils
+        - brew link binutils
         - chmod +x tools/install_cmake_macos.sh
         - tools/install_cmake_macos.sh
         - echo $PATH
@@ -82,7 +83,7 @@ jobs:
         - mkdir build
         - cd build
         - cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
-        - cmake --build . --config ${CMAKE_BUILD_TYPE}
+        - cmake -v --build . --config ${CMAKE_BUILD_TYPE}
       after_success:
         - aws s3 cp DriftFX/libdriftfx.dylib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/${CMAKE_BUILD_TYPE}/libdriftfx.dylib
         - aws s3 cp samples/libsamples.dylib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/${CMAKE_BUILD_TYPE}/libsamples.dylib
@@ -97,6 +98,7 @@ jobs:
           update: true
       install:
         - brew install binutils
+        - brew link binutils
         - chmod +x tools/install_cmake_macos.sh
         - tools/install_cmake_macos.sh
         - echo $PATH
@@ -107,7 +109,7 @@ jobs:
         - mkdir build
         - cd build
         - cmake -G "Unix Makefiles" ../native || cat CMakeFiles/CMakeOutput.log
-        - cmake --build . --config ${CMAKE_BUILD_TYPE}
+        - cmake -v --build . --config ${CMAKE_BUILD_TYPE}
       after_success:
         - aws s3 cp DriftFX/libdriftfx.dylib s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/${CMAKE_BUILD_TYPE}/libdriftfx.dylib
         - aws s3 cp DriftFX/libdriftfx.dylib.sym s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/macos/${CMAKE_BUILD_TYPE}/libdriftfx.dylib.sym
