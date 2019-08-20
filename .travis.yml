@@ -73,6 +73,9 @@ jobs:
       install:
         - brew install binutils
         - brew link binutils
+        - PATH="/usr/local/opt/binutils/bin:$PATH"
+        - which objcopy
+        - which gobjcopy
         - chmod +x tools/install_cmake_macos.sh
         - tools/install_cmake_macos.sh
         - echo $PATH
