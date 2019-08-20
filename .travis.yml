@@ -60,6 +60,7 @@ jobs:
           aws s3 cp --recursive artifacts/macos s3://efxclipse-drift/$TRAVIS_BUILD_NUMBER/natives/
     - name: "Linux GCC Natives"
       os: linux
+      dist: trusty
       language: cpp
       compiler:
         - gcc
