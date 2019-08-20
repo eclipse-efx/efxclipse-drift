@@ -20,33 +20,19 @@ if (MSVC)
 endif (MSVC)
 
 
-function(EXTRACT_DEBUG_SYMBOLS target)
-	if (UNIX)
-	add_custom_command(
-		TARGET ${target}
-		POST_BUILD
-		COMMAND ${CMAKE_OBJCOPY} ARGS --only-keep-debug $<TARGET_FILE:${target}> $<TARGET_FILE:${target}>.sym)
-	add_custom_command(
-		TARGET ${target}
-		POST_BUILD
-		COMMAND ${CMAKE_OBJCOPY} ARGS --add-gnu-debuglink $<TARGET_FILE:${target}> $<TARGET_FILE:${target}>.sym)
-	add_custom_command(
-		TARGET ${target}
-		POST_BUILD
-		COMMAND ${CMAKE_STRIP} ARGS --strip-unneeded $<TARGET_FILE:${target}>)
-	endif (UNIX)
-endfunction(EXTRACT_DEBUG_SYMBOLS)
+if(UNIX)
+  
+  # create files with debug symobls
+  set(CMAKE_CXX_CREATE_SHARED_LIBRARY
+  	"${CMAKE_CXX_CREATE_SHARED_LIBRARY}"
+  	"${CMAKE_OBJCOPY} --only-keep-debug <TARGET> <TARGET>.debug"
+  	"${CMAKE_OBJCOPY} --add-gnu-debuglink=<TARGET>.debug <TARGET>"
+  	"${CMAKE_STRIP} --strip-unneeded <TARGET>"
+  )
+  
+endif(UNIX)
 
 
-#if (WIN32)
-#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,$$ORIGIN -Wl,--export-all-symbols -static-libgcc -static-libstdc++ -static -lpthread")
-#endif (WIN32)
-
-#if (APPLE)
-#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,$$ORIGIN  -static-libgcc -static-libstdc++ -static -lpthread")
-#endif (APPLE)
-
-#enable_testing()
 
 if (APPLE)
   # since apple deprecated OpenGL we do not want to see this during the build
