@@ -22,7 +22,7 @@ if (MSVC)
 endif (MSVC)
 
 
-if(LINUX)
+if(UNIX)
   
   # create files with debug symobls
   set(CMAKE_CXX_CREATE_SHARED_LIBRARY

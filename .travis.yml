@@ -71,9 +71,7 @@ jobs:
             - awscli
           update: true
       install:
-        - cmake -version
-        - brew desc cmake
-        - brew info cmake
+        - brew install binutils
         - chmod +x tools/install_cmake_macos.sh
         - tools/install_cmake_macos.sh
         - echo $PATH
@@ -98,9 +96,7 @@ jobs:
             - awscli
           update: true
       install:
-        - cmake -version
-        - brew desc cmake
-        - brew info cmake
+        - brew install binutils
         - chmod +x tools/install_cmake_macos.sh
         - tools/install_cmake_macos.sh
         - echo $PATH
