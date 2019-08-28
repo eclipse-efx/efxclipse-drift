@@ -20,5 +20,10 @@
 			<artifactId>org.eclipse.fx.core</artifactId>
 			<version>${efx-org.eclipse.fx.core}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+			<version>11.0.2</version>
+		</dependency>
 	</dependencies>
 </project>

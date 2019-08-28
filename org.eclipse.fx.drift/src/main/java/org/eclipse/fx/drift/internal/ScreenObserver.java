@@ -13,7 +13,6 @@ package org.eclipse.fx.drift.internal;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.sun.javafx.stage.ScreenHelper;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
@@ -97,7 +96,7 @@ public class ScreenObserver {
 				node.sceneProperty(),
 				Screen.getScreens()));
 		currentRenderScale.bind(Bindings.createDoubleBinding(() -> {
-			return (double) ScreenHelper.getScreenAccessor().getRenderScale(getCurrentScreen());
+			return getCurrentScreen().getOutputScaleX(); // TODO We should expose to scales
 		}, currentScreen));
 	}
 }
