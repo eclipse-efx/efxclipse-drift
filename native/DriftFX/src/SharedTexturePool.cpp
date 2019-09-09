@@ -3,6 +3,9 @@
 #include "SharedTexture.h"
 #include <DriftFX/math/Vec2.h>
 
+#include <DriftFX/Context.h>
+#include <DriftFX/GL/GLContext.h>
+
 #include <map>
 #include <set>
 
@@ -10,12 +13,12 @@
 
 #include <utils/Logger.h>
 
+using namespace driftfx;
+using namespace driftfx::gl;
 using namespace driftfx::math;
 using namespace driftfx::internal;
 
-
-
-SharedTexturePool::SharedTexturePool(GLContext* glContext, Context* fxContext, TransferMode* mode) :
+SharedTexturePool::SharedTexturePool(GLContext* glContext, Context* fxContext, ::driftfx::internal::TransferMode* mode) :
 	glContext(glContext),
 	fxContext(fxContext),
 	mode(mode) {
