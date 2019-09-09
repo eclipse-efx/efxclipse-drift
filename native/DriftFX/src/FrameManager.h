@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 #include <mutex>
+#include <chrono>
 
 #include <DriftFX/DriftFXSurface.h>
 #include <DriftFX/math/Vec2.h>
@@ -41,7 +42,6 @@ public:
 	virtual void SetPresentationHint(PresentationHint hint);
 
 	virtual ShareData* GetData();
-	virtual void SetData(ShareData* data);
 
 	virtual SharedTexture* GetSharedTexture();
 
@@ -58,6 +58,15 @@ public:
 	virtual PresentationHint GetPresentationHint();
 
 	virtual std::string ToString();
+	virtual std::string TimeReport();
+
+
+	std::chrono::steady_clock::time_point acquireBegin = std::chrono::steady_clock::time_point::min();
+	std::chrono::steady_clock::time_point acquireEnd = std::chrono::steady_clock::time_point::min();
+	std::chrono::steady_clock::time_point presentBegin = std::chrono::steady_clock::time_point::min();
+	std::chrono::steady_clock::time_point presentEnd = std::chrono::steady_clock::time_point::min();
+	std::chrono::steady_clock::time_point fxPresentBegin = std::chrono::steady_clock::time_point::min();
+	std::chrono::steady_clock::time_point fxPresentEnd = std::chrono::steady_clock::time_point::min();
 
 private:
 	long surfaceId;

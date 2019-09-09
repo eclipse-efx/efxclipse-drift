@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 project(DriftFX CXX)
 
-
-
 # configuring msvc to include the runtime
 #if (WIN32)
 #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
@@ -80,6 +78,9 @@ set(DriftFX-Sources
 	src/TransferModeManager.cpp
 	
 	src/NoOpTransferMode.cpp
+	
+	src/SharedTexturePool.h
+	src/SharedTexturePool.cpp
 )
 
 if (WIN32)

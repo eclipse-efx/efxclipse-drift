@@ -14,6 +14,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 # configure debug symbols
 if (LINUX)
+# set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb")
   set(CMAKE_CXX_CREATE_SHARED_LIBRARY
   	"${CMAKE_CXX_CREATE_SHARED_LIBRARY}"
   	"${CMAKE_OBJCOPY} --only-keep-debug <TARGET> <TARGET>.debug"

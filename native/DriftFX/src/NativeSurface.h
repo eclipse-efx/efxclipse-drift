@@ -11,6 +11,7 @@
 #ifndef DRIFTFX_INTERNAL_NATIVESURFACE_H_
 #define DRIFTFX_INTERNAL_NATIVESURFACE_H_
 
+#include <map>
 #include <vector>
 #include <mutex>
 #include <atomic>
@@ -29,6 +30,7 @@ namespace driftfx {
 namespace internal {
 
 	class SharedTexture;
+	class SharedTexturePool;
 
 class NativeSurface : public DriftFXSurface {
 
@@ -99,6 +101,8 @@ public:
 
 	virtual Context* GetFxContext();
 
+	virtual void DisposeFrame(long long frameId);
+
 	FrameManager* GetFrameManager();
 
 protected:
@@ -111,6 +115,9 @@ protected:
 	long surfaceId;
 
 	FrameManager frameManager;
+
+	std::mutex texturePoolMutex;
+	std::map<unsigned int, SharedTexturePool*> texturePool;
 
 private:
 	std::atomic<SurfaceData> surfaceData;

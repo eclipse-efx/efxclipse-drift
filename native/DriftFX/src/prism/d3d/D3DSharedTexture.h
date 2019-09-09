@@ -45,7 +45,7 @@ public:
 class D3DSharedTexture : public SharedTexture {
 
 public:
-	D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, Frame* frame);
+	D3DSharedTexture(GLContext* glContext, D3D9ExContext* d3dContext, math::Vec2ui size);
 	virtual ~D3DSharedTexture();
 
 	virtual bool BeforeRender();

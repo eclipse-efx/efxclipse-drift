@@ -19,6 +19,7 @@
 #include "JNINativeSurface.h"
 #include "NativeSurface.h"
 #include "SharedTexture.h"
+#include "SharedTexturePool.h"
 #include "prism/PrismBridge.h"
 
 #include <utils/Logger.h>
@@ -42,7 +43,8 @@ NativeSurface::NativeSurface(long surfaceId, JNINativeSurface* api) :
 	api(api),
 	context(nullptr),
 	surfaceData(SurfaceData()),
-	frameManager(surfaceId) {
+	frameManager(surfaceId),
+	texturePool() {
 	LogDebug("NativeSurface constructor")
 
 }
@@ -75,6 +77,19 @@ void NativeSurface::Cleanup() {
 
 	// NOTE: since textures know their context and set it current upon deletion
 	// we must ensure that all textures from a context are deleted before the context is deleted!
+
+
+	// we need to clean the pools, since our context becomes invalid
+	texturePoolMutex.lock();
+	std::map<unsigned int, SharedTexturePool*>::iterator it;
+	for (it = texturePool.begin(); it != texturePool.end(); it++) {
+		auto pool = (*it).second;
+		LogDebug("Deleting Texture Pool " << pool);
+		delete pool;
+	}
+	texturePool.clear();
+	LogDebug("Cleared pools " << texturePool.size());
+	texturePoolMutex.unlock();
 
 	LogDebug("clean GLContext");
 	delete context;
@@ -137,6 +152,7 @@ RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height, dr
 }
 
 RenderTarget* NativeSurface::Acquire(math::Vec2ui size, SurfaceData surfaceData) {
+	auto begin = std::chrono::steady_clock::now();
 	PrismBridge* bridge = PrismBridge::Get();
 	// in case the system was destroyed
 	if (bridge == nullptr) {
@@ -150,32 +166,74 @@ RenderTarget* NativeSurface::Acquire(math::Vec2ui size, SurfaceData surfaceData)
 	}
 
 	auto frame = frameManager.CreateFrame(surfaceData, size);
+	frame->acquireBegin = begin;
 
 	LogDebug("Acquire " << frame->ToString() << "(" << size.x << ", " << size.y << ")");
 
-	auto mode = TransferModeManager::Instance()->GetTransferMode(surfaceData.transferMode);
 
-	LogDebug("Creating it with " << mode->Name());
+	texturePoolMutex.lock();
+	// create pool if needed
+	if (texturePool.find(surfaceData.transferMode) == texturePool.end()) {
+		auto mode = TransferModeManager::Instance()->GetTransferMode(surfaceData.transferMode);
+		LogDebug("Creating Shared Texture Pool for surface " << surfaceId << " and mode " << mode->Name());
+		auto pool = new SharedTexturePool(GetContext(), GetFxContext(), mode);
+		texturePool[surfaceData.transferMode] = pool;
+	}
+	auto pool = texturePool[surfaceData.transferMode];
+	texturePoolMutex.unlock();
 
-	auto tex = mode->CreateSharedTexture(GetContext(), GetFxContext(), frame);
+	auto tex = pool->AcquireTexture(size);
+
+	pool->DisposeUnusedTextures();
+
+//	auto mode = TransferModeManager::Instance()->GetTransferMode(surfaceData.transferMode);
+//
+//	LogDebug("Creating it with " << mode->Name());
+//
+//	auto tex = mode->CreateSharedTexture(GetContext(), GetFxContext(), size);
 	frame->SetSharedTexture(tex);
 
 	if (!tex->BeforeRender()) {
 		LogError("Failed to acquire surface!");
 	}
 
+
+
+	frame->acquireEnd = std::chrono::steady_clock::now();
 	return frame;
 }
 
+void NativeSurface::DisposeFrame(long long frameId) {
+	auto frame = frameManager.GetFrame(frameId);
+	LogDebug("Frame done. " << frame->TimeReport());
+	auto texture = frame->GetSharedTexture();
+	auto transferMode = frame->GetSurfaceData().transferMode;
+	frame->SetSharedTexture(nullptr);
+
+	texturePoolMutex.lock();
+	if (texturePool.find(transferMode) != texturePool.end()) {
+		// we only release the frame if the pool is still available
+		texturePool[transferMode]->ReleaseTexture(texture);
+	}
+	else {
+		// TODO this may not work on all platforms -.-
+		delete texture;
+	}
+	texturePoolMutex.unlock();
+
+	frameManager.DisposeFrame(frameId);
+}
 
 
 void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
+	auto begin = std::chrono::steady_clock::now();
 	if (target == nullptr) {
 		LogDebug("Cannot present nullptr; doing nothing.");
 		return;
 	}
 
 	auto frame = dynamic_cast<Frame*>(target);
+	frame->presentBegin = begin;
 	LogDebug("Present " << frame->ToString());
 
 	auto tex = frame->GetSharedTexture();
@@ -186,7 +244,9 @@ void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 
 	api->Present(frame);
 
-	GetFrameManager()->DisposePendingFrames();
+	//GetFrameManager()->DisposePendingFrames();
+
+	frame->presentEnd = std::chrono::steady_clock::now();
 }
 
 driftfx::TransferMode* NativeSurface::GetTransferMode() {

@@ -38,7 +38,7 @@ using namespace win32;
 class D3DSharedFallbackTexture : public SharedTexture {
 
 public:
-	D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, Frame* frame);
+	D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, math::Vec2ui size);
 	virtual ~D3DSharedFallbackTexture();
 
 	virtual bool BeforeRender();

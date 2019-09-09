@@ -29,40 +29,50 @@ using namespace driftfx::internal;
 using namespace driftfx::internal::prism::es2;
 using namespace driftfx::internal::prism::es2::glx;
 
-GLXSharedTexture::GLXSharedTexture(GLContext* context, GLContext* fxContext, Frame* frame) :
-	SharedTexture(context, frame),
+GLXSharedTexture::GLXSharedTexture(GLContext* context, GLContext* fxContext, math::Vec2ui size) :
+	SharedTexture(context, size),
 	fxContext(fxContext) {
 
-	auto textureSize = frame->GetSize();
-	glTexture = dynamic_cast<GLTexture*>(glContext->CreateTexture(textureSize.x, textureSize.y));
-
-
+	Allocate();
 }
 
 GLXSharedTexture::~GLXSharedTexture() {
-	LogDebug("destroying tex " << glTexture->Name());
+
+	Release();
+}
+
+ShareData* GLXSharedTexture::CreateShareData() {
+	GLXShareData* data = new GLXShareData();
+	data->textureName = glTexture->Name();
+	return data;
+}
+
+void GLXSharedTexture::Allocate() {
+	auto begin = std::chrono::steady_clock::now();
+
+	LogDebug("Allocating GL Texture ctx:" << glContext << ", size: " << &size);
+	glTexture = dynamic_cast<GLTexture*>(glContext->CreateTexture(size.x, size.y));
+	GLCALL( glBindTexture(GL_TEXTURE_2D, glTexture->Name()) );
+	GLCALL( glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.x, size.y, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL) );
+	GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
+
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - begin);
+	LogDebug("allocation needed " << duration.count() << "ns");
+}
+
+void GLXSharedTexture::Release() {
+	LogDebug("Releasing texture " << glTexture);
 	delete glTexture;
+	glTexture = nullptr;
 }
 
 bool GLXSharedTexture::BeforeRender() {
-	auto textureSize = frame->GetSize();
-
-	GLCALL( glBindTexture(GL_TEXTURE_2D, glTexture->Name()) );
-	GLCALL( glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize.x, textureSize.y, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL) );
-	GLCALL( glBindTexture(GL_TEXTURE_2D, 0) );
-
-	GLXShareData* data = new GLXShareData();
-	data->textureName = glTexture->Name();
-	frame->SetData(data);
-
 	return true;
 }
 
 bool GLXSharedTexture::AfterRender() {
-	std::cout << "FOO" << std::endl << std::flush;
-	SignalFrameReady();
-	std::cout << "BAR" << std::endl << std::flush;
-	WaitForFrameReady();
+//	SignalFrameReady();
+//	WaitForFrameReady();
 	return true;
 }
 
