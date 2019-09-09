@@ -128,16 +128,9 @@ int IOSurfaceSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, 
 }
 
 
-IOSurfaceSharedTexture::IOSurfaceSharedTexture(GLContext* context, Frame* frame) :
-	SharedTexture(context, frame)
+IOSurfaceSharedTexture::IOSurfaceSharedTexture(GLContext* context, math::Vec2ui size) :
+	SharedTexture(context, size)
 		{
-	auto textureSize = frame->GetSize();
-	ioSurface = createIOSurface(textureSize.x, textureSize.y);
-	ioSurfaceID = IOSurfaceGetID(ioSurface);
-
-	IOSurfaceShareData* data = new IOSurfaceShareData();
-	data->ioSurfaceID = ioSurfaceID;
-	frame->SetData(data);
 
 	if (!glContext->IsCurrent()) {
 		std::ostringstream s;
@@ -145,47 +138,52 @@ IOSurfaceSharedTexture::IOSurfaceSharedTexture(GLContext* context, Frame* frame)
 		LogError(s.str());
 	}
 
-
+	Allocate();
 }
 
 IOSurfaceSharedTexture::~IOSurfaceSharedTexture() {
-	LogDebug("Releasing IOSurface id: " << ioSurfaceID << ", handle: " << ioSurface);
 
-	if (ioSurface != nullptr) {
-		releaseIOSurface(ioSurface);
-		ioSurface = nullptr;
-	}
-
-
-//	if (!glContext->IsCurrent()) {
-//		LogInfo("Forcing context switch to " << glContext->GetName());
-//		glContext->SetCurrent();
-//	}
-
+	Release();
 }
 
-bool IOSurfaceSharedTexture::BeforeRender() {
+ShareData* IOSurfaceSharedTexture::CreateShareData() {
+	IOSurfaceShareData* data = new IOSurfaceShareData();
+	data->ioSurfaceID = ioSurfaceID;
+	return data;
+}
 
-	auto textureSize = frame->GetSize();
-	glTexture = dynamic_cast<GLTexture*>(glContext->CreateTexture(textureSize.x, textureSize.y));
+void IOSurfaceSharedTexture::Allocate() {
+	glTexture = dynamic_cast<GLTexture*>(glContext->CreateTexture(size.x, size.y));
+
+	ioSurface = createIOSurface(size.x, size.y);
+	ioSurfaceID = IOSurfaceGetID(ioSurface);
 
 	CGLGLContext* cglCtx = dynamic_cast<CGLGLContext*>(glContext);
 
 	CGLError success;
 	GLCALL( glBindTexture(GL_TEXTURE_RECTANGLE, glTexture->Name()) );
-	CGLCALL( success = CGLTexImageIOSurface2D(cglCtx->GetCGLContextObj(), GL_TEXTURE_RECTANGLE, GL_RGBA, textureSize.x, textureSize.y, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0) );
+	CGLCALL( success = CGLTexImageIOSurface2D(cglCtx->GetCGLContextObj(), GL_TEXTURE_RECTANGLE, GL_RGBA, size.x, size.y, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0) );
 	GLCALL( glBindTexture(GL_TEXTURE_RECTANGLE, 0) );
 	//IOSurfaceLock(ioSurface, kIOSurfaceLockAvoidSync, NULL);
-	return success == kCGLNoError;
+
+}
+
+void IOSurfaceSharedTexture::Release() {
+	LogDebug("Releasing IOSurface id: " << ioSurfaceID << ", handle: " << ioSurface);
+	if (ioSurface != nullptr) {
+		releaseIOSurface(ioSurface);
+		ioSurface = nullptr;
+	}
+	delete glTexture;
+}
+
+bool IOSurfaceSharedTexture::BeforeRender() {
+	return true;
 }
 bool IOSurfaceSharedTexture::AfterRender() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_RECTANGLE, 0);
 	glFlush();
-	//IOSurfaceUnlock(ioSurface, kIOSurfaceLockAvoidSync, NULL);
-	delete glTexture;
-//	releaseIOSurface(ioSurface);
-//	ioSurface = nullptr;
 	return true;
 }
 

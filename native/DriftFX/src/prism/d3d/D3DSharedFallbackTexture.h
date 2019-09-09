@@ -38,17 +38,22 @@ using namespace win32;
 class D3DSharedFallbackTexture : public SharedTexture {
 
 public:
-	D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, Frame* frame);
+	D3DSharedFallbackTexture(GLContext* glContext, D3D9ExContext* d3dContext, math::Vec2ui size);
 	virtual ~D3DSharedFallbackTexture();
 
 	virtual bool BeforeRender();
 	virtual bool AfterRender();
+
+	virtual ShareData* CreateShareData();
 
 protected:
 	D3D9ExContext* d3dContext;
 	D3D9Texture* d3dTexture;
 
 	void DownloadPixels(GLTexture * texture, byte * pixles);
+
+	virtual void Allocate();
+	virtual void Release();
 };
 
 }

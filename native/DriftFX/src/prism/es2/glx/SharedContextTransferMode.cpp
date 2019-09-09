@@ -35,11 +35,13 @@ namespace glx {
 	
 class SharedContextTransferMode : public TransferMode {
 	public:
-	SharedTexture* CreateSharedTexture(GLContext* glContext, Context* fxContext, Frame* frame) {
+	SharedTexture* CreateSharedTexture(GLContext* glContext, Context* fxContext, math::Vec2ui size) {
 		GLContext* fxGlContext = dynamic_cast<GLContext*>(fxContext);
-		return new GLXSharedTexture(glContext, fxGlContext, frame);
+		return new GLXSharedTexture(glContext, fxGlContext, size);
 	}
 	int OnTextureCreated(prism::PrismBridge* bridge, Frame* frame, jobject fxTexture) {
+		LogDebug("OnTextureCreated " << bridge << ", " << frame << ", " << fxTexture);
+
 			ES2PrismBridge* es2Bridge = dynamic_cast<ES2PrismBridge*>(bridge);
 			ShareData* data = frame->GetData();
 			GLXShareData* shareData = (GLXShareData*) data;

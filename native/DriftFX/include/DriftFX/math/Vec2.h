@@ -43,6 +43,8 @@ typedef Vec2<int> Vec2i;
 typedef Vec2<unsigned int> Vec2ui;
 typedef Vec2<double> Vec2d;
 
+
+
 }
 }
 

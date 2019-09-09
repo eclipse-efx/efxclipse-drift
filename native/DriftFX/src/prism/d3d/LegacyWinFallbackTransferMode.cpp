@@ -41,9 +41,9 @@ namespace d3d {
 
 class LegacyWinFallbackTransferMode : public TransferMode {
 public:
-	SharedTexture* CreateSharedTexture(GLContext* glContext, Context* fxContext, Frame* frame) {
+	SharedTexture* CreateSharedTexture(GLContext* glContext, Context* fxContext, math::Vec2ui size) {
     	D3D9ExContext* d3dContext = dynamic_cast<D3D9ExContext*>(fxContext);
-		return new D3DSharedFallbackTexture(glContext, d3dContext, frame);
+		return new D3DSharedFallbackTexture(glContext, d3dContext, size);
 	}
 	int OnTextureCreated(prism::PrismBridge* bridge, Frame* frame, jobject fxTexture) {
 		return D3DSharedTexture::OnTextureCreated(bridge, frame, fxTexture);

@@ -39,24 +39,21 @@ Frame::Frame(long surfaceId, long long frameId, SurfaceData surfaceData, math::V
 }
 
 Frame::~Frame() {
-	LogDebug("Destroying Frame " << dec << surfaceId << "." << dec << frameId);
-	if (sharedTexture != nullptr) {
-		delete sharedTexture;
-	}
 	if (frameData != nullptr) {
 		delete frameData;
+		frameData = nullptr;
 	}
 }
 
-void Frame::SetData(ShareData* data) {
-	this->frameData = data;
-}
 ShareData* Frame::GetData() {
 	return this->frameData;
 }
 
 void Frame::SetSharedTexture(SharedTexture* texture) {
 	sharedTexture = texture;
+	if (texture != nullptr) {
+		frameData = texture->CreateShareData();
+	}
 }
 
 SharedTexture* Frame::GetSharedTexture() {
@@ -97,6 +94,16 @@ std::string Frame::ToString() {
 	return s.str();
 }
 
+std::string Frame::TimeReport() {
+	ostringstream s;
+	auto clientDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(presentBegin - acquireEnd);
+	auto acquireDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(acquireEnd - acquireBegin);
+	auto presentDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(presentEnd - presentBegin);
+	auto fxPresentDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(fxPresentEnd - fxPresentBegin);
+	s << "Frame(" << dec << surfaceId << "." << dec << frameId << "| acquire: " << acquireDuration.count() << "ns, client: " << clientDuration.count() <<"ns, present: " << presentDuration.count() << "ns, fxPresent: " << fxPresentDuration.count() << "ns)";
+	return s.str();
+}
+
 math::Vec2ui Frame::GetSize() {
 	return size;
 }
@@ -130,6 +137,7 @@ Frame* FrameManager::GetFrame(long long frameId) {
 }
 
 void FrameManager::DisposeFrame(long long frameId) {
+	LogDebug("Dispose Frame #" << frameId);
 	framesMutex.lock();
 	Frame* frame = frames[frameId];
 	frames.erase(frameId);

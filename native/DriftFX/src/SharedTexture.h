@@ -23,7 +23,6 @@
 
 #include <DriftFX/math/Vec2.h>
 
-#include "NativeSurface.h"
 #include "SurfaceData.h"
 #include "FrameManager.h"
 
@@ -48,15 +47,22 @@ public:
 	virtual bool BeforeRender() = 0;
 	virtual bool AfterRender() = 0;
 
-	virtual Frame* GetFrame();
+	virtual math::Vec2ui GetSize();
+
+	virtual ShareData* CreateShareData() = 0;
+
+	virtual std::string ToString();
 
 protected:
-	SharedTexture(GLContext* glContext, Frame* frame);
+	SharedTexture(GLContext* glContext, math::Vec2ui size);
+
+	virtual void Allocate() = 0;
+	virtual void Release() = 0;
 
 	GLContext* glContext;
 	GLTexture* glTexture;
 
-	Frame* frame;
+	math::Vec2ui size;
 
 	virtual void SignalFrameReady();
 	virtual void WaitForFrameReady();
@@ -66,7 +72,7 @@ private:
 };
 
 typedef unsigned int SharedTextureFactoryId;
-typedef std::function<SharedTexture*(GLContext*, Context*, Frame*)> SharedTextureFactoryFunc;
+typedef std::function<SharedTexture*(GLContext*, Context*, math::Vec2ui)> SharedTextureFactoryFunc;
 
 struct SharedTextureFactoryData {
 	unsigned int id;
@@ -82,7 +88,7 @@ public:
 	static SharedTextureFactoryId FALLBACK;
 	static SharedTextureFactoryId PLATFORM_DEFAULT;
 
-	static SharedTexture* CreateSharedTexture(SharedTextureFactoryId id, GLContext* context, Context* fxContext, Frame* frame);
+	static SharedTexture* CreateSharedTexture(SharedTextureFactoryId id, GLContext* context, Context* fxContext, math::Vec2ui size);
 
 	static SharedTextureFactoryId RegisterSharedTextureType(std::string name, SharedTextureFactoryFunc factory);
 	static SharedTextureFactoryId RegisterSharedTextureType(SharedTextureFactoryId id, std::string name, SharedTextureFactoryFunc factory);
