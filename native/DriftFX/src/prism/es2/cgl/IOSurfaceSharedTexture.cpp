@@ -77,9 +77,17 @@ int IOSurfaceSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, 
 	IOSurfaceID surfaceID = sharedTexture->GetIOSurfaceID();
 	IOSurfaceRef ioSurface = IOSurfaceLookup(surfaceID);
 
-	LogDebug("Connecting to ioSurface: id=" << surfaceID << ", pointer=" << ioSurface);
+	LogDebug(frame->ToString());
+
+	LogDebug("Connecting to ioSurface: id=" << surfaceID << ", pointer=" << ioSurface << ", width=" << width << ", height=" << height);
 
 	if (ioSurface != nullptr) {
+
+//		GLsizei w = (GLsizei) IOSurfaceGetWidth(ioSurface);
+//		GLsizei h = (GLsizei) IOSurfaceGetHeight(ioSurface);
+
+//		LogDebug(" w: " << width << " <-> " << w);
+//		LogDebug(" h: " << height << " <-> " << h);
 
 		GLuint tmpTex;
 
@@ -124,6 +132,12 @@ IOSurfaceSharedTexture::~IOSurfaceSharedTexture() {
 	Release();
 }
 
+ShareData* IOSurfaceSharedTexture::CreateShareData() {
+	IOSurfaceShareData* data = new IOSurfaceShareData();
+	data->ioSurfaceID = ioSurfaceID;
+	return data;
+}
+
 void IOSurfaceSharedTexture::Allocate() {
 	glTexture = dynamic_cast<GLTexture*>(glContext->CreateTexture(size.x, size.y));
 
@@ -138,9 +152,6 @@ void IOSurfaceSharedTexture::Allocate() {
 	GLCALL( glBindTexture(GL_TEXTURE_RECTANGLE, 0) );
 	//IOSurfaceLock(ioSurface, kIOSurfaceLockAvoidSync, NULL);
 
-	IOSurfaceShareData* data = new IOSurfaceShareData();
-	data->ioSurfaceID = ioSurfaceID;
-	shareData = data;
 }
 
 void IOSurfaceSharedTexture::Release() {
@@ -157,8 +168,11 @@ bool IOSurfaceSharedTexture::BeforeRender() {
 }
 
 bool IOSurfaceSharedTexture::AfterRender() {
-	SignalFrameReady();
-	WaitForFrameReady();
+//	SignalFrameReady();
+//	WaitForFrameReady();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_RECTANGLE, 0);
+	glFlush();
 	return true;
 }
 

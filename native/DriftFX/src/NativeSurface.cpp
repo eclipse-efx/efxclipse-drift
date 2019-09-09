@@ -216,8 +216,9 @@ void NativeSurface::DisposeFrame(long long frameId) {
 		texturePool[transferMode]->ReleaseTexture(texture);
 	}
 	else {
-		// TODO this may not work on all platforms -.-
-		delete texture;
+		// TODO this destroys at least the macos javafx context state
+		// delete texture;
+		// for now we leak it..
 	}
 	texturePoolMutex.unlock();
 

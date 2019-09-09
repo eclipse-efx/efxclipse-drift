@@ -48,6 +48,8 @@ public:
 
 	virtual IOSurfaceID GetIOSurfaceID();
 
+	virtual ShareData* CreateShareData();
+
 protected:
 
 	virtual void Allocate();

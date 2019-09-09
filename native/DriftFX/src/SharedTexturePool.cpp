@@ -51,7 +51,7 @@ void SharedTexturePool::LogContent() {
 			auto l = lastUsed[tex];
 
 			auto t = std::chrono::duration_cast<std::chrono::milliseconds>(now - l);
-			LogDebug("   * " << tex << " (last used " << t.count() << "ms ago)");
+			LogDebug("   * " << tex << ": " << tex->ToString() << " (last used " << t.count() << "ms ago)");
 
 			if (t.count() > 1000) {
 				LogDebug("     => older than 1s");
@@ -65,7 +65,7 @@ SharedTexture* SharedTexturePool::AcquireTexture(math::Vec2ui size) {
 
 	unusedTexturesMutex.lock();
 //	LogDebug("### Before Acquire");
-//	LogContent();
+	LogContent();
 
 
 	if (unusedTextures.find(size) != unusedTextures.end()) {
@@ -133,17 +133,21 @@ void SharedTexturePool::DisposeUnusedTextures() {
 			auto l = lastUsed[tex];
 
 			auto t = std::chrono::duration_cast<std::chrono::milliseconds>(now - l);
-			LogDebug("   * " << tex << " (last used " << t.count() << "ms ago)");
+			LogDebug("   * " << tex << ": " << tex->ToString() << " (last used " << t.count() << "ms ago)");
 
 			if (t.count() > 1000) {
-				LogDebug("before erase " << set->size());
 				it2 = set->erase(it2);
-				LogDebug("after erase " << set->size());
 				toDispose.insert(tex);
 				LogDebug("     => marking for disposal");
 				if (it2 == set->end()){
 					break;
 				}
+			}
+		}
+		if (set->empty()) {
+			it = unusedTextures.erase(it);
+			if (it == unusedTextures.end()) {
+				break;
 			}
 		}
 	}

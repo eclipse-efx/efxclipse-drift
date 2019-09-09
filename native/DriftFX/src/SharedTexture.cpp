@@ -36,6 +36,12 @@ SharedTexture::~SharedTexture() {
 	LogDebug(" * SharedTexture Destructor!")
 }
 
+std::string SharedTexture::ToString() {
+	std::ostringstream s;
+	s << "SharedTexture[" << GetSize().x << " x " << GetSize().y << " ]";
+	return s.str();
+}
+
 GLTexture* SharedTexture::GetTexture() {
 	return glTexture;
 }

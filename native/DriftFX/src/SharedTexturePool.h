@@ -32,7 +32,7 @@ namespace internal {
 
 struct Vec2uiCompare {
 	bool operator() (const math::Vec2ui& lhs, const math::Vec2ui& rhs) const {
-		return lhs.x < rhs.x && lhs.y < rhs.y;
+		return  (long) lhs.x * 1000000l + lhs.y < (long) rhs.x * 1000000l + rhs.y;
 	}
 };
 

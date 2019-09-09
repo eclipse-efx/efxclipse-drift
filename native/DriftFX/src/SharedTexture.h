@@ -51,6 +51,8 @@ public:
 
 	virtual ShareData* CreateShareData() = 0;
 
+	virtual std::string ToString();
+
 protected:
 	SharedTexture(GLContext* glContext, math::Vec2ui size);
 
