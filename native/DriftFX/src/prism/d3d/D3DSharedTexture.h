@@ -51,6 +51,8 @@ public:
 	virtual bool BeforeRender();
 	virtual bool AfterRender();
 
+	virtual ShareData* CreateShareData();
+
 	virtual long long GetShareHandle();
 
 	static HANDLE OpenSharedDevice(D3D9ExContext* d3dContext, GLContext* glContext);
@@ -72,6 +74,8 @@ protected:
 	static std::map<std::pair<IDirect3DDevice9Ex*, HGLRC>, HANDLE> sharedDevices;
 	static std::map<HANDLE, int> sharedDevicesUsageCount;
 
+	virtual void Allocate();
+	virtual void Release();
 };
 
 }

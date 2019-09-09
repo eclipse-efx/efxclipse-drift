@@ -61,6 +61,10 @@ void NativeSurface::Initialize() {
 }
 
 void NativeSurface::Cleanup() {
+
+	// TODO we need to make sure that every SharedTexture is gone
+	// however atm fx holds the last texture until we send a new one..
+
 //	// TODO send some kind of signal to tell FX we are going to dispose our textures
 //	FrameData* frameData = new FrameData();
 //	frameData->d3dSharedHandle = 0;

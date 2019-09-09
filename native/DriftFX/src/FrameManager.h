@@ -12,6 +12,12 @@
 #ifndef DRIFTFX_INTERNAL_FRAMEMANAGER_H_
 #define DRIFTFX_INTERNAL_FRAMEMANAGER_H_
 
+
+// windows header conflicts with chronos min -.-
+#ifdef min
+#undef min
+#endif
+
 #include <map>
 #include <vector>
 #include <mutex>

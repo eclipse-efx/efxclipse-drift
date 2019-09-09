@@ -44,11 +44,16 @@ public:
 	virtual bool BeforeRender();
 	virtual bool AfterRender();
 
+	virtual ShareData* CreateShareData();
+
 protected:
 	D3D9ExContext* d3dContext;
 	D3D9Texture* d3dTexture;
 
 	void DownloadPixels(GLTexture * texture, byte * pixles);
+
+	virtual void Allocate();
+	virtual void Release();
 };
 
 }

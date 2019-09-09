@@ -35,8 +35,8 @@ namespace d3d {
 
 class MainMemoryTransferMode : public TransferMode {
 public:
-	SharedTexture* CreateSharedTexture(GLContext* glContext, Context* fxContext, Frame* frame) {
-		return new MainMemorySharedTexture(glContext, frame);
+	SharedTexture* CreateSharedTexture(GLContext* glContext, Context* fxContext, math::Vec2ui size) {
+		return new MainMemorySharedTexture(glContext, size);
 	}
 	int OnTextureCreated(prism::PrismBridge* bridge, Frame* frame, jobject fxTexture) {
 				LogDebug("OnTextureCreated(" << bridge << ", " << frame << ", " << fxTexture << ")");
