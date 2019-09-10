@@ -180,7 +180,7 @@ public:
 
 			renderFrame();
 
-			this_thread::sleep_for(milliseconds(10));
+			this_thread::sleep_for(milliseconds(1));
 		}
 
 		cleanup();

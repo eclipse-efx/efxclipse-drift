@@ -367,7 +367,7 @@ public:
 
 			renderFrame();
 
-			this_thread::sleep_for(milliseconds(30));
+			this_thread::sleep_for(milliseconds(1));
 		}
 
 		cleanup();
