@@ -38,7 +38,7 @@ struct Vec2uiCompare {
 
 struct TexCompare {
 	bool operator() (const SharedTexture* lhs, const SharedTexture* rhs) const {
-		return (long) lhs > (long) rhs;
+		return (long long) lhs > (long long) rhs;
 	}
 };
 
