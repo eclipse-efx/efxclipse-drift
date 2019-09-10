@@ -40,6 +40,7 @@ class SharedContextTransferMode : public TransferMode {
 		return new GLXSharedTexture(glContext, fxGlContext, size);
 	}
 	int OnTextureCreated(prism::PrismBridge* bridge, Frame* frame, jobject fxTexture) {
+		frame->Begin("SharedContextTransferMode#OnTextureCreated");
 		LogDebug("OnTextureCreated " << bridge << ", " << frame << ", " << fxTexture);
 
 			ES2PrismBridge* es2Bridge = dynamic_cast<ES2PrismBridge*>(bridge);
@@ -47,7 +48,44 @@ class SharedContextTransferMode : public TransferMode {
 			GLXShareData* shareData = (GLXShareData*) data;
 			auto size = frame->GetSize();
 			GLuint targetTex = es2Bridge->GetGLTextureName(fxTexture);
-			ES2PrismBridge::CopyTexture(shareData->textureName, targetTex, size.x, size.y);
+//			ES2PrismBridge::CopyTexture(shareData->textureName, targetTex, size.x, size.y);
+
+			GLuint width = size.x;
+			GLuint height = size.y;
+			GLuint sourceTex = shareData->textureName;
+
+			// COPY OVER
+			GLuint fbos[2];
+
+			GLCALL( glGenFramebuffers(2, &fbos[0]) );
+
+			GLCALL( glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[0]) );
+			GLCALL( glFramebufferTexture(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, sourceTex, 0) );
+
+			GLCALL( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[1]); );
+			GLCALL( glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, targetTex, 0) );
+
+			GLCALL( glClearColor(0, 0, 0, 0) );
+			GLCALL( glClear(GL_COLOR_BUFFER_BIT) );
+
+			GLCALL( glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR) );
+
+
+			GLCALL( glFlush() );
+
+			GLCALL( glDeleteFramebuffers(2, &fbos[0]) );
+
+
+			// We need to wait here for the blit operation to finish to prevent copying an empty texture in FX context
+			//GLCALL( glFinish() );
+//			GLsync fence;
+//			GLCALL( fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0) );
+//			GLCALL( glFlush() );
+//			GLCALL( glWaitSync(fence, 0, GL_TIMEOUT_IGNORED) );
+//			GLCALL( glDeleteSync( fence ) );
+
+
+			frame->End("SharedContextTransferMode#OnTextureCreated");
 			return 0;
 	}
 	virtual bool isPlatformDefault() {

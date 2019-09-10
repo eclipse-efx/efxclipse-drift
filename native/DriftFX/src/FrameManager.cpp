@@ -75,6 +75,28 @@ unsigned int Frame::GetHeight() {
 	return size.y;
 }
 
+void Frame::Begin(std::string tag) {
+	auto time = std::chrono::high_resolution_clock::now();
+	Timing t;
+	t.tag = tag;
+	t.begin = time.time_since_epoch().count();
+	openTimings[tag] = t;
+}
+
+void Frame::End(std::string tag) {
+	auto time = std::chrono::high_resolution_clock::now();
+	if (openTimings.find(tag) != openTimings.end()) {
+		auto t = openTimings[tag];
+		openTimings.erase(tag);
+		t.end = time.time_since_epoch().count();
+		timings.push_back(t);
+	}
+}
+
+std::vector<Timing> Frame::GetReport() {
+	return timings;
+}
+
 long Frame::GetSurfaceId() {
 	return surfaceId;
 }

@@ -39,6 +39,12 @@ public:
 	unsigned int type;
 };
 
+struct Timing {
+	std::string tag;
+	long begin;
+	long end;
+};
+
 class Frame : public RenderTarget {
 public:
 	Frame(long surfaceId, long long frameId, SurfaceData surfaceData, math::Vec2ui size);
@@ -67,6 +73,12 @@ public:
 	virtual std::string TimeReport();
 
 
+	virtual void Begin(std::string tag);
+	virtual void End(std::string tag);
+
+	virtual std::vector<Timing> GetReport();
+
+
 	std::chrono::steady_clock::time_point acquireBegin = std::chrono::steady_clock::time_point::min();
 	std::chrono::steady_clock::time_point acquireEnd = std::chrono::steady_clock::time_point::min();
 	std::chrono::steady_clock::time_point presentBegin = std::chrono::steady_clock::time_point::min();
@@ -83,6 +95,9 @@ private:
 	SharedTexture* sharedTexture;
 
 	ShareData* frameData;
+
+	std::map<std::string, Timing> openTimings;
+	std::vector<Timing> timings;
 };
 
 class FrameManager {

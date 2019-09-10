@@ -8,9 +8,21 @@
  * Contributors:
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  */
+#ifndef JNI_JNIUTIL_H_
+#define JNI_JNIUTIL_H_
 
-#include <DriftFX/RenderTarget.h>
-using namespace driftfx;
+#include <jni.h>
 
-RenderTarget::~RenderTarget() {
+namespace driftfx {
+namespace internal {
+namespace jni {
+
+jclass ResolveClass(JNIEnv* env, const char* name);
+jmethodID ResolveMethod(JNIEnv* env, jclass cls, const char* name, const char* sig);
+jfieldID ResolveField(JNIEnv* env, jclass cls, const char* name, const char* sig);
+
 }
+}
+}
+
+#endif

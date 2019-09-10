@@ -156,6 +156,7 @@ RenderTarget* NativeSurface::Acquire(unsigned int width, unsigned int height, dr
 }
 
 RenderTarget* NativeSurface::Acquire(math::Vec2ui size, SurfaceData surfaceData) {
+
 	auto begin = std::chrono::steady_clock::now();
 	PrismBridge* bridge = PrismBridge::Get();
 	// in case the system was destroyed
@@ -170,6 +171,7 @@ RenderTarget* NativeSurface::Acquire(math::Vec2ui size, SurfaceData surfaceData)
 	}
 
 	auto frame = frameManager.CreateFrame(surfaceData, size);
+	frame->Begin("NativeSurface#Acquire");
 	frame->acquireBegin = begin;
 
 	LogDebug("Acquire " << frame->ToString() << "(" << size.x << ", " << size.y << ")");
@@ -204,6 +206,8 @@ RenderTarget* NativeSurface::Acquire(math::Vec2ui size, SurfaceData surfaceData)
 
 
 	frame->acquireEnd = std::chrono::steady_clock::now();
+	frame->End("NativeSurface#Acquire");
+	frame->Begin("ClientRenderer");
 	return frame;
 }
 
@@ -238,6 +242,8 @@ void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 	}
 
 	auto frame = dynamic_cast<Frame*>(target);
+	frame->End("ClientRenderer");
+	frame->Begin("NativeSurface#Present");
 	frame->presentBegin = begin;
 	LogDebug("Present " << frame->ToString());
 
@@ -252,6 +258,7 @@ void NativeSurface::Present(RenderTarget* target, PresentationHint hint) {
 	//GetFrameManager()->DisposePendingFrames();
 
 	frame->presentEnd = std::chrono::steady_clock::now();
+	frame->End("NativeSurface#Present");
 }
 
 driftfx::TransferMode* NativeSurface::GetTransferMode() {

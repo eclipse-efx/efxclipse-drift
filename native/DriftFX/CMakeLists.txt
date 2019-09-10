@@ -81,6 +81,15 @@ set(DriftFX-Sources
 	
 	src/SharedTexturePool.h
 	src/SharedTexturePool.cpp
+	
+	src/GPUSyncUtil.cpp
+	
+	src/jni/jniutil.h
+	src/jni/jniutil.cpp
+	src/jni/JNITiming.h
+	src/jni/JNITiming.cpp
+	
+	src/FrameNativeAPI.cpp
 )
 
 if (WIN32)

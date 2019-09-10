@@ -14,21 +14,15 @@ import java.util.function.Consumer;
 
 public class JNINativeSurface {
 
-	private Consumer<FrameData> presentFrame;
-	private Consumer<Frame> presentFrame2;
+	private Consumer<Frame> framePresenter;
 	
-	public JNINativeSurface(Consumer<FrameData> presentFrame, Consumer<Frame> presentFrame2) {
-		this.presentFrame = presentFrame;
-		this.presentFrame2 = presentFrame2;
+	public JNINativeSurface(Consumer<Frame> framePresenter) {
+		this.framePresenter = framePresenter;
 	}
 	
-	public void present(FrameData frame) {
-		//System.err.println("Present call " + frame);
-		presentFrame.accept(frame);
-	}
-	
+	// Important: called from native code
 	public void present(Frame frame) {
-		presentFrame2.accept(frame);
+		framePresenter.accept(frame);
 	}
 	
 }

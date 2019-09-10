@@ -24,6 +24,7 @@ public:
     	return new MainMemorySharedTexture(glContext, size);
 	}
 	int OnTextureCreated(prism::PrismBridge* bridge, Frame* frame, jobject fxTexture) {
+		frame->Begin("MainMemoryTransferMode#OnTextureCreated");
 		//LogDebug("OnTextureCreated(" << bridge << ", " << frame << ", " << fxTexture << ")");
 
 		ES2PrismBridge* es2Bridge = dynamic_cast<ES2PrismBridge*>(bridge);
@@ -45,6 +46,7 @@ public:
 
 		es2Bridge->UploadTexture(targetTex, frame->GetWidth(), frame->GetHeight(), memData->pointer, memData->length);
 
+		frame->End("MainMemoryTransferMode#OnTextureCreated");
 		return 0;
     }
 	virtual bool isFallback() {

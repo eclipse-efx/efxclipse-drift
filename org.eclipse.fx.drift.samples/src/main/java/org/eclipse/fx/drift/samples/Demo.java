@@ -13,6 +13,7 @@ package org.eclipse.fx.drift.samples;
 import org.eclipse.fx.drift.DriftFXConfig;
 import org.eclipse.fx.drift.DriftFXSurface;
 import org.eclipse.fx.drift.DriftFXSurface.TransferMode;
+import org.eclipse.fx.drift.internal.FrameProfiler;
 
 import javafx.application.Application;
 import javafx.scene.Node;
@@ -87,7 +88,9 @@ public class Demo extends Application {
 		userScale.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 2.4, 1.0, 0.1));
 		surface0.userScaleFactorProperty().bind(userScale.valueProperty());
 		
-		
+		if (Boolean.getBoolean("driftfx.profile")) {
+			FrameProfiler.open(surface0.getNativeSurfaceHandle());
+		}
 		dummy.setBottom(new VBox(new HBox(renderers, start, stop), new HBox(new Label("User Scale:"), userScale)));
 
 		return dummy;
@@ -95,7 +98,7 @@ public class Demo extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		DriftFXSurface.initialize(DriftFXConfig.initSystemProperties().debug(true).logLevel(0));
+		DriftFXSurface.initialize(DriftFXConfig.initSystemProperties().debug(true).logLevel(3));
 
 		BorderPane root = new BorderPane();
 		root.setPrefSize(400, 300);
@@ -113,6 +116,8 @@ public class Demo extends Application {
 		root.setCenter(hbox);
 
 		primaryStage.show();
+		
+		
 	}
 
 	public static void main(String[] args) {
