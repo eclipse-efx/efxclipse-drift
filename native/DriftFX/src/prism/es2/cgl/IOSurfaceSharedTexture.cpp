@@ -49,7 +49,7 @@ using namespace driftfx::internal::prism::es2::cgl;
 
 
 int IOSurfaceSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, jobject fxTexture) {
-
+	frame->Begin("IOSurfaceSharedTexture#OnTextureCreated");
 	ES2PrismBridge* es2Bridge = dynamic_cast<ES2PrismBridge*>(bridge);
 
 	GLContext* fxShared = es2Bridge->GetFXSharedGLContext();
@@ -106,9 +106,12 @@ int IOSurfaceSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, 
 		LogDebug("Releasing IOSurface id=" << surfaceID);
 		releaseIOSurface(ioSurface);
 
+		frame->End("IOSurfaceSharedTexture#OnTextureCreated");
+
 		return 0;
 
 	}
+	frame->End("IOSurfaceSharedTexture#OnTextureCreated");
 
 	return -1;
 }
