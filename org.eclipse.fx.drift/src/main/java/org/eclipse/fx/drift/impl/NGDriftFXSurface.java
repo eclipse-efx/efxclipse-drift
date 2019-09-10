@@ -15,15 +15,9 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.fx.drift.DriftFXSurface;
 import org.eclipse.fx.drift.internal.Frame;
-import org.eclipse.fx.drift.internal.FrameData;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
 import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.NativeAPI;
@@ -50,7 +44,6 @@ public class NGDriftFXSurface extends NGNode {
 	private ResourceFactory resourceFactory;
 	private DriftFXSurface node;
 	
-	private FrameData currentFrameData;
 	
 	private int currentFrameDataHash;
 	private Texture currentTexture;
@@ -61,23 +54,9 @@ public class NGDriftFXSurface extends NGNode {
 	private Texture renderedTexture;
 	
 	private Queue<Frame> nextFrame = new ConcurrentLinkedQueue<>();
-	
-	@Deprecated
-	public void present(FrameData frame) {
-		FrameData oldData = currentFrameData;
-		currentFrameData = frame;
-		if (oldData != null) {
-			dispose(oldData);
-		}
-	}
-	
+
 	public void present(Frame frame) {
 		nextFrame.offer(frame);
-	}
-	
-	@Deprecated
-	private void dispose(FrameData frame) {
-		NativeAPI.disposeFrameData(nativeSurfaceHandle, frame);
 	}
 	
 	private void dispose(Frame frame) {
@@ -141,37 +120,6 @@ public class NGDriftFXSurface extends NGNode {
 			return null;
 		}
 	}
-	
-	private Texture createTexture(Graphics g, FrameData data) {
-		int w = currentFrameData.width;
-		int h = currentFrameData.height;
-		
-		// create fx texture
-		Texture texture = resourceFactory.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, w, h);
-		if (texture == null) {
-			Log.error("[J] Allocation of requested texture failed! This is FATAL! requested size was " + w + "x" + h);
-			System.out.flush();
-			System.exit(1);
-		}
-		texture.makePermanent();
-		Log.debug("Created Texture @ " + texture.getContentWidth() + " x " + texture.getContentHeight());
-		
-		// to protect the javafx gl context we change threads here
-		// recreate shared texture
-		int result = QuantumRendererHelper.syncExecute(() -> GraphicsPipelineUtil.onTextureCreated(texture, currentFrameData));
-		
-		if (result == 0) {
-			texture.contentsUseful();
-			return texture;
-		}
-		else {
-			System.err.println("Result was " + result);
-			texture.dispose();
-			return null;
-		}
-	}
-	
-	
 	
 	private int toPixels(double value) {
 		return (int) Math.ceil(value);
@@ -368,92 +316,6 @@ public class NGDriftFXSurface extends NGNode {
 		if (currentFrame != null) {
 			renderFrame(g, currentFrame);
 		}
-		
-		if (1==1) return;
-		
-		//renderPlaceholder(g);
-				
-		// TODO add signal & check it here!
-		if (currentFrameData != null && currentFrameData.width != 0 && currentFrameData.height != 0) {
-			int hash = currentFrameData.hashCode();
-			if (hash != currentFrameDataHash) {
-				currentFrameDataHash = hash;
-				Texture texture = createTexture(g, currentFrameData);
-				if (texture != null) {
-					if (currentTexture != null) {
-						currentTexture.dispose();
-					}
-					currentTexture = texture;
-				}
-				else {
-					System.err.println("[J] [WARNING] Surface# \"+nativeSurfaceHandle+\": Could not recreate texture, keeping old one.");
-				}
-			}
-		}
-		
-		
-		
-		
-		// nothing to render!
-		if (currentFrameData == null || currentFrameData.surfaceData == null) return;
-		
-		float frameWidth = currentFrameData.surfaceData.width;
-		float frameHeight = currentFrameData.surfaceData.height;
-
-		
-		// TODO we need to transport the effective scale here, because the client could use any scale
-		float renderScaleX = this.surfaceData.renderScaleX * this.surfaceData.userScaleX;
-		float renderScaleY = this.surfaceData.renderScaleY * this.surfaceData.userScaleY;
-		
-		float frameScaleX = this.surfaceData.renderScaleX * this.surfaceData.userScaleX;
-		float frameScaleY = this.surfaceData.renderScaleY * this.surfaceData.userScaleY;
-		
-		
-		if (currentTexture != null) {
-			float frameContainerWidth = currentFrameData.surfaceData.width;
-			float frameContainerHeight = currentFrameData.surfaceData.height;
-			
-			Placement placement = toPlacement(currentFrameData.placementHint);
-			
-			float textureRatio = currentTexture.getContentWidth() / (float) currentTexture.getContentHeight();
-			float frameRatio = currentFrameData.surfaceData.width / currentFrameData.surfaceData.height;
-			
-			Pos framePos = new Pos(0, frameContainerWidth, 0, frameContainerHeight);
-			
-			if (Math.abs(textureRatio - frameRatio) > 0.001f) {
-				// aspect ratio is not matching, we need to do compute the position within the frame container
-				framePos = computeContain(frameContainerWidth, frameContainerHeight, currentTexture.getContentWidth(), currentTexture.getContentHeight());
-//				System.err.println("frame: " + frameContainerWidth + " / " + frameContainerHeight);
-//				System.err.println("framePos = " + framePos.width + " / " + framePos.height);
-			}
-			
-			
-			int frameTextureWidth = currentTexture.getContentWidth();
-			int frameTextureHeight = currentTexture.getContentHeight();
-			
-			float currentContainerWidth = surfaceData.width;
-			float currentContainerHeight = surfaceData.height;	
-
-			Pos pos = computePlacement(placement, currentContainerWidth, currentContainerHeight, framePos.width, framePos.height);
-
-			// flip it vertically
-			g.scale(1, -1);
-			g.translate(0, -currentContainerHeight);		
-				
-			pos.y = currentContainerHeight - pos.y - pos.height;
-
-			
-			//System.err.println("Render! " + currentTexture.getPixelFormat());
-			
-			g.drawTexture(currentTexture, pos.x, pos.y, 
-					pos.x + pos.width, pos.y + pos.height, 0, 0, frameTextureWidth, frameTextureHeight);
-			
-		}
-		else {
-			Log.debug("current Texture == null");
-		}
-		
-		
 	}
 	
 	public void updateSurface(SurfaceData surfaceData)  {

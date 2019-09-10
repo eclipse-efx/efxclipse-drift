@@ -117,12 +117,6 @@ public class NativeAPI {
 		nDestroy();
 	}
 	
-	private static native void nDisposeFrameData(long nativeSurfaceHandle, long frameDataId);
-	@Deprecated
-	public static void disposeFrameData(long nativeSurfaceHandle, FrameData frameData) {
-		nDisposeFrameData(nativeSurfaceHandle, frameData.frameId);
-	}
-	
 	private static native long nCreateNativeSurface(JNINativeSurface surface);
 	public static long createNativeSurface(JNINativeSurface surface) {
 		return nCreateNativeSurface(surface);
@@ -159,6 +153,7 @@ public class NativeAPI {
 
 	
 	public static native int nOnTextureCreated(long surfaceId, long frameId, Texture fxTexture);
+
 
 
 	

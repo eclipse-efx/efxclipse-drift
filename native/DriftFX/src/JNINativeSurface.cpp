@@ -63,24 +63,6 @@ jobject jni::Frame::New(JNIEnv* env, jlong surfaceId, jlong frameId, jint w, jin
 	return env->NewObject(cls, constructor, surfaceId, frameId, w, h, surfaceData, presentationHint);
 }
 
-// FrameData
-jclass jni::FrameData::cls = nullptr;
-jmethodID jni::FrameData::constructor = nullptr;
-
-void jni::FrameData::Initialize(JNIEnv* env) {
-	cls = ResolveClass(env, "org/eclipse/fx/drift/internal/FrameData");
-	cls = (jclass) env->NewGlobalRef(jni::FrameData::cls);
-	constructor = ResolveMethod(env, cls, "<init>", "(JIILorg/eclipse/fx/drift/internal/SurfaceData;JJIIJJ)V");
-}
-void jni::FrameData::Dispose(JNIEnv* env) {
-	env->DeleteGlobalRef(cls);
-	cls = nullptr;
-	constructor = nullptr;
-}
-jobject jni::FrameData::New(JNIEnv* env, jlong frameId, jint width, jint height, jobject surfaceData, jlong d3dShareHandle, jlong ioSurfaceHandle, jint textureName, jint placementHint, jlong memoryPointer, jlong memorySize) {
-	return env->NewObject(cls, constructor, frameId, width, height, surfaceData, d3dShareHandle, ioSurfaceHandle, textureName, placementHint, memoryPointer, memorySize);
-}
-
 // SurfaceData
 jclass jni::SurfaceData::cls = nullptr;
 jmethodID jni::SurfaceData::constructor = nullptr;
@@ -102,34 +84,27 @@ jobject jni::SurfaceData::New(JNIEnv* env, jfloat width, jfloat height, jfloat r
 // NativeSurface
 jclass jni::NativeSurface::cls = nullptr;
 jmethodID jni::NativeSurface::present = nullptr;
-jmethodID jni::NativeSurface::present2 = nullptr;
 
 void jni::NativeSurface::Initialize(JNIEnv* env) {
 	cls = ResolveClass(env, "org/eclipse/fx/drift/internal/JNINativeSurface");
 	cls = (jclass)env->NewGlobalRef(cls);
-	present = ResolveMethod(env, cls, "present", "(Lorg/eclipse/fx/drift/internal/FrameData;)V");
-	present2 = ResolveMethod(env, cls, "present", "(Lorg/eclipse/fx/drift/internal/Frame;)V");
+	present = ResolveMethod(env, cls, "present", "(Lorg/eclipse/fx/drift/internal/Frame;)V");
 }
 
 void jni::NativeSurface::Dispose(JNIEnv* env) {
 	env->DeleteGlobalRef(cls);
 	cls = nullptr;
 	present = nullptr;
-	present2 = nullptr;
 }
 
-void jni::NativeSurface::Present(JNIEnv* env, jobject nativeSurface, jobject frameData) {
-	env->CallVoidMethod(nativeSurface, present, frameData);
-}
-void jni::NativeSurface::Present2(JNIEnv* env, jobject nativeSurface, jobject frame) {
-	env->CallVoidMethod(nativeSurface, present2, frame);
+void jni::NativeSurface::Present(JNIEnv* env, jobject nativeSurface, jobject frame) {
+	env->CallVoidMethod(nativeSurface, present, frame);
 }
 
 void JNINativeSurface::Initialize() {
 	LogDebug("Initialize")
 	JNIEnv *env = JNIHelper::GetJNIEnv(true);
 	jni::Frame::Initialize(env);
-	jni::FrameData::Initialize(env);
 	jni::SurfaceData::Initialize(env);
 	jni::NativeSurface::Initialize(env);
 	LogDebug("initialization complete")
@@ -137,7 +112,6 @@ void JNINativeSurface::Initialize() {
 void JNINativeSurface::Dispose() {
 	JNIEnv *env = JNIHelper::GetJNIEnv(true);
 	jni::Frame::Dispose(env);
-	jni::FrameData::Dispose(env);
 	jni::SurfaceData::Dispose(env);
 	jni::NativeSurface::Dispose(env);
 }
@@ -166,5 +140,5 @@ void JNINativeSurface::Present(Frame* frame) {
 
 	jobject jFrame = jni::Frame::New(env, frame->GetSurfaceId(), frame->GetFrameId(), frame->GetWidth(), frame->GetHeight(), jSurfaceData, frame->GetPresentationHint());
 
-	jni::NativeSurface::Present2(env, jNativeSurfaceInstance, jFrame);
+	jni::NativeSurface::Present(env, jNativeSurfaceInstance, jFrame);
 }

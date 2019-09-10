@@ -305,57 +305,5 @@ public class GraphicsPipelineUtil {
 		return NativeAPI.nOnTextureCreated(frame.surfaceId, frame.frameId, texture);
 	}
 	
-	public static int onTextureCreated(Texture texture, FrameData currentFrameData) {
-		
-		if (currentFrameData.memoryPointer != 0) {
-			int textureName = ES2.getTextureName(texture);
-	
-			NativeAPI.nES2UploadTexture(textureName, currentFrameData.width, currentFrameData.height, currentFrameData.memoryPointer, currentFrameData.memorySize);
-
-			return 0;
-		}
-		
-		if (isD3D()) {
-			return NativeAPI.d3dRecreateTextureAsShared(texture, currentFrameData.d3dShareHandle);
-		}
-		else if (isES2()) {
-			Log.debug("Connecting texture to " + currentFrameData.textureName);
-			if (ES2.isMac) {
-				int textureName = ES2.getTextureName(texture);
-				return NativeAPI.es2ConnectTextureToIOSurface(textureName, currentFrameData.width, currentFrameData.height, currentFrameData.ioSurfaceHandle);
-			}
-			else { // ES2.isX11
-				
-				Object iDrawable = null;
-//				try {
-//					Field fES2Context_currentDrawable = ES2.cES2Context.getDeclaredField("currentDrawable");
-//					fES2Context_currentDrawable.setAccessible(true);
-//					iDrawable = fES2Context_currentDrawable.get(iES2Context);
-//				}
-//				catch (Exception e) {
-//					e.printStackTrace();
-//					return -1;
-//				}
-				
-				int textureName = ES2.getTextureName(texture);
-				NativeAPI.es2CopyTexture(currentFrameData.textureName, textureName, currentFrameData.width, currentFrameData.height);
-				// now context is wrong!
-				
-//				try {
-//					Class<?> cGLDrawable = Class.forName("com.sun.prism.es2.GLDrawable");
-//					Method mES2Context_makeCurrent = ES2.cES2Context.getDeclaredMethod("makeCurrent", cGLDrawable);
-//					mES2Context_makeCurrent.setAccessible(true);
-//					mES2Context_makeCurrent.invoke(iES2Context, iDrawable);
-//				}
-//				catch (Exception e) {
-//					e.printStackTrace();
-//					return -1;
-//				}
-				return 0;
-			}
-		}
-	
-		return -1;
-	}
 
 }

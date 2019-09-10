@@ -30,16 +30,6 @@ namespace jni {
 		static jmethodID constructor;
 	};
 
-	class FrameData {
-	public:
-		static void Initialize(JNIEnv* env);
-		static void Dispose(JNIEnv* env);
-		static jobject New(JNIEnv* env, jlong frameId, jint width, jint height, jobject surfaceData, jlong d3dShareHandle, jlong ioSurfaceHandle, jint textureName, jint placementHint, jlong memoryPointer, jlong memorySize);
-	private :
-		static jclass cls;
-		static jmethodID constructor;
-	};
-
 	class SurfaceData {
 	public:
 		static void Initialize(JNIEnv* env);
@@ -54,12 +44,10 @@ namespace jni {
 	public:
 		static void Initialize(JNIEnv* env);
 		static void Dispose(JNIEnv* env);
-		static void Present(JNIEnv* env, jobject nativeSurface, jobject frameData);
-		static void Present2(JNIEnv* env, jobject nativeSurface, jobject frame);
+		static void Present(JNIEnv* env, jobject nativeSurface, jobject frame);
 	private:
 		static jclass cls;
 		static jmethodID present;
-		static jmethodID present2;
 	};
 
 }
