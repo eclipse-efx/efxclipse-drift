@@ -34,6 +34,15 @@ public class GPUSyncUtil {
 		}
 	}
 	
+	public static GPUSync createFence() {
+		if (GraphicsPipelineUtil.isES2()) {
+			return GLSync.CreateFence();
+		}
+		else {
+			return new D3DSync();
+		}
+	}
+	
 	public static class GLSync implements GPUSync {
 		private long sync;
 		
