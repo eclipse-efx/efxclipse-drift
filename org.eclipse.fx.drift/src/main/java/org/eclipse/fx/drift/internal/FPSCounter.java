@@ -8,6 +8,8 @@ public class FPSCounter {
 	long lastFrame;
 	Queue<Long> framesTimes = new LinkedList<>();
 	
+	double avgFps;
+	
 	public void frame() {
 		long lastFrameDur = System.nanoTime() - lastFrame;
 		if (framesTimes.size() > 10) framesTimes.poll();
@@ -15,7 +17,16 @@ public class FPSCounter {
 		
 		lastFrame = System.nanoTime();
 		
-		double avgTime = framesTimes.stream().mapToLong(l -> l).average().orElse(0);
-		System.err.println(String.format("%5.3ffps", Duration.ofSeconds(1).toNanos() / avgTime));
+		//double avgTime = framesTimes.stream().mapToLong(l -> l).average().orElse(0);
+		//System.err.println(String.format("%5.3ffps", Duration.ofSeconds(1).toNanos() / avgTime));
+	}
+	
+	public double avgTime() {
+		return framesTimes.stream().mapToLong(l -> l).average().orElse(0);
+		
+	}
+	
+	public double avgFps() {
+		return Duration.ofSeconds(1).toNanos() / avgTime();
 	}
 }

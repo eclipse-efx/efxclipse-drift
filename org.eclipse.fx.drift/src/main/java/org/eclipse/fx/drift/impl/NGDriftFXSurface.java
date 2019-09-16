@@ -35,13 +35,24 @@ import org.eclipse.fx.drift.internal.QuantumRendererHelper;
 import org.eclipse.fx.drift.internal.QuantumRendererHelper.WithFence;
 import org.eclipse.fx.drift.internal.SurfaceData;
 
+import com.sun.javafx.font.FontStrike;
+import com.sun.javafx.font.PGFont;
+import com.sun.javafx.geom.Point2D;
+import com.sun.javafx.geom.transform.BaseTransform;
+import com.sun.javafx.scene.text.GlyphList;
+import com.sun.javafx.scene.text.TextLayout;
+import com.sun.javafx.scene.text.TextLayoutFactory;
 import com.sun.javafx.sg.prism.NGNode;
 import com.sun.javafx.tk.Toolkit;
 import com.sun.prism.Graphics;
 import com.sun.prism.PixelFormat;
 import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
+import com.sun.prism.paint.Color;
 import com.sun.prism.paint.Paint;
+
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 // Note: this implementation is against internal JavafX API
 @SuppressWarnings("restriction")
@@ -65,7 +76,9 @@ public class NGDriftFXSurface extends NGNode {
 	
 	private Queue<Frame> nextFrame = new ConcurrentLinkedQueue<>();
 	
-	private FPSCounter fps = Boolean.getBoolean("driftfx.showfps") ? new FPSCounter() : null;
+	private final static boolean showFPS = Boolean.getBoolean("driftfx.showfps");
+	FPSCounter renderContent = new FPSCounter();
+	FPSCounter renderTexture = new FPSCounter();
 	
 	public void present(Frame frame) {
 		nextFrame.offer(frame);
@@ -111,43 +124,40 @@ public class NGDriftFXSurface extends NGNode {
 	}
 
 	private Texture createTexture(Graphics g, Frame frame) {
+		if (showFPS) renderTexture.frame();
 		frame.begin("NGDriftFXSurface#renderTexture");
-		try {
-			int w = frame.textureWidth;
-			int h = frame.textureHeight;
-			
-			Texture texture = resourceFactory.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, w, h);
-			if (texture == null) {
-				Log.error("[J] Allocation of requested texture failed! This is FATAL! requested size was " + w + "x" + h);
-				return null;
-			}
-			texture.makePermanent();
-			Log.debug("Created Texture @ " + texture.getContentWidth() + " x " + texture.getContentHeight());
-			
-			//int result = QuantumRendererHelper.syncExecute(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame));
-			
-			WithFence<Integer> exec = QuantumRendererHelper.syncExecuteWithFence(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame) );
-			
-			//exec.getFence().ClientWaitSync(Duration.ZERO);
-			exec.getFence().WaitSync();
-			exec.getFence().Delete();
-			
-			int result = exec.getResult();
-			
-			frame.end("NGDriftFXSurface#renderTexture");
-			if (result == 0) {
-				// once the texture is ready we want to dispose the frame
-				dispose(frame);
-				return texture;
-			}
-			else {
-				Log.error("[J] Could not connect the texture to actual data.");
-				texture.dispose();
-				return null;
-			}
+
+		int w = frame.textureWidth;
+		int h = frame.textureHeight;
+		
+		Texture texture = resourceFactory.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, w, h);
+		if (texture == null) {
+			Log.error("[J] Allocation of requested texture failed! This is FATAL! requested size was " + w + "x" + h);
+			return null;
 		}
-		finally {
-			if (fps != null) fps.frame();
+		texture.makePermanent();
+		Log.debug("Created Texture @ " + texture.getContentWidth() + " x " + texture.getContentHeight());
+		
+		//int result = QuantumRendererHelper.syncExecute(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame));
+		
+		WithFence<Integer> exec = QuantumRendererHelper.syncExecuteWithFence(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame) );
+		
+		//exec.getFence().ClientWaitSync(Duration.ZERO);
+		exec.getFence().WaitSync();
+		exec.getFence().Delete();
+		
+		int result = exec.getResult();
+		
+		frame.end("NGDriftFXSurface#renderTexture");
+		if (result == 0) {
+			// once the texture is ready we want to dispose the frame
+			dispose(frame);
+			return texture;
+		}
+		else {
+			Log.error("[J] Could not connect the texture to actual data.");
+			texture.dispose();
+			return null;
 		}
 	}
 	
@@ -266,6 +276,7 @@ public class NGDriftFXSurface extends NGNode {
 		if (renderedHash != frame.hashCode()) {
 			// re-create texture
 			
+			
 			Texture texture = createTexture(g, frame);
 			if (texture != null) {
 				if (renderedTexture != null) {
@@ -284,6 +295,50 @@ public class NGDriftFXSurface extends NGNode {
 			drawTexture(g, currentFrame, renderedTexture);
 		}
 		
+	}
+	
+
+	
+	private void drawStats(Graphics g) {
+		
+		String stats0;
+		if (currentFrame != null) {
+			stats0 = String.format("%d.%d (%d x %d)", nativeSurfaceHandle, currentFrame.frameId, currentFrame.textureWidth, currentFrame.textureHeight);
+		}
+		else {
+			stats0 = "" + nativeSurfaceHandle;
+		}
+		
+		String stats = String.format("%s\nfx:  %5.1ffps\ntex: %5.1ffps", stats0, renderContent.avgFps(), renderTexture.avgFps());
+		
+		Font font = Font.font(18);
+		PGFont pgFont = (PGFont) font.impl_getNativeFont();
+		
+		FontStrike strike = pgFont.getStrike(BaseTransform.IDENTITY_TRANSFORM);
+		
+		TextLayoutFactory factory = Toolkit.getToolkit().getTextLayoutFactory();
+		TextLayout layout = factory.createLayout();
+		
+		layout.setContent(stats, pgFont);
+		layout.setAlignment(TextAlignment.LEFT.ordinal());
+		layout.setLineSpacing(0);
+		layout.setWrapWidth(0);
+		
+		GlyphList[] runs = layout.getRuns();
+		
+		float layoutX = 0;
+		float layoutY = -pgFont.getSize();
+		
+		g.setPaint(Color.RED);
+		for (int i = 0; i < runs.length; i++) {
+			GlyphList run = runs[i];
+			Point2D pt = run.getLocation();
+            float x = pt.x- layoutX;
+            float y = pt.y - layoutY;
+			BaseTransform t = BaseTransform.getTranslateInstance(x, y);
+			g.fill(strike.getOutline(run,  t));
+		}
+
 	}
 	
 	private void drawTexture(Graphics g, Frame frame, Texture t) {
@@ -339,6 +394,10 @@ public class NGDriftFXSurface extends NGNode {
 	
 	@Override
 	protected void renderContent(Graphics g) {
+		if (showFPS) renderContent.frame();
+		
+		BaseTransform saved = g.getTransformNoClone().copy();
+		
 		Frame next = getNextFrame();
 		if (next != null) {
 			currentFrame = next;
@@ -346,6 +405,12 @@ public class NGDriftFXSurface extends NGNode {
 		
 		if (currentFrame != null) {
 			renderFrame(g, currentFrame);
+		}
+		
+		g.setTransform(saved);
+		
+		if (showFPS) {
+			drawStats(g);
 		}
 	}
 	
