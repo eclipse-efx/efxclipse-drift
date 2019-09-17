@@ -157,8 +157,11 @@ bool IOSurfaceSharedTexture::BeforeRender() {
 	return success == kCGLNoError;
 }
 bool IOSurfaceSharedTexture::AfterRender() {
-	SignalFrameReady();
-	WaitForFrameReady();
+	// Those calls make sure that the io surface is flushed
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_RECTANGLE, 0);
+	glFlush();
+
 	//IOSurfaceUnlock(ioSurface, kIOSurfaceLockAvoidSync, NULL);
 	delete glTexture;
 //	releaseIOSurface(ioSurface);
