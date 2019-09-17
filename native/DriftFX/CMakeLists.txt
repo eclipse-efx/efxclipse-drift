@@ -80,6 +80,8 @@ set(DriftFX-Sources
 	src/TransferModeManager.cpp
 	
 	src/NoOpTransferMode.cpp
+	
+	src/GPUSyncUtil.cpp
 )
 
 if (WIN32)

@@ -24,6 +24,7 @@ import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.NativeAPI;
 import org.eclipse.fx.drift.internal.Placement;
 import org.eclipse.fx.drift.internal.QuantumRendererHelper;
+import org.eclipse.fx.drift.internal.QuantumRendererHelper.WithFence;
 import org.eclipse.fx.drift.internal.SurfaceData;
 
 import com.sun.javafx.font.FontStrike;
@@ -126,7 +127,15 @@ public class NGDriftFXSurface extends NGNode {
 		texture.makePermanent();
 		Log.debug("Created Texture @ " + texture.getContentWidth() + " x " + texture.getContentHeight());
 		
-		int result = QuantumRendererHelper.syncExecute(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame));
+		//int result = QuantumRendererHelper.syncExecute(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame));
+		
+		WithFence<Integer> exec = QuantumRendererHelper.syncExecuteWithFence(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame) );
+		
+		//exec.getFence().ClientWaitSync(Duration.ZERO);
+		exec.getFence().WaitSync();
+		exec.getFence().Delete();
+		
+		int result = exec.getResult();
 		
 		if (result == 0) {
 			// once the texture is ready we want to dispose the frame

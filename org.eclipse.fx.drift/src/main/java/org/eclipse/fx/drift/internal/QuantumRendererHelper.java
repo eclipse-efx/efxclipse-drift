@@ -8,7 +8,28 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
+import org.eclipse.fx.drift.internal.GPUSyncUtil.GPUSync;
+
 public class QuantumRendererHelper {
+	
+	public static class WithFence<T> {
+		
+		private GPUSync sync;
+		private T result;
+		
+		public WithFence(T result, GPUSync sync) {
+			this.sync = sync;
+			this.result = result;
+		}
+		
+		public T getResult() {
+			return result;
+		}
+		public GPUSync getFence() {
+			return sync;
+		}
+	}
+	
 
 	static boolean initialized = false;
 	
@@ -32,6 +53,12 @@ public class QuantumRendererHelper {
 		return internalSyncExecute(r);
 	}
 	
+	public static <T> WithFence<T> syncExecuteWithFence(Supplier<T> r) {
+		T result = syncExecute(r);
+		GPUSync fence = GPUSyncUtil.createFence();
+		return new WithFence<>(result, fence);
+	}
+	
 	
 	public static void syncExecute(Runnable r) {
 		if (!initialized) {
@@ -41,6 +68,11 @@ public class QuantumRendererHelper {
 			initialized = true;
 		}
 		internalSyncExecute(r);
+	}
+	
+	public static GPUSync syncExecuteWithFence(Runnable r) {
+		syncExecute(r);
+		return GPUSyncUtil.createFence();
 	}
 	
 	static void internalSyncExecute(Runnable r) {
@@ -59,7 +91,7 @@ public class QuantumRendererHelper {
 			e.printStackTrace();
 		}
 	}
-	
+
 	static <T> T internalSyncExecute(Supplier<T> r) {
 		ReentrantLock lock = new ReentrantLock();
 		AtomicReference<T> result = new AtomicReference<>();

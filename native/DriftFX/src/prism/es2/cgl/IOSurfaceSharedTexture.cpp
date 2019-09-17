@@ -91,7 +91,29 @@ int IOSurfaceSharedTexture::OnTextureCreated(PrismBridge* bridge, Frame* frame, 
 
 		// COPY OVER
 		// Note: we need to copy the texture here, because iosurface works with GL_TEXTURE_RECTANGLE, while javafx can only work with GL_TEXTURE_2D
-		ES2PrismBridge::CopyTexture(tmpTex, textureName, width, height);
+		// ES2PrismBridge::CopyTexture(shareData->textureName, targetTex, size.x, size.y);
+
+		GLuint fbos[2];
+
+		GLCALL( glGenFramebuffers(2, &fbos[0]) );
+
+		GLCALL( glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[0]) );
+		GLCALL( glFramebufferTexture(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tmpTex, 0) );
+
+		GLCALL( glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[1]); );
+		GLCALL( glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureName, 0) );
+
+		GLCALL( glClearColor(0, 0, 0, 0) );
+		GLCALL( glClear(GL_COLOR_BUFFER_BIT) );
+
+		GLCALL( glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR) );
+
+
+		GLCALL( glFlush() );
+
+		GLCALL( glDeleteFramebuffers(2, &fbos[0]) );
+
+		// The fence operation happens on the java side
 
 		GLCALL( glDeleteTextures(1, &tmpTex) );
 
@@ -157,8 +179,9 @@ bool IOSurfaceSharedTexture::BeforeRender() {
 	return success == kCGLNoError;
 }
 bool IOSurfaceSharedTexture::AfterRender() {
-	SignalFrameReady();
-	WaitForFrameReady();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_RECTANGLE, 0);
+	glFlush();
 	//IOSurfaceUnlock(ioSurface, kIOSurfaceLockAvoidSync, NULL);
 	delete glTexture;
 //	releaseIOSurface(ioSurface);
