@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.fx.drift.DriftFXSurface;
+import org.eclipse.fx.drift.internal.FPSCounter;
 import org.eclipse.fx.drift.internal.Frame;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
 import org.eclipse.fx.drift.internal.Log;
@@ -25,13 +26,24 @@ import org.eclipse.fx.drift.internal.Placement;
 import org.eclipse.fx.drift.internal.QuantumRendererHelper;
 import org.eclipse.fx.drift.internal.SurfaceData;
 
+import com.sun.javafx.font.FontStrike;
+import com.sun.javafx.font.PGFont;
+import com.sun.javafx.geom.Point2D;
+import com.sun.javafx.geom.transform.BaseTransform;
+import com.sun.javafx.scene.text.GlyphList;
+import com.sun.javafx.scene.text.TextLayout;
+import com.sun.javafx.scene.text.TextLayoutFactory;
 import com.sun.javafx.sg.prism.NGNode;
 import com.sun.javafx.tk.Toolkit;
 import com.sun.prism.Graphics;
 import com.sun.prism.PixelFormat;
 import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
+import com.sun.prism.paint.Color;
 import com.sun.prism.paint.Paint;
+
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 // Note: this implementation is against internal JavafX API
 @SuppressWarnings("restriction")
@@ -55,6 +67,11 @@ public class NGDriftFXSurface extends NGNode {
 	
 	private Queue<Frame> nextFrame = new ConcurrentLinkedQueue<>();
 
+	
+	private final static boolean showFPS = Boolean.getBoolean("driftfx.showfps");
+	FPSCounter renderContent = new FPSCounter();
+	FPSCounter renderTexture = new FPSCounter();
+	
 	public void present(Frame frame) {
 		nextFrame.offer(frame);
 	}
@@ -96,6 +113,8 @@ public class NGDriftFXSurface extends NGNode {
 	}
 
 	private Texture createTexture(Graphics g, Frame frame) {
+		if (showFPS) renderTexture.frame();
+		
 		int w = frame.textureWidth;
 		int h = frame.textureHeight;
 		
@@ -255,6 +274,50 @@ public class NGDriftFXSurface extends NGNode {
 		
 	}
 	
+
+	
+	private void drawStats(Graphics g) {
+		
+		String stats0;
+		if (currentFrame != null) {
+			stats0 = String.format("%d.%d (%d x %d)", nativeSurfaceHandle, currentFrame.frameId, currentFrame.textureWidth, currentFrame.textureHeight);
+		}
+		else {
+			stats0 = "" + nativeSurfaceHandle;
+		}
+		
+		String stats = String.format("%s\nfx:  %5.1ffps\ntex: %5.1ffps", stats0, renderContent.avgFps(), renderTexture.avgFps());
+		
+		Font font = Font.font(18);
+		PGFont pgFont = (PGFont) font.impl_getNativeFont();
+		
+		FontStrike strike = pgFont.getStrike(BaseTransform.IDENTITY_TRANSFORM);
+		
+		TextLayoutFactory factory = Toolkit.getToolkit().getTextLayoutFactory();
+		TextLayout layout = factory.createLayout();
+		
+		layout.setContent(stats, pgFont);
+		layout.setAlignment(TextAlignment.LEFT.ordinal());
+		layout.setLineSpacing(0);
+		layout.setWrapWidth(0);
+		
+		GlyphList[] runs = layout.getRuns();
+		
+		float layoutX = 0;
+		float layoutY = -pgFont.getSize();
+		
+		g.setPaint(Color.RED);
+		for (int i = 0; i < runs.length; i++) {
+			GlyphList run = runs[i];
+			Point2D pt = run.getLocation();
+            float x = pt.x- layoutX;
+            float y = pt.y - layoutY;
+			BaseTransform t = BaseTransform.getTranslateInstance(x, y);
+			g.fill(strike.getOutline(run,  t));
+		}
+
+	}
+	
 	private void drawTexture(Graphics g, Frame frame, Texture t) {
 		float frameContainerWidth = frame.surfaceData.width;
 		float frameContainerHeight = frame.surfaceData.height;
@@ -308,6 +371,10 @@ public class NGDriftFXSurface extends NGNode {
 	
 	@Override
 	protected void renderContent(Graphics g) {
+		if (showFPS) renderContent.frame();
+		
+		BaseTransform saved = g.getTransformNoClone().copy();
+		
 		Frame next = getNextFrame();
 		if (next != null) {
 			currentFrame = next;
@@ -315,6 +382,12 @@ public class NGDriftFXSurface extends NGNode {
 		
 		if (currentFrame != null) {
 			renderFrame(g, currentFrame);
+		}
+		
+		g.setTransform(saved);
+		
+		if (showFPS) {
+			drawStats(g);
 		}
 	}
 	
