@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,6 +35,8 @@ import org.eclipse.fx.drift.internal.Placement;
 import org.eclipse.fx.drift.internal.QuantumRendererHelper;
 import org.eclipse.fx.drift.internal.QuantumRendererHelper.WithFence;
 import org.eclipse.fx.drift.internal.SurfaceData;
+import org.eclipse.fx.drift.internal.SwapChain;
+import org.eclipse.fx.drift.internal.SwapChainImage;
 
 import com.sun.javafx.font.FontStrike;
 import com.sun.javafx.font.PGFont;
@@ -71,8 +74,13 @@ public class NGDriftFXSurface extends NGNode {
 	
 	private Frame currentFrame;
 	
+	private SwapChain swapChain;
+	
 	private int renderedHash;
+	
 	private Texture renderedTexture;
+	
+	private SwapChainImage renderedImage;
 	
 	private Queue<Frame> nextFrame = new ConcurrentLinkedQueue<>();
 	
@@ -82,6 +90,10 @@ public class NGDriftFXSurface extends NGNode {
 	
 	public void present(Frame frame) {
 		nextFrame.offer(frame);
+	}
+	
+	public void setSwapChain(SwapChain swapChain) {
+		this.swapChain = swapChain;
 	}
 	
 	private static boolean profile = Boolean.getBoolean("driftfx.profile");
@@ -161,6 +173,41 @@ public class NGDriftFXSurface extends NGNode {
 		}
 	}
 	
+	
+	private Texture createTexture(Graphics g, SwapChainImage image) {
+		if (showFPS) renderTexture.frame();
+		System.out.println("[J] NGDriftFXSurface#createTexture " + image);
+		
+		int w = swapChain.width;
+		int h = swapChain.height;
+		
+		Texture texture = resourceFactory.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, w, h);
+		if (texture == null) {
+			Log.error("[J] Allocation of requested texture failed! This is FATAL! requested size was " + w + "x" + h);
+			return null;
+		}
+		texture.makePermanent();
+		Log.debug("Created Texture @ " + texture.getContentWidth() + " x " + texture.getContentHeight());
+		
+		//int result = QuantumRendererHelper.syncExecute(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame));
+		
+		WithFence<Integer> exec = QuantumRendererHelper.syncExecuteWithFence(() -> image.onTextureCreated(texture) );
+		
+		//exec.getFence().ClientWaitSync(Duration.ZERO);
+		exec.getFence().WaitSync();
+		exec.getFence().Delete();
+		
+		int result = exec.getResult();
+		
+		if (result == 0) {
+			return texture;
+		}
+		else {
+			Log.error("[J] Could not connect the texture to actual data.");
+			texture.dispose();
+			return null;
+		}
+	}
 	
 	private int toPixels(double value) {
 		return (int) Math.ceil(value);
@@ -297,7 +344,6 @@ public class NGDriftFXSurface extends NGNode {
 		
 	}
 	
-
 	
 	private void drawStats(Graphics g) {
 		
@@ -375,6 +421,40 @@ public class NGDriftFXSurface extends NGNode {
 				pos.x + pos.width, pos.y + pos.height, 0, 0, frameTextureWidth, frameTextureHeight);
 	}
 	
+	private void drawTexture(Graphics g, Texture t) {
+		float frameContainerWidth = surfaceData.width;
+		float frameContainerHeight = surfaceData.height;
+		
+		Placement placement = toPlacement(swapChain.presentationHint);
+		
+		float textureRatio = t.getContentWidth() / (float) t.getContentHeight();
+		float frameRatio = surfaceData.width / surfaceData.height;
+		
+		Pos framePos = new Pos(0, frameContainerWidth, 0, frameContainerHeight);
+		
+		if (Math.abs(textureRatio - frameRatio) > 0.001f) {
+			// aspect ratio is not matching, we need to do compute the position within the frame container
+			framePos = computeContain(frameContainerWidth, frameContainerHeight, t.getContentWidth(), t.getContentHeight());
+		}
+		
+		int frameTextureWidth = t.getContentWidth();
+		int frameTextureHeight = t.getContentHeight();
+		
+		float currentContainerWidth = this.surfaceData.width;
+		float currentContainerHeight = this.surfaceData.height;	
+
+		Pos pos = computePlacement(placement, currentContainerWidth, currentContainerHeight, framePos.width, framePos.height);
+
+		// flip it vertically
+		g.scale(1, -1);
+		g.translate(0, -currentContainerHeight);		
+			
+		pos.y = currentContainerHeight - pos.y - pos.height;
+
+		g.drawTexture(t, pos.x, pos.y, 
+				pos.x + pos.width, pos.y + pos.height, 0, 0, frameTextureWidth, frameTextureHeight);
+	}
+	
 	private Frame getNextFrame() {
 		Frame next = null;
 		List<Frame> skipped = new LinkedList<>();
@@ -398,13 +478,37 @@ public class NGDriftFXSurface extends NGNode {
 		
 		BaseTransform saved = g.getTransformNoClone().copy();
 		
-		Frame next = getNextFrame();
-		if (next != null) {
-			currentFrame = next;
-		}
+		if (swapChain == null) {
 		
-		if (currentFrame != null) {
-			renderFrame(g, currentFrame);
+			Frame next = getNextFrame();
+			if (next != null) {
+				currentFrame = next;
+			}
+			
+			if (currentFrame != null) {
+				renderFrame(g, currentFrame);
+			}
+		
+		}
+		else {
+			SwapChainImage image = swapChain.getNextImage();
+			
+			if (image != null) {
+				// (re)-create texture
+				Texture texture = createTexture(g, image);
+				if (texture != null) {
+					if (renderedTexture != null) {
+						renderedTexture.dispose();
+					}
+					renderedTexture = texture;
+				}
+				swapChain.Release(image);
+			}
+			
+			if (renderedTexture != null) {
+				drawTexture(g, renderedTexture);
+			}
+			
 		}
 		
 		g.setTransform(saved);

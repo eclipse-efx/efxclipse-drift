@@ -21,6 +21,7 @@ import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.NativeAPI;
 import org.eclipse.fx.drift.internal.ScreenObserver;
 import org.eclipse.fx.drift.internal.SurfaceData;
+import org.eclipse.fx.drift.internal.SwapChain;
 
 import com.sun.javafx.geom.BaseBounds;
 import com.sun.javafx.geom.RectBounds;
@@ -89,6 +90,8 @@ public class DriftFXSurface extends Node {
 	
 	private ObjectProperty<TransferMode> transferMode = new SimpleObjectProperty<>(this, "transferMode", defaultTransferMode);
 	
+	
+	
 	public static List<TransferMode> getAvailableTransferModes() {
 		return NativeAPI.getTransferModes();
 	}
@@ -151,6 +154,13 @@ public class DriftFXSurface extends Node {
 			ngSurface.present(frame);
 			Platform.runLater(() -> {
 				impl_markDirty(DirtyBits.NODE_CONTENTS);
+			});
+		},
+		(swapChain) -> {
+			Platform.runLater(() -> {
+				NGDriftFXSurface ng = this.impl_getPeer();
+				ng.setSwapChain(swapChain);
+				swapChain.setOnAvail(()->Platform.runLater(this::dirty));
 			});
 		});
 		nativeSurfaceId = NativeAPI.createNativeSurface(jni);

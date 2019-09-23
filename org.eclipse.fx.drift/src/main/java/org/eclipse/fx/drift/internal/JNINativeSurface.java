@@ -15,14 +15,20 @@ import java.util.function.Consumer;
 public class JNINativeSurface {
 
 	private Consumer<Frame> framePresenter;
+	private Consumer<SwapChain> swapChainSetter;
 	
-	public JNINativeSurface(Consumer<Frame> framePresenter) {
+	public JNINativeSurface(Consumer<Frame> framePresenter, Consumer<SwapChain> swapChainSetter) {
 		this.framePresenter = framePresenter;
+		this.swapChainSetter = swapChainSetter;
 	}
 	
 	// Important: called from native code
 	public void present(Frame frame) {
 		framePresenter.accept(frame);
+	}
+	
+	public void setSwapChain(SwapChain swapChain) {
+		swapChainSetter.accept(swapChain);
 	}
 	
 }
