@@ -35,10 +35,10 @@ public class GLESMainMemorySharedTexture extends SharedTexture {
 	protected void allocate() {
 		glTexture = glGenTexture();
 		glBindTexture(GL_TEXTURE_2D, glTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.getX(), size.getY(), 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.x, size.y, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		
-		memSize = size.getX() * size.getY() * 4;
+		memSize = size.x * size.y * 4;
 		memPointer = malloc(memSize);
 	}
 	

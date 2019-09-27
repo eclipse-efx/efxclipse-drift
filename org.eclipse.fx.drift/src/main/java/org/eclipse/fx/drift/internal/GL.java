@@ -4,6 +4,7 @@ public class GL {
 	
 	static {
 		System.loadLibrary("driftfx");
+		initialize();
 	}
 	
 	public static final int GL_TEXTURE_2D = 0x0DE1;
@@ -35,6 +36,7 @@ public class GL {
 	public static native void glUnmapBuffer(int target);
 	
 	
+	public static native void initialize();
 	public static native long createContext(long sharedContext);
 	public static native void destroyContext(long context);
 	public static native void makeContextCurrent(long context);

@@ -30,7 +30,7 @@ public class ES2MainMemoryFxImage implements FxImage {
 	public void update() {
 		System.err.println("*update");
 		int targetTex = GraphicsPipelineUtil.ES2.getTextureName(texture);
-		uploadTexture(targetTex, data.size.x, data.size.y, data.memPointer, data.memSize);
+//		uploadTexture(targetTex, data.size.x, data.size.y, data.memPointer, data.memSize);
 	}
 	
 	
