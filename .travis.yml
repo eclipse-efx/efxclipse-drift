@@ -18,6 +18,8 @@ jobs:
         - ls -al /c
         - ls -al /c/Program\ Files
         - ls -al /c/Program\ Files/CMake
+        - ls -al /c/Program\ Files\ \(x86\)
+        - ls -al /c/Program\ Files\ \(x86\)/CMake
 #        - alias cmake="/c/Program\ Files/CMake/bin/cmake.exe "
         - choco install jdk8
         - choco install visualstudio2017buildtools
