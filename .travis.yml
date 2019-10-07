@@ -14,10 +14,11 @@ jobs:
       install:
         - choco install awscli
         - alias aws="/c/Program\ Files/Amazon/AWSCLI/bin/aws.exe "
-        - choco install cmake --version 3.13.0
-        - find /c -iname "*cmake*"
-        - ls -alR /c/Program\ Files/CMake
+#        - choco install cmake --version 3.13.0
+#        - find /c -iname "*cmake*"
+#        - ls -alR /c/Program\ Files/CMake
 #        - alias cmake="/c/Program\ Files/CMake/bin/cmake.exe "
+        - alias cmake="/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe "
         - choco install jdk8
         - choco install visualstudio2017buildtools
         - choco install visualstudio2017-workload-vctools
