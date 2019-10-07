@@ -19,7 +19,7 @@ jobs:
         - choco install visualstudio2017buildtools
         - choco install visualstudio2017-workload-vctools
         - choco install visualstudio2017-workload-nativedesktop
-        - refreshenv
+        - cmake -version
       script:
         - mkdir build && cd build
         - cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
