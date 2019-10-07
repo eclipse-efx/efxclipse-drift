@@ -14,11 +14,12 @@ jobs:
       install:
         - choco install awscli
         - alias aws="/c/Program\ Files/Amazon/AWSCLI/bin/aws.exe "
-        - choco install cmake --version 3.13.0
+        - choco install cmake --version 3.13.0 --installargs 'ADD_CMAKE_TO_PATH=User'
         - choco install jdk8
         - choco install visualstudio2017buildtools
         - choco install visualstudio2017-workload-vctools
         - choco install visualstudio2017-workload-nativedesktop
+        - refreshenv
       script:
         - mkdir build && cd build
         - cmake -G "Visual Studio 15 2017 Win64" ../native || cat CMakeFiles/CMakeOutput.log
