@@ -10,11 +10,8 @@
  *******************************************************************************/
 package org.eclipse.fx.drift.impl;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.fx.drift.DriftFXSurface;
 import org.eclipse.fx.drift.internal.FPSCounter;
@@ -66,15 +63,17 @@ public class NGDriftFXSurface extends NGNode {
 	private int renderedHash;
 	private Texture renderedTexture;
 	
-	private Queue<Frame> nextFrame = new ConcurrentLinkedQueue<>();
-
+	private AtomicReference<Frame> nextFrame = new AtomicReference<>();
 	
 	private final static boolean showFPS = Boolean.getBoolean("driftfx.showfps");
 	FPSCounter renderContent = new FPSCounter();
 	FPSCounter renderTexture = new FPSCounter();
 	
 	public void present(Frame frame) {
-		nextFrame.offer(frame);
+		Frame toDispose = nextFrame.getAndSet(frame);
+		if (toDispose != null) {
+			dispose(toDispose);
+		}
 	}
 	
 	private void dispose(Frame frame) {
@@ -362,19 +361,7 @@ public class NGDriftFXSurface extends NGNode {
 	}
 	
 	private Frame getNextFrame() {
-		Frame next = null;
-		List<Frame> skipped = new LinkedList<>();
-		do {
-			if (next != null) {
-				skipped.add(next);
-			}
-			next = nextFrame.poll();
-			
-		} while (!nextFrame.isEmpty());
-		if (!skipped.isEmpty()) {
-			Log.debug("Skipped " + skipped.size() + " frames! " + skipped);
-			skipped.forEach(this::dispose);
-		}
+		Frame next = nextFrame.getAndSet(null);
 		return next;
 	}
 	

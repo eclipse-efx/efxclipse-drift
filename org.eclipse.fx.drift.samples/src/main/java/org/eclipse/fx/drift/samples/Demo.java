@@ -18,6 +18,7 @@ import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -36,6 +37,12 @@ public class Demo extends Application {
 
 	Node create() {
 		DriftFXSurface surface0 = new DriftFXSurface();
+		
+		CheckBox visible = new CheckBox();
+		visible.setText("visible");
+		surface0.visibleProperty().bind(visible.selectedProperty());
+		
+		
 		HBox bb = new HBox();
 
 		ComboBox<TransferMode> fxTransferMode = new ComboBox<>();
@@ -44,6 +51,7 @@ public class Demo extends Application {
 	
 		
 		bb.getChildren().addAll(new Label("Transfer Mode: "), fxTransferMode);
+		bb.getChildren().add(visible);
 		
 		Rectangle clip = new Rectangle();
 		clip.widthProperty().bind(surface0.widthProperty());
