@@ -20,7 +20,6 @@ if (LINUX)
   	"${CMAKE_OBJCOPY} --add-gnu-debuglink=<TARGET>.debug <TARGET>"
   	"${CMAKE_STRIP} --strip-unneeded <TARGET>"
   )
-  set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static-libstdc++")
 endif (LINUX)
 if (APPLE)
   set(CMAKE_CXX_CREATE_SHARED_LIBRARY
