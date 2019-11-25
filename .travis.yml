@@ -37,17 +37,12 @@ jobs:
     - name: "MacOS GCC Natives"
       os: osx
       language: cpp
-      addons:
-        homebrew:
-          packages:
-            - awscli
-          update: true
+      before_install:
+        - curl https://nixos.org/nix/install | sh
+        - source /Users/travis/.nix-profile/etc/profile.d/nix.sh
       install:
-        - |
-          chmod +x tools/install_cmake_macos.sh
-          tools/install_cmake_macos.sh
-          PATH=${TRAVIS_BUILD_DIR}/cmake.portable/CMake.app/Contents/bin:${PATH}
-          echo $PATH
+        - nix-env -i cmake
+        - nix-env -i awscli
       script:
         - mkdir build && cd build
         - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo ../native || cat CMakeFiles/CMakeOutput.log
