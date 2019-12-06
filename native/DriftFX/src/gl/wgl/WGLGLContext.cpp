@@ -148,6 +148,7 @@ WGLGLContext::WGLGLContext(std::string name, WGLGLContext *shared) : InternalGLC
 
 	if (errorDuringCreation) {
 		LogError("An error occured during context creation!");
+		valid = false;
 	}
 
 }
