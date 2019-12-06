@@ -13,7 +13,7 @@ package org.eclipse.fx.drift.impl;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.eclipse.fx.drift.DriftFXSurface;
+import org.eclipse.fx.drift.BaseDriftFXSurface;
 import org.eclipse.fx.drift.internal.FPSCounter;
 import org.eclipse.fx.drift.internal.Frame;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
@@ -52,7 +52,7 @@ public class NGDriftFXSurface extends NGNode {
 	private SurfaceData surfaceData;
 	
 	private ResourceFactory resourceFactory;
-	private DriftFXSurface node;
+	private BaseDriftFXSurface node;
 	
 	
 	private int currentFrameDataHash;
@@ -69,6 +69,13 @@ public class NGDriftFXSurface extends NGNode {
 	FPSCounter renderContent = new FPSCounter();
 	FPSCounter renderTexture = new FPSCounter();
 	
+	public NGDriftFXSurface(BaseDriftFXSurface node, long nativeSurfaceId) {
+		this.node = node;
+		this.nativeSurfaceHandle = nativeSurfaceId;
+		Log.debug("NGNativeSurface got handle: " + this.nativeSurfaceHandle);
+		this.resourceFactory = GraphicsPipelineUtil.getResourceFactory();
+	}
+	
 	public void present(Frame frame) {
 		Frame toDispose = nextFrame.getAndSet(frame);
 		if (toDispose != null) {
@@ -78,13 +85,6 @@ public class NGDriftFXSurface extends NGNode {
 	
 	private void dispose(Frame frame) {
 		NativeAPI.disposeFrame(frame);
-	}
-	
-	public NGDriftFXSurface(DriftFXSurface node, long nativeSurfaceId) {
-		this.node = node;
-		this.nativeSurfaceHandle = nativeSurfaceId;
-		Log.debug("NGNativeSurface got handle: " + this.nativeSurfaceHandle);
-		this.resourceFactory = GraphicsPipelineUtil.getResourceFactory();
 	}
 	
 	public void destroy() {

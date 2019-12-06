@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.fx.drift.DriftFXSurface.TransferMode;
+import org.eclipse.fx.drift.BaseDriftFXSurface.TransferMode;
 
 import com.sun.prism.Texture;
 
