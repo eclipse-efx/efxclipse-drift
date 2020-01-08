@@ -11,7 +11,7 @@ public class ScreenObserver extends BaseScreenObserver {
 
 	@Override
 	protected double getRenderScale(Screen screen) {
-		throw new UnsupportedOperationException("This class should not be loaded");
+		return screen.getOutputScaleX();
 	}
 
 }

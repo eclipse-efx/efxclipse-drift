@@ -14,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.fx.drift.BaseDriftFXSurface;
+import org.eclipse.fx.drift.internal.DriftUtil;
 import org.eclipse.fx.drift.internal.FPSCounter;
 import org.eclipse.fx.drift.internal.Frame;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
@@ -65,7 +66,7 @@ public class NGDriftFXSurface extends NGNode {
 	
 	private AtomicReference<Frame> nextFrame = new AtomicReference<>();
 	
-	private final static boolean showFPS = Boolean.getBoolean("driftfx.showfps");
+	private static final boolean SHOW_FPS = Boolean.getBoolean("driftfx.showfps");
 	FPSCounter renderContent = new FPSCounter();
 	FPSCounter renderTexture = new FPSCounter();
 	
@@ -113,7 +114,7 @@ public class NGDriftFXSurface extends NGNode {
 	}
 
 	private Texture createTexture(Graphics g, Frame frame) {
-		if (showFPS) renderTexture.frame();
+		if (SHOW_FPS) renderTexture.frame();
 		
 		int w = frame.textureWidth;
 		int h = frame.textureHeight;
@@ -297,7 +298,7 @@ public class NGDriftFXSurface extends NGNode {
 		String stats = String.format("%s\nfx:  %5.1ffps\ntex: %5.1ffps", stats0, renderContent.avgFps(), renderTexture.avgFps());
 		
 		Font font = Font.font(18);
-		PGFont pgFont = (PGFont) font.impl_getNativeFont();
+		PGFont pgFont = DriftUtil.getFont(font);
 		
 		FontStrike strike = pgFont.getStrike(BaseTransform.IDENTITY_TRANSFORM);
 		
@@ -367,7 +368,7 @@ public class NGDriftFXSurface extends NGNode {
 	
 	@Override
 	protected void renderContent(Graphics g) {
-		if (showFPS) renderContent.frame();
+		if (SHOW_FPS) renderContent.frame();
 		
 		BaseTransform saved = g.getTransformNoClone().copy();
 		
@@ -382,7 +383,7 @@ public class NGDriftFXSurface extends NGNode {
 		
 		g.setTransform(saved);
 		
-		if (showFPS) {
+		if (SHOW_FPS) {
 			drawStats(g);
 		}
 	}

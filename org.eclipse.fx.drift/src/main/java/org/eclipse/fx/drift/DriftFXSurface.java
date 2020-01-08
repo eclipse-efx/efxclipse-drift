@@ -22,7 +22,47 @@ import com.sun.javafx.sg.prism.NGNode;
 //Note: this implementation is against internal JavafX API
 @SuppressWarnings("restriction")
 public class DriftFXSurface extends BaseDriftFXSurface {
+	public static class TransferMode {
+		private String name;
+		int id;
 
+		protected TransferMode(String name, int id) {
+			this.name = name;
+			this.id = id;
+		}
+
+		@Override
+		public String toString() {
+			return name + " " + id;
+		}
+
+		public String getKey() {
+			return name;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + id;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			TransferMode other = (TransferMode) obj;
+			if (id != other.id)
+				return false;
+			return true;
+		}
+	}
+	
 	@Override
 	public void drift_updatePeer() {
 		throw new UnsupportedOperationException("The class should not have been loaded");
@@ -53,22 +93,18 @@ public class DriftFXSurface extends BaseDriftFXSurface {
 		throw new UnsupportedOperationException("The class should not have been loaded");
 	}
 
-	@Override
 	protected NGNode impl_createPeer() {
 		throw new UnsupportedOperationException("The class should not have been loaded");
 	}
 
-	@Override
 	public BaseBounds impl_computeGeomBounds(BaseBounds bounds, BaseTransform tx) {
 		throw new UnsupportedOperationException("The class should not have been loaded");
 	}
 
-	@Override
 	protected boolean impl_computeContains(double localX, double localY) {
 		throw new UnsupportedOperationException("The class should not have been loaded");
 	}
 
-	@Override
 	public Object impl_processMXNode(MXNodeAlgorithm alg, MXNodeAlgorithmContext ctx) {
 		throw new UnsupportedOperationException("The class should not have been loaded");
 	}

@@ -52,9 +52,18 @@ public class DriftFXSurface extends BaseDriftFXSurface {
 			}
 		});
 	}
+	
+	{
+		// To initialize the class helper at the begining each constructor of this class
+		DriftHelper.initHelper(this);
+	}
+	
+	public DriftFXSurface() {
+		init();
+	}
 
 	@Override
-	public void drift_updatePeer() {
+	protected void drift_updatePeer() {
 		NGDriftFXSurface peer = drift_getPeer();
 
 		if ( NodeHelper.isDirty(this,DirtyBits.NODE_GEOMETRY)) {

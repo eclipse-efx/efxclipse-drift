@@ -10,6 +10,24 @@
 	<artifactId>org.eclipse.fx.drift</artifactId>
 
 	<dependencies>
-		
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.openjfx</groupId> -->
+<!-- 			<artifactId>javafx-controls</artifactId> -->
+<!-- 			<version>11.0.2</version> -->
+<!-- 		</dependency> -->
 	</dependencies>
+	
+<!-- 	<build> -->
+<!-- 		<plugins> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-compiler-plugin</artifactId> -->
+<!-- 				<version>3.8.1</version> -->
+<!-- 				<configuration> -->
+<!-- 					<source>11</source> -->
+<!-- 					<target>11</target> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
+<!-- 		</plugins> -->
+<!-- 	</build> -->
 </project>

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.fx.drift.samples;
 
+import org.eclipse.fx.drift.BaseDriftFXSurface;
 import org.eclipse.fx.drift.DriftFXConfig;
 import org.eclipse.fx.drift.DriftFXSurface;
 import org.eclipse.fx.drift.DriftFXSurface.TransferMode;
@@ -30,7 +31,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.TextBoundsType;
 import javafx.stage.Stage;
 
 public class Demo extends Application {
@@ -46,7 +46,7 @@ public class Demo extends Application {
 		HBox bb = new HBox();
 
 		ComboBox<TransferMode> fxTransferMode = new ComboBox<>();
-		fxTransferMode.getItems().setAll(DriftFXSurface.getAvailableTransferModes());
+		fxTransferMode.getItems().setAll(BaseDriftFXSurface.getAvailableTransferModes());
 		fxTransferMode.valueProperty().bindBidirectional(surface0.transferModeProperty());
 	
 		

@@ -17,7 +17,7 @@
 		<osgi.qualifier>${maven.build.timestamp}</osgi.qualifier>
 		<osgi.modifier>${osgi.qualifier}</osgi.modifier>
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
-		
+
 		<plugin-bnd-maven-plugin>4.0.0</plugin-bnd-maven-plugin>
 	</properties>
 
@@ -29,6 +29,7 @@
 		<module>org.eclipse.fx.drift.updatesite</module>
 		<module>org.eclipse.fx.drift.eight</module>
 		<module>org.eclipse.fx.drift.eleven</module>
+		<module>org.eclipse.fx.drift.assembly</module>
 	</modules>
 
 	<repositories>

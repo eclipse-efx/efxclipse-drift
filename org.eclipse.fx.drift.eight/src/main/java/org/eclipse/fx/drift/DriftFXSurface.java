@@ -23,8 +23,12 @@ import com.sun.javafx.sg.prism.NGNode;
 //Note: this implementation is against internal JavafX API
 @SuppressWarnings("restriction")
 public class DriftFXSurface extends BaseDriftFXSurface {
+	public DriftFXSurface() {
+		init();
+	}
+	
 	@Override
-	public void drift_updatePeer() {
+	protected void drift_updatePeer() {
 		impl_updatePeer();
 	}
 	

@@ -13,6 +13,7 @@ package org.eclipse.fx.drift;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.fx.drift.DriftFXSurface.TransferMode;
 import org.eclipse.fx.drift.impl.NGDriftFXSurface;
 import org.eclipse.fx.drift.internal.Configuration;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
@@ -34,47 +35,6 @@ import javafx.scene.Node;
 //Note: this implementation is against internal JavafX API
 public abstract class BaseDriftFXSurface extends Node {
 
-	public static class TransferMode {
-		private String name;
-		private int id;
-
-		protected TransferMode(String name, int id) {
-			this.name = name;
-			this.id = id;
-		}
-
-		@Override
-		public String toString() {
-			return name + " " + id;
-		}
-
-		public String getKey() {
-			return name;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + id;
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			TransferMode other = (TransferMode) obj;
-			if (id != other.id)
-				return false;
-			return true;
-		}
-	}
-	
 	public static List<TransferMode> getAvailableTransferModes() {
 		return NativeAPI.getTransferModes();
 	}
@@ -149,9 +109,14 @@ public abstract class BaseDriftFXSurface extends Node {
 	
 	protected long nativeSurfaceId;
 
-	private ScreenObserver screenObserver = new ScreenObserver(this);
+	private ScreenObserver screenObserver;
 	
 	public BaseDriftFXSurface() {
+		
+	}
+	
+	protected void init() {
+		screenObserver = new ScreenObserver(this);
 		JNINativeSurface jni = new JNINativeSurface(frame -> {
 			NGDriftFXSurface ngSurface = drift_getPeer();
 			ngSurface.present(frame);
@@ -389,7 +354,7 @@ public abstract class BaseDriftFXSurface extends Node {
 		return (w > 0 && h > 0 && localX >= 0 && localY >= 0 && localX < w && localY < h);
 	}
 
-	public abstract void drift_updatePeer();
+	protected abstract void drift_updatePeer();
 
 	@SuppressWarnings("restriction")
 	protected abstract com.sun.javafx.sg.prism.NGNode drift_createPeer();

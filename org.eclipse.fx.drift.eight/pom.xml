@@ -7,7 +7,6 @@
 		<artifactId>parent</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
-	<groupId>org.eclipse.fx.drift.eight</groupId>
 	<artifactId>org.eclipse.fx.drift.eight</artifactId>
 	<dependencies>
 		<dependency>

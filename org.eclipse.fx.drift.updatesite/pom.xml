@@ -13,6 +13,14 @@
 	<properties>
 		<download-publish-path>/home/data/httpd/download.eclipse.org/efxclipse/runtime-driftfx-nightly</download-publish-path>
 	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.eclipse.fx.drift</groupId>
+			<artifactId>org.eclipse.fx.drift.assembly</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -30,7 +38,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.eclipse.fx.drift</groupId>
-									<artifactId>org.eclipse.fx.drift</artifactId>
+									<artifactId>org.eclipse.fx.drift.assembly</artifactId>
 									<version>${project.version}</version>
 								</artifactItem>
 								<!-- rtifactItem>
