@@ -100,7 +100,8 @@ public class Demo extends Application {
 		BorderPane root = new BorderPane();
 		root.setPrefSize(400, 300);
 		Scene scene = new Scene(root);
-
+		
+		primaryStage.setTitle(System.getProperty("javafx.runtime.version"));
 		primaryStage.setScene(scene);
 
 		Node a = create();
