@@ -118,4 +118,24 @@ jobs:
         java-package: jdk+fx
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Prepare dist
+      run: |
+        mkdir dist
+        echo $GITHUB_SHA > dist/git_commit
+        mkdir dist/include
+        cp -r native/DriftFX/include/* dist/include/
+        mkdir dist/libs
+        cp -r natives/* dist/libs&
+        zip -r dist.zip dist/*
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: echo "Doing Release"
+    - name: Create Integration Build
+      if: startsWidth(github.ref, 'refs/tags/I-')
+      run: echo "Doing I-Build"
+#      uses: actions/create-release@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        tag_name: 
 
