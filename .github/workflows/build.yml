@@ -88,6 +88,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+    - name: Download Linux Natives
+      uses: actions/download-artifact@v1
+      with:
+        name: native-linux
+        path: native-linux
+    - name: Download MacOS Natives
+      uses: actions/download-artifact@v1
+      with:
+        name: native-macos
+        path: native-macos
+    - name: Download Windows Natives
+      uses: actions/download-artifact@v1
+      with:
+        name: native-windows
+        path: native-windows
+    - name: Prepare natives for build
+      run: |
+        mkdir org.eclipse.fx.drift/native || rm org.eclipse.fx.drift/native/*
+        cp native-linux/libdriftfx.so org.eclipse.fx.drift/native/
+        cp native-macos/libdriftfx.dylib org.eclipse.fx.drift/native/
+        cp native-windows/driftfx.dll org.eclipse.fx.drift/native/
+        mkdir org.eclipse.fx.drift.samples/native || rm org.eclipse.fx.drift.samples/native/*
+        cp native-linux/libsamples.so org.eclipse.fx.drift.samples/native/
+        cp native-macos/libsamples.dylib org.eclipse.fx.drift.samples/native/
+        cp native-windows/libsamples.dll org.eclipse.fx.drift.samples/native/
+        ls -al org.eclipse.fx.drift/native
+        ls -al org.eclipse.fx.drift.samples/native
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
       with:
