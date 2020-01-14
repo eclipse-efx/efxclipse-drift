@@ -17,4 +17,5 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=DEBUG -G "Unix Makefiles" ../native
     - name: make
       run: |
+        cd build
         make
