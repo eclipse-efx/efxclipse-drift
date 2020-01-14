@@ -18,7 +18,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=DEBUG -G "Visual Studio 15 2017 Win64" ../native
+        cmake -G "Visual Studio 16 2019" ../native
     - name: Build
       run: |
         cd build
