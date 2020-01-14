@@ -129,6 +129,7 @@ jobs:
         zip -r dist.zip dist/*
     - name: Upload Dist
       uses: actions/upload-artifact@v1
+      with:
         name: dist
         path: dist
   release:
