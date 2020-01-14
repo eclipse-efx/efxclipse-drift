@@ -170,11 +170,11 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${ steps.ibuild.outputs.TAG }
-        release_name: ${ steps.ibuild.outputs.TAG }
+        tag_name: ${{ steps.ibuild.outputs.TAG }}
+        release_name: ${{ steps.ibuild.outputs.TAG }}
         body: |
           This is an Integration Build
-          The updatesite is available at https://download.eclipse.org/efxclipse/runtime-driftfx-ibuilds/${ steps.ibuild.outputs.TAG }/
+          The updatesite is available at https://download.eclipse.org/efxclipse/runtime-driftfx-ibuilds/${{ steps.ibuild.outputs.TAG }}/
         draft: true
         prerelease: true
     - name: Upload dist
@@ -184,6 +184,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist.zip
+        asset_path: ./dist.zip
         asset_name: dist.zip
         asset_content_type: application/zip
