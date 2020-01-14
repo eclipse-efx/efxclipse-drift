@@ -102,7 +102,7 @@ jobs:
         mkdir org.eclipse.fx.drift.samples/native || rm org.eclipse.fx.drift.samples/native/*
         cp natives/libsamples.so org.eclipse.fx.drift.samples/native/
         cp natives/libsamples.dylib org.eclipse.fx.drift.samples/native/
-        cp natives/libsamples.dll org.eclipse.fx.drift.samples/native/
+        cp natives/samples.dll org.eclipse.fx.drift.samples/native/
         ls -al org.eclipse.fx.drift/native
         ls -al org.eclipse.fx.drift.samples/native
     - name: Set up JDK 1.8
