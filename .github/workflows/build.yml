@@ -20,10 +20,10 @@ jobs:
     - name: Prepare artifacts
       run: |
         mkdir artifacts
-        cp DriftFX/libdriftfx.so artifacts
-        cp DriftFX/libdriftfx.so.debug atrifacts
-        cp samples/libsamples.so artifacts
-        cp samples/libsamples.so.debug artifacts
+        cp build/DriftFX/libdriftfx.so artifacts
+        cp build/DriftFX/libdriftfx.so.debug atrifacts
+        cp build/samples/libsamples.so artifacts
+        cp build/samples/libsamples.so.debug artifacts
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
@@ -45,10 +45,10 @@ jobs:
     - name: Prepare artifacts
       run: |
         mkdir artifacts
-        cp DriftFX/libdriftfx.dylib artifacts
-        cp -r DriftFX/libdriftfx.dylib.dSYM artifacts
-        cp samples/libsamples.dylib artifacts
-        cp -r samples/libsamples.dylib.dSYM artifacts
+        cp build/DriftFX/libdriftfx.dylib artifacts
+        cp -r build/DriftFX/libdriftfx.dylib.dSYM artifacts
+        cp build/samples/libsamples.dylib artifacts
+        cp -r build/samples/libsamples.dylib.dSYM artifacts
     - name: Upload atrifacts
       uses: actions/upload-artifact@v1
       with:
@@ -59,7 +59,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Configure Build (cmake)
+    - name: Configure Build
       run: |
         mkdir build
         cd build
@@ -71,12 +71,12 @@ jobs:
     - name: Prepare artifacts
       run: |
         mkdir artifacts
-        cp DriftFX/RelWithDebInfo/driftfx.dll artifacts
-        cp DriftFX/RelWithDebInfo/driftfx.lib artifacts
-        cp DriftFX/RelWithDebInfo/driftfx.pdb artifacts
-        cp samples/RelWithDebInfo/samples.dll artifacts
-        cp samples/RelWithDebInfo/samples.lib artifacts
-        cp samples/RelWithDebInfo/samples.pdb artifacts
+        cp build/DriftFX/RelWithDebInfo/driftfx.dll artifacts
+        cp build/DriftFX/RelWithDebInfo/driftfx.lib artifacts
+        cp build/DriftFX/RelWithDebInfo/driftfx.pdb artifacts
+        cp build/samples/RelWithDebInfo/samples.dll artifacts
+        cp build/samples/RelWithDebInfo/samples.lib artifacts
+        cp build/samples/RelWithDebInfo/samples.pdb artifacts
     - name: Upload atrifacts
       uses: actions/upload-artifact@v1
       with:
