@@ -11,6 +11,8 @@ jobs:
 #    - name: Prepare
 #      run: |
 #        choco install something
+    - name: List cmake generators
+      run: cmake --help
     - uses: actions/checkout@v1
     - name: Configure Build (cmake)
       run: |
