@@ -5,11 +5,11 @@ on: [push]
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
-    - name: Prepare
-      run: sudo apt-get install -y mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
+#    - name: Prepare
+#      run: sudo apt-get install -y mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
     - uses: actions/checkout@v1
     - name: Configure Build
       run: |
@@ -18,4 +18,4 @@ jobs:
     - name: Build
       run: |
         cd build
-        cmake --buld .
+        cmake --build .
