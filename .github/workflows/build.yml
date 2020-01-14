@@ -4,9 +4,7 @@ on: [push]
 
 jobs:
   build-linux:
-
     runs-on: ubuntu-latest
-
     steps:
     - name: Prepare
       run: sudo apt-get install -y mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
@@ -19,11 +17,21 @@ jobs:
       run: |
         cd build
         cmake --build .
+    - name: Prepare artifacts
+      run: |
+        mkdir artifacts
+        cp DriftFX/libdriftfx.so artifacts
+        cp DriftFX/libdriftfx.so.debug atrifacts
+        cp samples/libsamples.so artifacts
+        cp samples/libsamples.so.debug artifacts
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: native-linux
+        path: artifacts
 
   build-macos:
-
     runs-on: macos-latest
-
     steps:
     - uses: actions/checkout@v1
     - name: Configure Build
@@ -34,14 +42,22 @@ jobs:
       run: |
         cd build
         cmake --build .
+    - name: Prepare artifacts
+      run: |
+        mkdir artifacts
+        cp DriftFX/libdriftfx.dylib artifacts
+        cp -r DriftFX/libdriftfx.dylib.dSYM artifacts
+        cp samples/libsamples.dylib artifacts
+        cp -r samples/libsamples.dylib.dSYM artifacts
+    - name: Upload atrifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: native-macos
+        path: artifacts
 
   build-windows:
-    
     runs-on: windows-latest
-
     steps:
-    - name: List cmake generators
-      run: cmake --help
     - uses: actions/checkout@v1
     - name: Configure Build (cmake)
       run: |
@@ -52,12 +68,24 @@ jobs:
       run: |
         cd build
         cmake --build . --config RelWithDebInfo
-        
-  bulid-maven:
+    - name: Prepare artifacts
+      run: |
+        mkdir artifacts
+        cp DriftFX/RelWithDebInfo/driftfx.dll artifacts
+        cp DriftFX/RelWithDebInfo/driftfx.lib artifacts
+        cp DriftFX/RelWithDebInfo/driftfx.pdb artifacts
+        cp samples/RelWithDebInfo/samples.dll artifacts
+        cp samples/RelWithDebInfo/samples.lib artifacts
+        cp samples/RelWithDebInfo/samples.pdb artifacts
+    - name: Upload atrifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: native-macos
+        path: artifacts
+
+  build-maven:
     needs: [build-linux, build-macos, build-windows]
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v1
     - name: Set up JDK 1.8
