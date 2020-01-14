@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Prepare
+      run: sudo apt-get install mesa-common-dev
     - uses: actions/checkout@v1
     - name: cmake
       run: |
