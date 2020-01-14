@@ -9,7 +9,7 @@ jobs:
 
     steps:
     - name: Prepare
-      run: sudo apt-get install -y mesa-common-dev
+      run: sudo apt-get install -y mesa-common-dev libgl1-mesa-dev
     - uses: actions/checkout@v1
     - name: cmake
       run: |
