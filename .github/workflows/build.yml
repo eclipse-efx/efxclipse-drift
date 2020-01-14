@@ -1,0 +1,189 @@
+name: DriftFX Build
+
+on: [push]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Prepare
+      run: sudo apt-get install -y mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
+    - uses: actions/checkout@v1
+    - name: Configure Build
+      run: |
+        mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -G "Unix Makefiles" ../native
+    - name: Build
+      run: |
+        cd build
+        cmake --build .
+    - name: Prepare artifacts
+      run: |
+        mkdir artifacts
+        cp build/DriftFX/libdriftfx.so artifacts
+        cp build/DriftFX/libdriftfx.so.debug atrifacts
+        cp build/samples/libsamples.so artifacts
+        cp build/samples/libsamples.so.debug artifacts
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: natives
+        path: artifacts
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Configure Build
+      run: |
+        mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -G "Unix Makefiles" ../native
+    - name: Build
+      run: |
+        cd build
+        cmake --build .
+    - name: Prepare artifacts
+      run: |
+        mkdir artifacts
+        cp build/DriftFX/libdriftfx.dylib artifacts
+        cp -r build/DriftFX/libdriftfx.dylib.dSYM artifacts
+        cp build/samples/libsamples.dylib artifacts
+        cp -r build/samples/libsamples.dylib.dSYM artifacts
+    - name: Upload atrifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: natives
+        path: artifacts
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Configure Build
+      run: |
+        mkdir build
+        cd build
+        cmake -G "Visual Studio 16 2019" ../native
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config RelWithDebInfo
+    - name: Prepare artifacts
+      run: |
+        mkdir artifacts
+        cp build/DriftFX/RelWithDebInfo/driftfx.dll artifacts
+        cp build/DriftFX/RelWithDebInfo/driftfx.lib artifacts
+        cp build/DriftFX/RelWithDebInfo/driftfx.pdb artifacts
+        cp build/samples/RelWithDebInfo/samples.dll artifacts
+        cp build/samples/RelWithDebInfo/samples.lib artifacts
+        cp build/samples/RelWithDebInfo/samples.pdb artifacts
+    - name: Upload atrifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: natives
+        path: artifacts
+
+  build-maven:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Download Natives
+      uses: actions/download-artifact@v1
+      with:
+        name: natives
+        path: natives
+    - name: Prepare natives for build
+      run: |
+        mkdir org.eclipse.fx.drift/native || rm org.eclipse.fx.drift/native/*
+        cp natives/libdriftfx.so org.eclipse.fx.drift/native/
+        cp natives/libdriftfx.dylib org.eclipse.fx.drift/native/
+        cp natives/driftfx.dll org.eclipse.fx.drift/native/
+        mkdir org.eclipse.fx.drift.samples/native || rm org.eclipse.fx.drift.samples/native/*
+        cp natives/libsamples.so org.eclipse.fx.drift.samples/native/
+        cp natives/libsamples.dylib org.eclipse.fx.drift.samples/native/
+        cp natives/samples.dll org.eclipse.fx.drift.samples/native/
+        ls -al org.eclipse.fx.drift/native
+        ls -al org.eclipse.fx.drift.samples/native
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+        java-package: jdk+fx
+    - name: Build with Maven (default)
+      if: startsWith(github.ref, 'refs/tags') == false
+      run: mvn -B package --file pom.xml
+    - name: Build with Maven (i-build)
+      if: startsWith(github.ref, 'refs/tags/I')
+      shell: bash
+      run: |
+        IBUILD=${GITHUB_REF##*/I}
+        echo "Got ${GITHUB_REF} -> ${IBUILD}"
+        mvn -Dosgi.qualifier=${IBUILD} -B package --file pom.xml
+    - name: Prepare dist
+      run: |
+        mkdir dist
+        zip -r dist/sources.zip org.eclipse.fx.drift org.eclipse.fx.drift.feature org.eclipse.fx.drift.samples org.eclipse.fx.drift.samples.feature org.eclipse.fx.drift.updatesite
+        cp org.eclipse.fx.drift.updatesite/target/org.eclipse.fx.drift.updatesite-0.1.0-SNAPSHOT.zip dist/updatesite.zip
+        echo $GITHUB_SHA > dist/git_commit
+        mkdir dist/include
+        cp -r native/DriftFX/include/* dist/include/
+        mkdir dist/libs
+        cp -r natives/* dist/libs&
+        zip -r dist.zip dist/*
+    - name: Upload Dist
+      uses: actions/upload-artifact@v1
+      with:
+        name: dist
+        path: dist
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-maven]
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+    - name: Create Release
+      run: echo "Doing Release"
+  i-build:
+    runs-on: ubuntu-latest
+    needs: [build-maven]
+    if: startsWith(github.ref, 'refs/tags/I')
+    steps:
+    - name: Extract IBuild
+      id: ibuild
+      run: echo ::set-output name=TAG::${GITHUB_REF#*/}
+    - name: Download dist
+      uses: actions/download-artifact@v1
+      with:
+        name: dist
+        path: dist
+    - name: Prepare dist
+      run: zip -r dist.zip dist/*
+    - name: Create Integration Build Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.ibuild.outputs.TAG }}
+        release_name: ${{ steps.ibuild.outputs.TAG }}
+        body: |
+          This is an Integration Build
+          The updatesite is available at https://download.eclipse.org/efxclipse/runtime-driftfx-ibuilds/${{ steps.ibuild.outputs.TAG }}/
+        draft: true
+        prerelease: true
+    - name: Upload dist
+      id: upload-dist
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist.zip
+        asset_name: dist.zip
+        asset_content_type: application/zip
