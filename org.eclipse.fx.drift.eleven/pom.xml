@@ -46,7 +46,6 @@
 					<toolchains>
 						<jdk>
 							<version>11</version>
-							<vendor>oracle</vendor>
 						</jdk>
 					</toolchains>
 				</configuration>
