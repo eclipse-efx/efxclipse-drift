@@ -7,7 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Prepare
-      run: sudo apt-get install -y mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
     - uses: actions/checkout@v1
     - name: Configure Build
       run: |
