@@ -23,7 +23,7 @@
         <include>org.eclipse.fx.drift:org.eclipse.fx.drift.eight</include>
       </includes>
       <binaries>
-        <outputDirectory>META-INF/versions/8</outputDirectory>
+        <outputDirectory>/</outputDirectory>
         <unpack>true</unpack>
         <includeDependencies>false</includeDependencies>
         <unpackOptions>
