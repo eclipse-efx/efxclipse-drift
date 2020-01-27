@@ -5,6 +5,11 @@
 #include <stdexcept>
 #include <string>
 
+// windows has no pretty function..
+#ifndef __PRETTY_FUNCTION__
+#define __PRETTY_FUNCTION__ __FUNCTION__
+#endif
+
 namespace test
 {
 

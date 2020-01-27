@@ -105,7 +105,9 @@ else (APPLE)
 	endif (WIN32)
 
 endif (APPLE)
-
+if (LINUX)
+	list(APPEND LinkLibraries X11)
+endif (LINUX)
 
 add_subdirectory(lib/DriftGL)
 

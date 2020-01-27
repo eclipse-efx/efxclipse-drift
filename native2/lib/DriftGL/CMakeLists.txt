@@ -36,7 +36,7 @@ set(DriftGL-Sources
 add_library(DriftGL STATIC ${DriftGL-Headers} ${DriftGL-Sources})
 target_include_directories(DriftGL PUBLIC include)
 
-target_link_libraries(DriftGL PRIVATE ${LinkLibraries} X11)
+target_link_libraries(DriftGL PRIVATE ${LinkLibraries})
 
 
 add_executable(test_create_context test/create_context.cpp)
