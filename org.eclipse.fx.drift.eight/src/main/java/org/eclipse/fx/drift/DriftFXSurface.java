@@ -18,7 +18,9 @@ import com.sun.javafx.geom.transform.BaseTransform;
 import com.sun.javafx.jmx.MXNodeAlgorithm;
 import com.sun.javafx.jmx.MXNodeAlgorithmContext;
 import com.sun.javafx.scene.DirtyBits;
-import com.sun.javafx.sg.prism.NGNode; 
+import com.sun.javafx.sg.prism.NGNode;
+
+import javafx.scene.Scene; 
 
 //Note: this implementation is against internal JavafX API
 @SuppressWarnings("restriction")
@@ -82,8 +84,18 @@ public class DriftFXSurface extends BaseDriftFXSurface {
 	}
 	
 	@Override
-	public NGDriftFXSurface drift_getPeer() {
+	protected NGDriftFXSurface drift_getPeer() {
 		return impl_getPeer();
+	}
+	
+	@Override
+	protected void drift_beginPeerAccess() {
+		Scene.impl_setAllowPGAccess(true);
+	}
+	
+	@Override
+	protected void drift_endPeerAccess() {
+		Scene.impl_setAllowPGAccess(false);
 	}
 	
 	@Override

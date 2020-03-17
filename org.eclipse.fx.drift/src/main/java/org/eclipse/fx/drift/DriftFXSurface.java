@@ -79,7 +79,7 @@ public class DriftFXSurface extends BaseDriftFXSurface {
 	}
 
 	@Override
-	public NGDriftFXSurface drift_getPeer() {
+	protected NGDriftFXSurface drift_getPeer() {
 		throw new UnsupportedOperationException("The class should not have been loaded");
 	}
 

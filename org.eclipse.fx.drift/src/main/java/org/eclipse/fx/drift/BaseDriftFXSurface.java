@@ -31,7 +31,6 @@ import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 
 //Note: this implementation is against internal JavafX API
 public abstract class BaseDriftFXSurface extends Node {
@@ -120,13 +119,13 @@ public abstract class BaseDriftFXSurface extends Node {
 		screenObserver = new ScreenObserver(this);
 		JNINativeSurface jni = new JNINativeSurface(frame -> {
 			Platform.runLater(() -> {
-				Scene.impl_setAllowPGAccess(true);
+				drift_beginPeerAccess();
 				try {
 					NGDriftFXSurface ngSurface = drift_getPeer();
 					ngSurface.present(frame);
 					drift_markDirtyContent();
 				} finally {
-					Scene.impl_setAllowPGAccess(false);
+					drift_endPeerAccess();
 				}
 			});
 		});
@@ -371,7 +370,10 @@ public abstract class BaseDriftFXSurface extends Node {
 	@SuppressWarnings("restriction")
 	protected abstract void drift_markDirty(com.sun.javafx.scene.DirtyBits dirtyBit);
 
-	public abstract NGDriftFXSurface drift_getPeer();
+	protected abstract NGDriftFXSurface drift_getPeer();
+	
+	protected void drift_beginPeerAccess() {}
+	protected void drift_endPeerAccess() {}
 
 	protected abstract void drift_geomChanged();
 
