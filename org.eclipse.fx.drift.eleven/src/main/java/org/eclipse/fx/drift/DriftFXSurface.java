@@ -19,9 +19,11 @@ import com.sun.javafx.geom.BaseBounds;
 import com.sun.javafx.geom.transform.BaseTransform;
 import com.sun.javafx.scene.DirtyBits;
 import com.sun.javafx.scene.NodeHelper;
+import com.sun.javafx.scene.SceneHelper;
 import com.sun.javafx.sg.prism.NGNode;
 
 import javafx.scene.Node;
+import javafx.scene.Scene;
 
 //Note: this implementation is against internal JavafX API
 public class DriftFXSurface extends BaseDriftFXSurface {
@@ -91,7 +93,17 @@ public class DriftFXSurface extends BaseDriftFXSurface {
 	protected NGDriftFXSurface drift_getPeer() {
 		return NodeHelper.getPeer(this);
 	}
-
+	
+	@Override
+	protected void drift_beginPeerAccess() {
+		SceneHelper.setAllowPGAccess(true);
+	}
+	
+	@Override
+	protected void drift_endPeerAccess() {
+		SceneHelper.setAllowPGAccess(false);
+	}
+	
 	@Override
 	protected void drift_geomChanged() {
 		NodeHelper.getNodeAccessor().doGeomChanged(this);
