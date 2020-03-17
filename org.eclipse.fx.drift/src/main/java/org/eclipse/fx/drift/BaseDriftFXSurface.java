@@ -31,6 +31,7 @@ import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 
 //Note: this implementation is against internal JavafX API
 public abstract class BaseDriftFXSurface extends Node {
@@ -118,10 +119,18 @@ public abstract class BaseDriftFXSurface extends Node {
 	protected void init() {
 		screenObserver = new ScreenObserver(this);
 		JNINativeSurface jni = new JNINativeSurface(frame -> {
-			NGDriftFXSurface ngSurface = drift_getPeer();
-			ngSurface.present(frame);
-			Platform.runLater(this::drift_markDirtyContent);
+			Platform.runLater(() -> {
+				Scene.impl_setAllowPGAccess(true);
+				try {
+					NGDriftFXSurface ngSurface = drift_getPeer();
+					ngSurface.present(frame);
+					drift_markDirtyContent();
+				} finally {
+					Scene.impl_setAllowPGAccess(false);
+				}
+			});
 		});
+		
 		nativeSurfaceId = NativeAPI.createNativeSurface(jni);
 
 		// observe current screen render factor
