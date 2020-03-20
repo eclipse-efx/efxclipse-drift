@@ -149,16 +149,8 @@ jobs:
         echo "  </configuration>" >> ~/.m2/toolchains.xml
         echo " </toolchain>" >> ~/.m2/toolchains.xml
         echo "</toolchains>" >> ~/.m2/toolchains.xml
-    - name: Build with Maven (default)
-      if: startsWith(github.ref, 'refs/tags') == false
+    - name: Build with Maven
       run: mvn -B package --file pom.xml
-    - name: Build with Maven (i-build)
-      if: startsWith(github.ref, 'refs/tags/I')
-      shell: bash
-      run: |
-        IBUILD=${GITHUB_REF##*/I}
-        echo "Got ${GITHUB_REF} -> ${IBUILD}"
-        mvn -Dosgi.qualifier=${IBUILD} -B package --file pom.xml
     - name: Prepare dist
       run: |
         mkdir dist
