@@ -5,6 +5,7 @@ import org.eclipse.fx.drift.internal.common.ImageData;
 import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
 
+@SuppressWarnings("restriction")
 public interface FxImage {
 	
 	ImageData getData();

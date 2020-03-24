@@ -1,15 +1,18 @@
 package org.eclipse.fx.drift.internal.frontend;
 
-import static org.eclipse.fx.drift.internal.GL.*;
-import static org.eclipse.fx.drift.internal.SYS.*;
+import static org.eclipse.fx.drift.internal.GL.GL_RGBA;
+import static org.eclipse.fx.drift.internal.GL.GL_RGBA8;
+import static org.eclipse.fx.drift.internal.GL.GL_TEXTURE_2D;
+import static org.eclipse.fx.drift.internal.GL.GL_UNPACK_ALIGNMENT;
+import static org.eclipse.fx.drift.internal.GL.GL_UNPACK_ROW_LENGTH;
+import static org.eclipse.fx.drift.internal.GL.GL_UNSIGNED_INT_8_8_8_8_REV;
+import static org.eclipse.fx.drift.internal.GL.glBindTexture;
+import static org.eclipse.fx.drift.internal.GL.glGetInteger;
+import static org.eclipse.fx.drift.internal.GL.glIsTexture;
+import static org.eclipse.fx.drift.internal.GL.glPixelStorei;
+import static org.eclipse.fx.drift.internal.GL.glTexImage2D;
 
-import java.lang.reflect.InvocationTargetException;
-
-import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
-import org.eclipse.fx.drift.internal.GPUSyncUtil.GLSync;
 import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
-import org.eclipse.fx.drift.internal.math.Vec2i;
-import org.eclipse.fx.drift.internal.prism.Prism;
 import org.eclipse.fx.drift.internal.prism.PrismES2;
 
 public class ES2MainMemoryFxImage extends AMainMemoryFxImage {

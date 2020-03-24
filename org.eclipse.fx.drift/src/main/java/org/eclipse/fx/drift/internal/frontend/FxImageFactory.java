@@ -1,6 +1,5 @@
 package org.eclipse.fx.drift.internal.frontend;
 
-import org.eclipse.fx.drift.internal.backend.MainMemoryImage;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
 

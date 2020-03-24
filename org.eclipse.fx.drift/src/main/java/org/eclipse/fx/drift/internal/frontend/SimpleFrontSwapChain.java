@@ -14,6 +14,7 @@ import org.eclipse.fx.drift.internal.math.Vec2i;
 
 import com.sun.prism.ResourceFactory;
 
+@SuppressWarnings("restriction")
 public class SimpleFrontSwapChain implements FrontSwapChain {
 
 	private List<FxImage> images = new ArrayList<>();

@@ -4,13 +4,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
-import org.eclipse.fx.drift.internal.Log;
-import org.eclipse.fx.drift.internal.NativeAPI;
-import org.eclipse.fx.drift.internal.QuantumRendererHelper;
-import org.eclipse.fx.drift.internal.GraphicsPipelineUtil.ES2;
-
 import com.sun.prism.Texture;
 
+import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.QuantumRendererHelper;
+
+@SuppressWarnings("restriction")
 public class Prism {
 
 	private static Class<?> cGraphicsPipeline;

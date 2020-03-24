@@ -9,9 +9,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import org.eclipse.fx.drift.internal.GPUSyncUtil.GPUSync;
-import org.eclipse.fx.drift.internal.prism.PrismES2;
-
-import com.sun.prism.ResourceFactory;
 
 public class QuantumRendererHelper {
 	

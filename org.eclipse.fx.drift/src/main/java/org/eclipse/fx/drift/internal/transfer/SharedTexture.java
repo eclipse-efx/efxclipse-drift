@@ -2,6 +2,7 @@ package org.eclipse.fx.drift.internal.transfer;
 
 import com.sun.prism.Texture;
 
+@SuppressWarnings("restriction")
 public abstract class SharedTexture {
 
 	protected int width;

@@ -18,6 +18,7 @@ import java.util.Optional;
 import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
 
+@SuppressWarnings("restriction")
 public class GraphicsPipelineUtil {
 
 	

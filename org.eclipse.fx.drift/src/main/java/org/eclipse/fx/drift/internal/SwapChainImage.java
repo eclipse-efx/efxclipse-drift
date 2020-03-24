@@ -3,6 +3,7 @@ package org.eclipse.fx.drift.internal;
 import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
 
+@SuppressWarnings("restriction")
 public class SwapChainImage {
 
 //	public final long surfaceId;

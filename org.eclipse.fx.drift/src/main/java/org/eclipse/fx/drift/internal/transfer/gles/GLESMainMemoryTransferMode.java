@@ -6,6 +6,7 @@ import org.eclipse.fx.drift.internal.transfer.TransferMode;
 
 import com.sun.prism.Texture;
 
+@SuppressWarnings("restriction")
 public class GLESMainMemoryTransferMode implements TransferMode {
 
 	@Override

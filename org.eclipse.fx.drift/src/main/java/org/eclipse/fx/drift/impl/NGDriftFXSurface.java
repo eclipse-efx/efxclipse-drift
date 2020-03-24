@@ -10,33 +10,11 @@
  *******************************************************************************/
 package org.eclipse.fx.drift.impl;
 
-import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.eclipse.fx.drift.DriftFXSurface;
-import org.eclipse.fx.drift.internal.FPSCounter;
-import org.eclipse.fx.drift.internal.Frame;
-import org.eclipse.fx.drift.internal.FrameProfiler;
-import org.eclipse.fx.drift.internal.GPUSyncUtil.WaitSyncResult;
-import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
-import org.eclipse.fx.drift.internal.Log;
-import org.eclipse.fx.drift.internal.NativeAPI;
-import org.eclipse.fx.drift.internal.Placement;
-import org.eclipse.fx.drift.internal.QuantumRendererHelper;
-import org.eclipse.fx.drift.internal.QuantumRendererHelper.WithFence;
-import org.eclipse.fx.drift.internal.SurfaceData;
-import org.eclipse.fx.drift.internal.SwapChain;
-import org.eclipse.fx.drift.internal.SwapChainImage;
 
 import com.sun.javafx.font.FontStrike;
 import com.sun.javafx.font.PGFont;
@@ -53,6 +31,20 @@ import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
 import com.sun.prism.paint.Color;
 import com.sun.prism.paint.Paint;
+
+import org.eclipse.fx.drift.DriftFXSurface;
+import org.eclipse.fx.drift.internal.FPSCounter;
+import org.eclipse.fx.drift.internal.Frame;
+import org.eclipse.fx.drift.internal.FrameProfiler;
+import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
+import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.NativeAPI;
+import org.eclipse.fx.drift.internal.Placement;
+import org.eclipse.fx.drift.internal.QuantumRendererHelper;
+import org.eclipse.fx.drift.internal.QuantumRendererHelper.WithFence;
+import org.eclipse.fx.drift.internal.SurfaceData;
+import org.eclipse.fx.drift.internal.SwapChain;
+import org.eclipse.fx.drift.internal.SwapChainImage;
 
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;

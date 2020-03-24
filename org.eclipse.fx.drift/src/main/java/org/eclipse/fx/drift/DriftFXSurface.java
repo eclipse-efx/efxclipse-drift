@@ -13,16 +13,6 @@ package org.eclipse.fx.drift;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.eclipse.fx.drift.impl.NGDriftFXSurface;
-import org.eclipse.fx.drift.internal.Configuration;
-import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
-import org.eclipse.fx.drift.internal.JNINativeSurface;
-import org.eclipse.fx.drift.internal.Log;
-import org.eclipse.fx.drift.internal.NativeAPI;
-import org.eclipse.fx.drift.internal.ScreenObserver;
-import org.eclipse.fx.drift.internal.SurfaceData;
-import org.eclipse.fx.drift.internal.SwapChain;
-
 import com.sun.javafx.geom.BaseBounds;
 import com.sun.javafx.geom.RectBounds;
 import com.sun.javafx.geom.transform.BaseTransform;
@@ -31,6 +21,15 @@ import com.sun.javafx.jmx.MXNodeAlgorithmContext;
 import com.sun.javafx.scene.DirtyBits;
 import com.sun.javafx.sg.prism.NGNode;
 import com.sun.javafx.tk.Toolkit;
+
+import org.eclipse.fx.drift.impl.NGDriftFXSurface;
+import org.eclipse.fx.drift.internal.Configuration;
+import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
+import org.eclipse.fx.drift.internal.JNINativeSurface;
+import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.NativeAPI;
+import org.eclipse.fx.drift.internal.ScreenObserver;
+import org.eclipse.fx.drift.internal.SurfaceData;
 
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;

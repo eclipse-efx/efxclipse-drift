@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 
 import org.eclipse.fx.drift.internal.backend.BackSwapChain.PresentationMode;
 import org.eclipse.fx.drift.internal.common.ImageData;
-import org.eclipse.fx.drift.internal.common.ImageData.ImageDataType;
 import org.eclipse.fx.drift.internal.math.Vec2i;
 
 public interface Frontend {

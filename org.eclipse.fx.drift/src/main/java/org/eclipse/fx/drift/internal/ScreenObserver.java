@@ -30,6 +30,7 @@ import javafx.stage.Window;
 
 // this class should track on which screen the node is and update the screen and renderscale properies
 // TODO verify if it is working..
+@SuppressWarnings("restriction")
 public class ScreenObserver {
 
 	private final ReadOnlyObjectWrapper<Screen> currentScreen = new ReadOnlyObjectWrapper<>();

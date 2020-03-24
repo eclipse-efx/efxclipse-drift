@@ -2,22 +2,15 @@ package org.eclipse.fx.drift.internal.backend;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.eclipse.fx.drift.internal.backend.BackSwapChain.PresentationMode;
-import org.eclipse.fx.drift.internal.backend.Image.ImageType;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.common.ImageData.ImageDataType;
 import org.eclipse.fx.drift.internal.math.Vec2i;

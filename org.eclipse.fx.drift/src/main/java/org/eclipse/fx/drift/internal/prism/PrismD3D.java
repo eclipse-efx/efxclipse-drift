@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 
 import com.sun.prism.Texture;
 
+@SuppressWarnings("restriction")
 public class PrismD3D {
 
 	private static Class<?> cD3DResourceFactory;

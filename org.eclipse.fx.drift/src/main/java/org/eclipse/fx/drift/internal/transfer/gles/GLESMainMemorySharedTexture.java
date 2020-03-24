@@ -1,15 +1,36 @@
 package org.eclipse.fx.drift.internal.transfer.gles;
 
-import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
-import org.eclipse.fx.drift.internal.SYS;
-import org.eclipse.fx.drift.internal.math.Vec2i;
-import org.eclipse.fx.drift.internal.transfer.SharedTexture;
+import static org.eclipse.fx.drift.internal.GL.GL_BGRA;
+import static org.eclipse.fx.drift.internal.GL.GL_PIXEL_PACK_BUFFER;
+import static org.eclipse.fx.drift.internal.GL.GL_READ_ONLY;
+import static org.eclipse.fx.drift.internal.GL.GL_RGBA;
+import static org.eclipse.fx.drift.internal.GL.GL_RGBA8;
+import static org.eclipse.fx.drift.internal.GL.GL_STATIC_READ;
+import static org.eclipse.fx.drift.internal.GL.GL_TEXTURE_2D;
+import static org.eclipse.fx.drift.internal.GL.GL_UNSIGNED_BYTE;
+import static org.eclipse.fx.drift.internal.GL.GL_UNSIGNED_INT_8_8_8_8_REV;
+import static org.eclipse.fx.drift.internal.GL.glBindBuffer;
+import static org.eclipse.fx.drift.internal.GL.glBindTexture;
+import static org.eclipse.fx.drift.internal.GL.glBufferData;
+import static org.eclipse.fx.drift.internal.GL.glDeleteBuffer;
+import static org.eclipse.fx.drift.internal.GL.glDeleteTexture;
+import static org.eclipse.fx.drift.internal.GL.glGenBuffer;
+import static org.eclipse.fx.drift.internal.GL.glGenTexture;
+import static org.eclipse.fx.drift.internal.GL.glGetTexImage;
+import static org.eclipse.fx.drift.internal.GL.glMapBuffer;
+import static org.eclipse.fx.drift.internal.GL.glTexImage2D;
+import static org.eclipse.fx.drift.internal.GL.glUnmapBuffer;
+import static org.eclipse.fx.drift.internal.SYS.free;
+import static org.eclipse.fx.drift.internal.SYS.malloc;
+import static org.eclipse.fx.drift.internal.SYS.memcpy;
 
 import com.sun.prism.Texture;
 
-import static org.eclipse.fx.drift.internal.GL.*;
-import static org.eclipse.fx.drift.internal.SYS.*;
+import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
+import org.eclipse.fx.drift.internal.math.Vec2i;
+import org.eclipse.fx.drift.internal.transfer.SharedTexture;
 
+@SuppressWarnings("restriction")
 public class GLESMainMemorySharedTexture extends SharedTexture {
 
 	

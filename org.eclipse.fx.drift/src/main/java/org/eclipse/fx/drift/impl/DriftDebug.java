@@ -14,8 +14,8 @@ public class DriftDebug {
 		assertThreadName("JavaFX Application Thread");
 	}
 	public static void outputThread() {
-		StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-		StackTraceElement source = stack[2];
+		//StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+		//StackTraceElement source = stack[2];
 		//System.out.println(Thread.currentThread().getName() + " - " + source.getClassName() + "#" + source.getMethodName());
 	}
 }

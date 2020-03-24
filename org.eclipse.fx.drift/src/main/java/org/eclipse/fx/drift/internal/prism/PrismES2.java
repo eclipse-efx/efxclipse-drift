@@ -4,11 +4,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.eclipse.fx.drift.internal.GL;
-import org.eclipse.fx.drift.internal.QuantumRendererHelper;
-
 import com.sun.prism.Texture;
 
+@SuppressWarnings("restriction")
 public class PrismES2 {
 
 	private static boolean isMac;

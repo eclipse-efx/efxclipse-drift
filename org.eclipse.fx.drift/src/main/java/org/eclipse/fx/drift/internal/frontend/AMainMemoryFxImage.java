@@ -1,14 +1,14 @@
 package org.eclipse.fx.drift.internal.frontend;
 
-import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
-import org.eclipse.fx.drift.internal.common.ImageData;
-import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
-import org.eclipse.fx.drift.internal.prism.Prism;
-
 import com.sun.prism.PixelFormat;
 import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
 
+import org.eclipse.fx.drift.internal.common.ImageData;
+import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
+import org.eclipse.fx.drift.internal.prism.Prism;
+
+@SuppressWarnings("restriction")
 public abstract class AMainMemoryFxImage implements FxImage {
 
 	private Texture texture;
