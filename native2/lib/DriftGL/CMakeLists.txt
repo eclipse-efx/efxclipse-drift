@@ -33,7 +33,7 @@ set(DriftGL-Sources
 )
 
 
-add_library(DriftGL STATIC ${DriftGL-Headers} ${DriftGL-Sources})
+add_library(DriftGL SHARED ${DriftGL-Headers} ${DriftGL-Sources})
 target_include_directories(DriftGL PUBLIC include)
 
 target_link_libraries(DriftGL PRIVATE ${LinkLibraries})

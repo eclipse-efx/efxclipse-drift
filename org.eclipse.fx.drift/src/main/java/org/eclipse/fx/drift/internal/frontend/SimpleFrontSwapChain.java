@@ -61,7 +61,7 @@ public class SimpleFrontSwapChain implements FrontSwapChain {
 	
 	// => called by backend
 	public void present(ImageData image) {
-		System.err.println("DriftFX Frontend: Swapchain#present " + image.number);
+//		System.err.println("DriftFX Frontend: Swapchain#present " + image.number);
 		ImageData old = mailbox.getAndSet(image);
 		if (old != null) {
 			release(old);
@@ -71,7 +71,7 @@ public class SimpleFrontSwapChain implements FrontSwapChain {
 	// => calls backend
 	@Override
 	public void release(FxImage image) {
-		System.err.println("DriftFX Frontend: Swapchain#release " + image.getData().number);
+//		System.err.println("DriftFX Frontend: Swapchain#release " + image.getData().number);
 		onRelease.accept(image.getData());
 	}
 	public void release(ImageData image) {

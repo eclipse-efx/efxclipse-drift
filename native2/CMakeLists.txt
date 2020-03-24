@@ -111,9 +111,11 @@ endif (LINUX)
 
 add_subdirectory(lib/DriftGL)
 
+add_subdirectory(DriftFX)
+
 #add_subdirectory(lib/glew)
 #add_subdirectory(lib/utils)
-#add_subdirectory(DriftFX)
+
 #add_subdirectory(samples)
 
 

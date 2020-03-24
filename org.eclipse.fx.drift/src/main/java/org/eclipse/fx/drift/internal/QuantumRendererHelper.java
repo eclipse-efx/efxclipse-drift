@@ -9,6 +9,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import org.eclipse.fx.drift.internal.GPUSyncUtil.GPUSync;
+import org.eclipse.fx.drift.internal.prism.PrismES2;
+
+import com.sun.prism.ResourceFactory;
 
 public class QuantumRendererHelper {
 	
@@ -30,6 +33,20 @@ public class QuantumRendererHelper {
 		}
 	}
 	
+	public static void initialize(long es2ContextHandle) {
+		if (!initialized) {
+			context = syncExecute(() -> {
+				// TODO context version should be same as fx!!
+				System.out.println("QuantumRendererHelper: creating shared context for " + es2ContextHandle);
+				long es2Context = GL.wrapContext(es2ContextHandle);
+				long context = GL.createSharedCompatContext(es2Context);
+				boolean result = GL.makeContextCurrent(context);
+				System.out.println("=> " + result);
+				return context;
+			});
+			initialized = true;
+		}
+	}
 
 	static boolean initialized = false;
 	
@@ -42,14 +59,16 @@ public class QuantumRendererHelper {
 			return t;
 		}
 	});
+
+	public static long context;
 	
 	public static <T> T syncExecute(Supplier<T> r) {
-		if (!initialized) {
-			internalSyncExecute(() -> {
-				// TODO
-			});
-			initialized = true;
-		}
+//		if (!initialized) {
+//			internalSyncExecute(() -> {
+//				// TODO
+//			});
+//			initialized = true;
+//		}
 		return internalSyncExecute(r);
 	}
 	
@@ -61,12 +80,12 @@ public class QuantumRendererHelper {
 	
 	
 	public static void syncExecute(Runnable r) {
-		if (!initialized) {
-			internalSyncExecute(() -> {
-				// TODO
-			});
-			initialized = true;
-		}
+//		if (!initialized) {
+//			internalSyncExecute(() -> {
+//				// TODO
+//			});
+//			initialized = true;
+//		}
 		internalSyncExecute(r);
 	}
 	
@@ -81,7 +100,9 @@ public class QuantumRendererHelper {
 		lock.lock();
 		executor.execute(() -> {
 			lock.lock();
+			System.out.println(" ==>");
 			r.run();
+			System.out.println(" ***");
 			done.signal();
 			lock.unlock();
 		});

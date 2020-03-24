@@ -40,6 +40,7 @@ import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 
 //Note: this implementation is against internal JavafX API
 @SuppressWarnings({"restriction", "deprecation"})
@@ -150,11 +151,13 @@ public class DriftFXSurface extends Node {
 	public DriftFXSurface() {
 		JNINativeSurface jni = new JNINativeSurface(
 		(frame) -> {
+			Scene.impl_setAllowPGAccess(true);
 			NGDriftFXSurface ngSurface = impl_getPeer();
 			ngSurface.present(frame);
 			Platform.runLater(() -> {
 				impl_markDirty(DirtyBits.NODE_CONTENTS);
 			});
+			Scene.impl_setAllowPGAccess(false);
 		},
 		(swapChain) -> {
 			Platform.runLater(() -> {

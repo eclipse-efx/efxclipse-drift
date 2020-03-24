@@ -40,9 +40,12 @@ public class BackendImpl implements Backend {
 	}
 	
 	private void onPresent(Image image) {
+		// TODO is this the right place to call before/after Render?
+		image.beforeRender();
 		if (onPresent != null) {
 			onPresent.accept(image.getData());
 		}
+		image.afterRender();
 	}
 
 	@Override

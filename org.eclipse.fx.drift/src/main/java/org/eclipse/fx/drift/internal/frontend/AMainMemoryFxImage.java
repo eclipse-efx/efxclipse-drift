@@ -3,6 +3,7 @@ package org.eclipse.fx.drift.internal.frontend;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
+import org.eclipse.fx.drift.internal.prism.Prism;
 
 import com.sun.prism.PixelFormat;
 import com.sun.prism.ResourceFactory;
@@ -36,6 +37,7 @@ public abstract class AMainMemoryFxImage implements FxImage {
 	public void allocate(ResourceFactory rf) {
 		texture = rf.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, data.size.x, data.size.y);
 		texture.makePermanent();
+		System.err.println("Texture Created! " + this + " / " + texture + " / " + Prism.getTextureHandle(texture));
 	}
 	
 	protected abstract void uploadTexture();

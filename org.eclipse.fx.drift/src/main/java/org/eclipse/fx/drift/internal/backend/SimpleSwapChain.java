@@ -76,7 +76,7 @@ public class SimpleSwapChain implements BackSwapChain {
 	// => called by frontend
 	@Override
 	public void release(ImageData imageData) {
-		System.err.println("DriftFX Backend: Swapchain#release " + imageData.number);
+//		System.err.println("DriftFX Backend: Swapchain#release " + imageData.number);
 		synchronized (freeImages) {
 			Image image = imageMap.get(imageData);
 			if (image == null) {
@@ -105,7 +105,7 @@ public class SimpleSwapChain implements BackSwapChain {
 	// => calls fontend present
 	@Override
 	public void present(Image image) {
-		System.err.println("DriftFX Backend: Swapchain#present " + image.getData().number);
+//		System.err.println("DriftFX Backend: Swapchain#present " + image.getData().number);
 		onPresent.accept(image);
 	}
 	

@@ -47,7 +47,7 @@ public class GPUSyncUtil {
 		private long sync;
 		
 		private GLSync() {
-			sync = nCreateFence();
+			sync = GL.glCreateFence();
 		}
 		
 		private void checkSync() {
@@ -62,12 +62,12 @@ public class GPUSyncUtil {
 		
 		public WaitSyncResult ClientWaitSync(Duration timeout) {
 			checkSync();
-			int r = nClientWaitSync(sync, timeout.toNanos());
+			int r = GL.glClientWaitSync(sync, timeout.toNanos());
 			switch (r) {
-			case GL_AREADY_SIGNALED: return WaitSyncResult.AREADY_SIGNALED;
-			case GL_TIMEOUT_EXPIRED: return WaitSyncResult.TIMEOUT_EXPIRED;
-			case GL_CONDITION_SATISFIED: return WaitSyncResult.CONDITION_SATISFIED;
-			case GL_WAIT_FAILED: return WaitSyncResult.WAIT_FAILED;
+			case GL.GL_AREADY_SIGNALED: return WaitSyncResult.AREADY_SIGNALED;
+			case GL.GL_TIMEOUT_EXPIRED: return WaitSyncResult.TIMEOUT_EXPIRED;
+			case GL.GL_CONDITION_SATISFIED: return WaitSyncResult.CONDITION_SATISFIED;
+			case GL.GL_WAIT_FAILED: return WaitSyncResult.WAIT_FAILED;
 			}
 			System.err.println("glClientWaitSync: Unexpected result!!! " + r);
 			return WaitSyncResult.WAIT_FAILED;
@@ -75,25 +75,14 @@ public class GPUSyncUtil {
 		
 		public void WaitSync() {
 			checkSync();
-			nWaitSync(sync);
+			GL.glWaitSync(sync);
 		}
 		
 		public void Delete() {
 			checkSync();
-			nDeleteSync(sync);
+			GL.glDeleteSync(sync);
 			sync = 0;
 		}
 		
 	}
-	
-	private static native long nCreateFence();
-	private static native void nDeleteSync(long sync);
-	
-	private static final int GL_AREADY_SIGNALED = 0x911A;
-	private static final int GL_TIMEOUT_EXPIRED = 0x911B;
-	private static final int GL_CONDITION_SATISFIED = 0x911C;
-	private static final int GL_WAIT_FAILED = 0x911D;
-	private static native int nClientWaitSync(long sync, long timeout);
-	
-	private static native void nWaitSync(long sync);
 }

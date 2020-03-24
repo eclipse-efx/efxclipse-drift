@@ -19,6 +19,7 @@ public interface Image {
 	void afterRender();
 	
 	
+	
 	int getGLTexture();
 	
 }

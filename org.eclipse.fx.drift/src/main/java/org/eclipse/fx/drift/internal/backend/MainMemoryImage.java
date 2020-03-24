@@ -41,20 +41,24 @@ public class MainMemoryImage implements Image {
 		memSize = size.x * size.y * 4;
 		memPointer = malloc(memSize);
 		
-		System.err.println("*allocated " + number + " " + memPointer);
-		
+		System.out.println("*allocated " + number + " 0x" + Long.toHexString(memPointer) + "("+size.x+"x"+size.y+": " + memSize + "B)");
+		System.out.flush();
 		this.data =  new MainMemoryImageData(number, size, memPointer, memSize);
 	}
 
 	@Override
 	public void release() {
 		glDeleteTexture(glTexture);
+		System.out.println("*release " + glTexture + " 0x" + Long.toHexString(memPointer));
+		System.out.flush();
 		free(memPointer);
 	}
 
 	@Override
 	public void beforeRender() {
-		downloadToMemorySimple(glTexture, memPointer);
+		synchronized (data) {
+			downloadToMemorySimple(glTexture, memPointer);
+		}
 	}
 
 	@Override
@@ -63,10 +67,13 @@ public class MainMemoryImage implements Image {
 	}
 
 	private void downloadToMemorySimple(int tex, long pPixels) {
+		
 		int format = GL_RGBA; // TODO need GL_BGRA on windows
 		glBindTexture(GL_TEXTURE_2D, glTexture);
 		glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_INT_8_8_8_8_REV, memPointer);
 		glBindTexture(GL_TEXTURE_2D, 0);
+		System.out.println("*downloaded " + tex + " => 0x" + Long.toHexString(memPointer));
+		System.out.flush();
 	}
 	
 	private void downloadToMemoryBuf(int tex, int size, long pPixels) {

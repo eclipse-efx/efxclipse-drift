@@ -13,6 +13,7 @@ package org.eclipse.fx.drift;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.fx.drift.impl.DriftDebug;
 import org.eclipse.fx.drift.impl.NGDriftFXSurface2;
 import org.eclipse.fx.drift.internal.Configuration;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
@@ -37,6 +38,8 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
@@ -79,6 +82,13 @@ public class DriftFXSurface2 extends Node {
 	
 	private ScreenObserver screenObserver = new ScreenObserver(this);
 	
+	
+	private ReadOnlyStringWrapper stats = new ReadOnlyStringWrapper(this, "stats", "");
+	
+	public ReadOnlyStringProperty statsProperty() {
+		return stats;
+	}
+	
 	public DriftFXSurface2() {
 
 		
@@ -91,7 +101,8 @@ public class DriftFXSurface2 extends Node {
 
 	@Override
 	protected NGNode impl_createPeer() {
-		NGDriftFXSurface2 peer = new NGDriftFXSurface2(this, nativeSurfaceId);
+		DriftDebug.outputThread();
+		NGDriftFXSurface2 peer = new NGDriftFXSurface2(this, nativeSurfaceId, stats);
 		return peer;
 	}
 	
@@ -128,6 +139,7 @@ public class DriftFXSurface2 extends Node {
 	
 	@Override
 	public BaseBounds impl_computeGeomBounds(BaseBounds bounds, BaseTransform tx) {
+		DriftDebug.outputThread();
 		bounds = new RectBounds(0f, 0f, (float) getWidth(), (float) getHeight());
 		bounds = tx.transform(bounds, bounds);
 		return bounds;
@@ -210,6 +222,7 @@ public class DriftFXSurface2 extends Node {
 
 
    private SurfaceData computeSurfaceData() {
+	   DriftDebug.outputThread();
 	   return new SurfaceData(
 			   (float) getWidth(), (float) getHeight(), 
 			   (float) getScreenScaleFactor(), (float) getScreenScaleFactor(), 
@@ -220,6 +233,7 @@ public class DriftFXSurface2 extends Node {
 	@Deprecated
 	@Override
 	public void impl_updatePeer() {
+		DriftDebug.outputThread();
 		super.impl_updatePeer();
 		NGDriftFXSurface2 peer = impl_getPeer();
 		
@@ -230,6 +244,10 @@ public class DriftFXSurface2 extends Node {
 		}
 		
 		if (impl_isDirty(DirtyBits.NODE_CONTENTS)) {
+			FrontSwapChain swapChain = swapChainBuf.getAndSet(null);
+			if (swapChain != null) {
+				peer.setSwapChain(swapChain);
+			}
 			peer.markDirty();
 		}
 		
@@ -242,28 +260,45 @@ public class DriftFXSurface2 extends Node {
    
    @Override
 	public void resize(double width, double height) {
+	   	DriftDebug.outputThread();
 		setWidth(width);
 		setHeight(height);
 		updateSurfaceData();
 	}
    
    private void updateSurfaceData() {
-	   surfaceData.set(computeSurfaceData());
-	   impl_markDirty(DirtyBits.NODE_GEOMETRY);
+	   DriftDebug.outputThread();
+	   SurfaceData data = computeSurfaceData();
+	   if (!data.equals(surfaceData.get())) {
+		   surfaceData.set(data);
+		   impl_markDirty(DirtyBits.NODE_GEOMETRY);
+	   }
    }
    
    @Override
 	public void relocate(double x, double y) {
+	   DriftDebug.outputThread();
 		super.relocate(x, y);
 	}
    
 	public void dirty() {
-		impl_markDirty(DirtyBits.NODE_CONTENTS);
+		DriftDebug.outputThread();
+		Platform.runLater(() ->  impl_markDirty(DirtyBits.NODE_CONTENTS));
+	}
+	
+	@Override
+	protected void impl_markDirty(DirtyBits dirtyBit) {
+		DriftDebug.assertJavaFXApplicationThread();
+		super.impl_markDirty(dirtyBit);
 	}
 
+	private AtomicReference<FrontSwapChain> swapChainBuf = new AtomicReference<>();
+	
 	public void setSwapChain(FrontSwapChain swapChain) {
-		NGDriftFXSurface2 peer = impl_getPeer();
-		peer.setSwapChain(swapChain);
+		DriftDebug.outputThread();
+		FrontSwapChain leftover = swapChainBuf.getAndSet(swapChain);
+		System.err.println("Leftover swapchain!!! This is not good! " + leftover);
+		Platform.runLater(() ->  impl_markDirty(DirtyBits.NODE_CONTENTS));
 	}
 	
 }

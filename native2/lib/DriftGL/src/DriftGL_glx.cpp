@@ -20,7 +20,13 @@ namespace driftgl {
 	glXMakeContextCurrentARBProc glXMakeContextCurrentARB;
 
 
+	bool initialized = false;
+
+
 	bool Initialize() {
+		if (initialized) {
+			return true;
+		}
 		std::cout << "driftgl::Initialize()" << std::endl;
 		display = XOpenDisplay( NULL );
 
@@ -51,6 +57,7 @@ namespace driftgl {
 
 
 		std::cout << "driftgl::Initialize() End" << std::endl;
+		initialized = true;
 		return true;
 	}
 
@@ -102,6 +109,54 @@ namespace driftgl {
 		return ctx;
 	}
 
+	Context* CreateSharedCompatContext(Context* sharedContext) {
+			std::cout << "driftgl::CreateSharedCompatContext( "<<sharedContext << " )" << std::endl;
+			DriftGLXContext* ctx = new DriftGLXContext();
+
+			static int visualAttribs[] = { None };
+			int fbConfigsCount = 0;
+			std::cout << "calling glXChooseFbConfig " << glXChooseFBConfig << std::endl;
+			GLXFBConfig* fbConfigs = glXChooseFBConfig( display, DefaultScreen(display), visualAttribs, &fbConfigsCount );
+
+			std::cout << "Created fbConfigs = " << fbConfigs << std::endl;
+
+			int context_attribs[] = {
+					GLX_CONTEXT_MAJOR_VERSION_ARB, 2,
+					GLX_CONTEXT_MINOR_VERSION_ARB, 1,
+					GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_DEBUG_BIT_ARB,
+					GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+					None
+			};
+
+			DriftGLXContext* shared = (DriftGLXContext*) (sharedContext);
+			GLXContext s = shared == NULL ? NULL : shared->glxContext;
+
+			ctx->glxContext = glXCreateContextAttribsARB( display, fbConfigs[0], s, True, context_attribs);
+			std::cout << "Created context = " << ctx->glxContext << std::endl;
+
+			int pbufferAttribs[] = {
+				GLX_PBUFFER_WIDTH,  32,
+				GLX_PBUFFER_HEIGHT, 32,
+				None
+			};
+			ctx->pBuffer = glXCreatePbuffer( display, fbConfigs[0], pbufferAttribs );
+			std::cout << "Created pBuffer = " << ctx->pBuffer << std::endl;
+
+			// clean up:
+			XFree( fbConfigs );
+			XSync( display, False );
+
+
+			std::cout << "driftgl::CreateContext() End" << std::endl;
+			return ctx;
+		}
+
+	Context* WrapContext(long nativeContextHandle) {
+		DriftGLXContext* ctx = new DriftGLXContext();
+		ctx->glxContext = (GLXContext) nativeContextHandle;
+		return ctx;
+	}
+
 	void DestroyContext(Context* context) {
 		DriftGLXContext* ctx = (DriftGLXContext*) context;
 		glXDestroyPbuffer(display, ctx->pBuffer);
@@ -115,6 +170,11 @@ namespace driftgl {
 		return glXMakeContextCurrent(display, ctx->pBuffer, ctx->pBuffer, ctx->glxContext);
 	}
 
+	bool IsContextCurrent(Context* context) {
+		GLXContext currentContext = glXGetCurrentContext();
+		DriftGLXContext* ctx = (DriftGLXContext*) context;
+		return currentContext == ctx->glxContext;
+	}
 
 }
 

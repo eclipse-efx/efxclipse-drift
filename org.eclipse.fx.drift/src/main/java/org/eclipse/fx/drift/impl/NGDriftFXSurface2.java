@@ -10,17 +10,24 @@
  *******************************************************************************/
 package org.eclipse.fx.drift.impl;
 
+import java.lang.management.PlatformLoggingMXBean;
+import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 import org.eclipse.fx.drift.DriftFXSurface2;
 import org.eclipse.fx.drift.internal.FPSCounter;
 import org.eclipse.fx.drift.internal.Frame;
 import org.eclipse.fx.drift.internal.FrameProfiler;
+import org.eclipse.fx.drift.internal.GL;
+import org.eclipse.fx.drift.internal.GPUSyncUtil.GPUSync;
+import org.eclipse.fx.drift.internal.GPUSyncUtil.WaitSyncResult;
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
 import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.NativeAPI;
@@ -51,11 +58,15 @@ import com.sun.prism.paint.Paint;
 
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyStringWrapper;
 
 // Note: this implementation is against internal JavafX API
 @SuppressWarnings("restriction")
 public class NGDriftFXSurface2 extends NGNode {
 
+	private final ReadOnlyStringWrapper stats;
+	
 	private long nativeSurfaceHandle;
 	
 	private SurfaceData surfaceData;
@@ -97,7 +108,8 @@ public class NGDriftFXSurface2 extends NGNode {
 		NativeAPI.disposeFrame(frame);
 	}
 	
-	public NGDriftFXSurface2(DriftFXSurface2 node, long nativeSurfaceId) {
+	public NGDriftFXSurface2(DriftFXSurface2 node, long nativeSurfaceId, ReadOnlyStringWrapper stats) {
+		this.stats = stats;
 		this.node = node;
 		this.nativeSurfaceHandle = nativeSurfaceId;
 		Log.debug("NGNativeSurface got handle: " + this.nativeSurfaceHandle);
@@ -277,7 +289,7 @@ public class NGDriftFXSurface2 extends NGNode {
 	
 	
 	private void drawStats(Graphics g) {
-		
+		DriftDebug.assertQuantumRenderer();
 		String stats0;
 //		if (currentFrame != null) {
 //			stats0 = String.format("%d.%d (%d x %d)", nativeSurfaceHandle, currentFrame.frameId, currentFrame.textureWidth, currentFrame.textureHeight);
@@ -285,10 +297,24 @@ public class NGDriftFXSurface2 extends NGNode {
 //		else {
 			stats0 = "" + nativeSurfaceHandle;
 //		}
-		
 		String stats = String.format("%s\nfx:  %5.1ffps\ntex: %5.1ffps", stats0, renderContent.avgFps(), renderTexture.avgFps());
+		Platform.runLater(() -> {
+			this.stats.set(stats);
+		});
 		
-		Font font = Font.font(18);
+//		
+//		
+//		String stats0;
+////		if (currentFrame != null) {
+////			stats0 = String.format("%d.%d (%d x %d)", nativeSurfaceHandle, currentFrame.frameId, currentFrame.textureWidth, currentFrame.textureHeight);
+////		}
+////		else {
+//			stats0 = "" + nativeSurfaceHandle;
+////		}
+//		
+//		String stats = String.format("%s\nfx:  %5.1ffps\ntex: %5.1ffps", stats0, renderContent.avgFps(), renderTexture.avgFps());
+//		
+		Font font = Font.font(40);
 		PGFont pgFont = (PGFont) font.impl_getNativeFont();
 		
 		FontStrike strike = pgFont.getStrike(BaseTransform.IDENTITY_TRANSFORM);
@@ -388,10 +414,17 @@ public class NGDriftFXSurface2 extends NGNode {
 				pos.x + pos.width, pos.y + pos.height, 0, 0, frameTextureWidth, frameTextureHeight);
 	}
 	
+	Executor quantumHelper;
+	
+	void initQuantumHelper() {
+		
+	}
+	
 	FxImage curImage;
 	
 	@Override
 	protected void renderContent(Graphics g) {
+		DriftDebug.assertQuantumRenderer();
 		if (showFPS) renderContent.frame();
 		
 		if (nextSwapChain != null) {
@@ -420,7 +453,22 @@ public class NGDriftFXSurface2 extends NGNode {
 				}
 				curImage = nextImage.get();
 				System.err.println("DriftFX Surface: Showing " + curImage.getData().number + " " + curImage.getTexture().getContentWidth() + " x " + curImage.getTexture().getContentHeight());
+				
 				curImage.update();
+				
+//				QuantumRendererHelper.syncExecute(() -> {
+//					boolean isCtx = GL.isContextCurrent(QuantumRendererHelper.context);
+//					if (!isCtx) throw new RuntimeException("QuantumRendererHelper has no context!");
+//					curImage.update();
+//				});
+//				GL.glFinish();
+				
+//				GPUSync sync = QuantumRendererHelper.syncExecuteWithFence(curImage::update);
+//				WaitSyncResult r = sync.ClientWaitSync(Duration.ZERO);
+//				System.err.println("=> " + r);
+//				sync.Delete();
+				
+				if (showFPS) renderTexture.frame();
 			}
 			
 			if (curImage != null) {
@@ -429,10 +477,11 @@ public class NGDriftFXSurface2 extends NGNode {
 		}
 		
 		g.setTransform(saved);
-		
+	
 		if (showFPS) {
 			drawStats(g);
 		}
+		
 	}
 	
 	public void updateSurface(SurfaceData surfaceData)  {
