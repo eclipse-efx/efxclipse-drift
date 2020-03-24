@@ -13,7 +13,7 @@ import java.nio.file.OpenOption
 import java.nio.file.StandardOpenOption
 import java.nio.file.Paths
 import java.util.HashSet
-
+ 
 class Command {
 	public String type
 	public String name
@@ -77,7 +77,7 @@ class CommandsHandler extends DefaultHandler {
 			case "command": {
 				if (inCommands) {
 					var o = commands.put(curCommand.name, curCommand)
-					System.err.println(''' * �curCommand.type� �curCommand.name�(�FOR p : curCommand.params SEPARATOR ", " ��p.type� �p.name��ENDFOR�)''')
+					System.err.println(''' * «curCommand.type» «curCommand.name»(«FOR p : curCommand.params SEPARATOR ", " »«p.type» «p.name»«ENDFOR»)''')
 					curCommand = null;
 				}
 			}
@@ -263,20 +263,20 @@ class CPPGenerator {
 		return javaClass.replaceAll("[.]", "_");
 	}
 	
-	def generateJavaParameterList(Command c) '''(�FOR p : c.params SEPARATOR ", "��p.type� �p.name��ENDFOR�)'''
+	def generateJavaParameterList(Command c) '''(«FOR p : c.params SEPARATOR ", "»«p.type» «p.name»«ENDFOR»)'''
 	
 	def generateJniJava(String javaClass, List<Enum> enums, List<Command> commands) '''
-	package �javaClass.getClassPackage�;
+	package «javaClass.getClassPackage»;
 	
-	public final class �javaClass.getClassName� {
+	public final class «javaClass.getClassName» {
 		
-		�FOR e : enums�
-			public static final int �e.name� = �e.value�;
-		�ENDFOR�
+		«FOR e : enums»
+			public static final int «e.name» = «e.value»;
+		«ENDFOR»
 		
-		�FOR c : commands�
-			public static native �c.type� �c.name��c.generateParameterList�;
-		�ENDFOR�
+		«FOR c : commands»
+			public static native «c.type» «c.name»«c.generateParameterList»;
+		«ENDFOR»
 	}
 	
 	'''
@@ -288,13 +288,13 @@ class CPPGenerator {
 	
 	extern "C" {
 		
-		�FOR c : commands�
-			extern "C" JNIEXPORT �c.jniCType� JNICALL Java_�javaClass.JNIMethodNamespace�_�c.name��c.jniCParameterList� {
-				driftgl::�c.name��c.jniCParameterCallList�;
+		«FOR c : commands»
+			extern "C" JNIEXPORT «c.jniCType» JNICALL Java_«javaClass.JNIMethodNamespace»_«c.name»«c.jniCParameterList» {
+				driftgl::«c.name»«c.jniCParameterCallList»;
 			}
 				
-			public static native �c.type� �c.name��c.generateParameterList�;
-		�ENDFOR�
+			public static native «c.type» «c.name»«c.generateParameterList»;
+		«ENDFOR»
 		
 	}
 	
@@ -345,16 +345,16 @@ class CPPGenerator {
 		typedef ptrdiff_t GLsizeiptr;
 		typedef ptrdiff_t GLintptr;
 		
-		typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
+		typedef void (*GLDEBUGPROC)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
 		
 		
-		�FOR e : enums�
-			extern unsigned int �e.name�;
-		�ENDFOR�
+		«FOR e : enums»
+			extern unsigned int «e.name»;
+		«ENDFOR»
 		
-		�FOR c : commands�
-			�c.generateAPICall�
-		�ENDFOR�
+		«FOR c : commands»
+			«c.generateAPICall»
+		«ENDFOR»
 		
 		namespace procs {
 			typedef void* (LookupFunctionPointer(const char* functionName));
@@ -370,32 +370,32 @@ class CPPGenerator {
 	
 		namespace driftgl {
 					
-			�FOR e : enums�
-				unsigned int �e.name� = �e.value�;
-			�ENDFOR�
+			«FOR e : enums»
+				unsigned int «e.name» = «e.value»;
+			«ENDFOR»
 			
 			namespace procs {
-				�FOR c : commands�
-					�c.generateProcTypedef�
-				�ENDFOR�
+				«FOR c : commands»
+					«c.generateProcTypedef»
+				«ENDFOR»
 				
-				�FOR c : commands�
-					�c.toProcDef� �c.toProcVar�;
-				�ENDFOR�
+				«FOR c : commands»
+					«c.toProcDef» «c.toProcVar»;
+				«ENDFOR»
 				
 				void Initialize(LookupFunctionPointer lookupFunctionPointer) {
-					�FOR c : commands�
-						�c.toProcVar� = (�c.toProcDef�)lookupFunctionPointer("�c.name�");
-					�ENDFOR�
+					«FOR c : commands»
+						«c.toProcVar» = («c.toProcDef»)lookupFunctionPointer("«c.name»");
+					«ENDFOR»
 				}
 				
 			}
 			
-			�FOR c : commands�
-				�c.type� �c.name��c.generateParameterList� {
-					return procs::�c.toProcVar��c.generateParameterCall�;
+			«FOR c : commands»
+				«c.type» «c.name»«c.generateParameterList» {
+					return procs::«c.toProcVar»«c.generateParameterCall»;
 				}
-			�ENDFOR�
+			«ENDFOR»
 		}
 	'''
 	
@@ -403,13 +403,13 @@ class CPPGenerator {
 	static def toProcDef(Command c) '''PFN�c.name.toUpperCase�'''
 	
 	def generateAPICall(Command c) '''
-	�c.type� �c.name��c.generateParameterList�;
+	«c.type» «c.name»«c.generateParameterList»;
 	'''
 	
-	def generateParameterList(Command c) '''(�FOR p : c.params SEPARATOR ", "��p.type� �p.name��ENDFOR�)'''
-	def generateParameterCall(Command c) '''(�FOR p : c.params SEPARATOR ", "��p.name��ENDFOR�)'''
+	def generateParameterList(Command c) '''(«FOR p : c.params SEPARATOR ", "»«p.type» «p.name»«ENDFOR»)'''
+	def generateParameterCall(Command c) '''(«FOR p : c.params SEPARATOR ", "»«p.name»«ENDFOR»)'''
 	def generateProcTypedef(Command c) '''
-	typedef �c.type� (* �c.toProcDef�) �c.generateParameterList�;
+	typedef «c.type» (* «c.toProcDef») «c.generateParameterList»;
 	'''
 }
 
@@ -531,41 +531,41 @@ class GLProcsGenerator {
 	}
 	
 	static def show(Collected c) '''
-		�FOR t : c.types�
-			+ TYPE �t�
-		�ENDFOR�
-		�FOR e : c.enums�
-			+ ENUM �e�
-		�ENDFOR�
-		�FOR cm : c.commands�
-			+ CMD �cm�
-		�ENDFOR�
+		«FOR t : c.types»
+			+ TYPE «t»
+		«ENDFOR»
+		«FOR e : c.enums»
+			+ ENUM «e»
+		«ENDFOR»
+		«FOR cm : c.commands»
+			+ CMD «cm»
+		«ENDFOR»
 	'''
-	
+
 	static def show(Feature f) '''
-		feature �f.api� �f.number� �f.name�
-			�FOR r : f.requires�
-				�FOR t : r.types�
-					+ TYPE �t�
-				�ENDFOR�
-				�FOR e : r.enums�
-					+ ENUM �e�
-				�ENDFOR�
-				�FOR c : r.commands�
-					+ CMD �c�
-				�ENDFOR�
-			�ENDFOR�
-			�FOR r : f.removes�
-				�FOR t : r.types�
-					- TYPE �t�
-				�ENDFOR�
-				�FOR e : r.enums�
-					- ENUM �e�
-				�ENDFOR�
-				�FOR c : r.commands�
-					- CMD �c�
-				�ENDFOR�
-			�ENDFOR�
+		feature «f.api» «f.number» «f.name»
+			«FOR r : f.requires»
+				«FOR t : r.types»
+					+ TYPE «t»
+				«ENDFOR»
+				«FOR e : r.enums»
+					+ ENUM «e»
+				«ENDFOR»
+				«FOR c : r.commands»
+					+ CMD «c»
+				«ENDFOR»
+			«ENDFOR»
+			«FOR r : f.removes»
+				«FOR t : r.types»
+					- TYPE «t»
+				«ENDFOR»
+				«FOR e : r.enums»
+					- ENUM «e»
+				«ENDFOR»
+				«FOR c : r.commands»
+					- CMD «c»
+				«ENDFOR»
+			«ENDFOR»
 	'''
 	
 }
