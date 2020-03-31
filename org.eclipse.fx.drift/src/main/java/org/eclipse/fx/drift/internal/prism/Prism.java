@@ -8,6 +8,8 @@ import com.sun.prism.Texture;
 
 import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.QuantumRendererHelper;
+import org.eclipse.fx.drift.internal.jni.win32.Win32;
+import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DDevice9Ex;
 
 @SuppressWarnings("restriction")
 public class Prism {
@@ -34,6 +36,8 @@ public class Prism {
 	private static Object iD3DContext;
 	private static long contextHandleD3D;
 	
+	private static Win32.IDirect3DDevice9Ex d3dDevice;
+	
 	private static Object iES2Context;
 	private static Object iGLContext;
 	private static long contextHandleES2;
@@ -56,7 +60,8 @@ public class Prism {
 			iD3DContext = PrismD3D.getD3DContext(iDefaultResourceFactory);
 			contextHandleD3D = PrismD3D.getContextHandle(iD3DContext);
 			Log.debug(" * D3D Context handle = " + contextHandleD3D);
-
+			d3dDevice = org.eclipse.fx.drift.internal.jni.win32.Prism.getPrismIDirect3DDevice9Ex(contextHandleD3D);
+			Log.debug(" * D3D Context direct3D device = " + d3dDevice);
 			//NativeAPI.initializeD3DPipeline(contextHandleD3D);
 		} else if (isES2) {
 			PrismES2.initialize();
@@ -104,6 +109,10 @@ public class Prism {
 			return PrismES2.getTextureName(texture);
 		}
 		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	public static IDirect3DDevice9Ex getD3DDevice() {
+		return d3dDevice;
 	}
 
 }

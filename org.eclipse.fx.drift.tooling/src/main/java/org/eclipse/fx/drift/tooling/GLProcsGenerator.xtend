@@ -318,6 +318,7 @@ class CPPGenerator {
 	#ifndef GL_CONTEXT_GEN_H_
 	#define GL_CONTEXT_GEN_H_
 	
+	#include "Export.h"
 	#include <cstdint>
 	#include <stddef.h>
 	
@@ -349,11 +350,11 @@ class CPPGenerator {
 		
 		
 		«FOR e : enums»
-			extern unsigned int «e.name»;
+			DRIFTGL_EXPORT extern unsigned int «e.name»;
 		«ENDFOR»
 		
 		«FOR c : commands»
-			«c.generateAPICall»
+			DRIFTGL_EXPORT «c.generateAPICall»
 		«ENDFOR»
 		
 		namespace procs {
@@ -399,8 +400,8 @@ class CPPGenerator {
 		}
 	'''
 	
-	static def toProcVar(Command c) '''pfn�c.name.toFirstUpper�'''
-	static def toProcDef(Command c) '''PFN�c.name.toUpperCase�'''
+	static def toProcVar(Command c) '''pfn«c.name.toFirstUpper»'''
+	static def toProcDef(Command c) '''PFN«c.name.toUpperCase»'''
 	
 	def generateAPICall(Command c) '''
 	«c.type» «c.name»«c.generateParameterList»;
@@ -500,11 +501,13 @@ class GLProcsGenerator {
 
 	
 	def static void main(String[] args) {
-		var path = "C:\\Users\\Christoph\\Projects\\drift\\git\\drift\\org.eclipse.fx.drift.tooling\\gl.xml";
-		var outH = '''C:\Users\Christoph\Projects\drift\git\drift\native\lib\DriftGL\include\DriftGL_gen.h'''
-		var outCPP = '''C:\Users\Christoph\Projects\drift\git\drift\native\lib\DriftGL\src\DriftGL_gen.cpp'''
-		var jniJava = '''C:\Users\Christoph\Projects\drift\git\drift\org.eclipse.fx.drift\src\main\java\org\eclipse\fx\drift\internal\driftgl\DriftGL.java'''
-		var jniCPP = '''C:\Users\Christoph\Projects\drift\git\drift\native\lib\DriftGL\src\DriftGL_jni.cpp'''
+		var projectDir = "C:\\Users\\redrezo\\Projects\\driftfx\\driftfx-swap";
+		
+		var path = 		'''«projectDir»\org.eclipse.fx.drift.tooling\gl.xml''';
+		var outH = 		'''«projectDir»\native2\lib\DriftGL\include\DriftGL_gen.h'''
+		var outCPP = 	'''«projectDir»\native2\lib\DriftGL\src\DriftGL_gen.cpp'''
+		var jniJava = 	'''«projectDir»\org.eclipse.fx.drift\src\main\java\org\eclipse\fx\drift\internal\driftgl\DriftGL.java'''
+		var jniCPP = 	'''«projectDir»\native2\lib\DriftGL\src\DriftGL_jni.cpp'''
 		
 		generateGLProcs(path, outH, outCPP, jniJava, jniCPP);
 	}

@@ -9,47 +9,18 @@ import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
 import org.eclipse.fx.drift.internal.prism.Prism;
 
 @SuppressWarnings("restriction")
-public abstract class AMainMemoryFxImage implements FxImage {
+public abstract class AMainMemoryFxImage extends AFxImage<MainMemoryImageData> {
 
-	private Texture texture;
-
-
-	
-	
-	protected MainMemoryImageData data;
-
-	public AMainMemoryFxImage() {
-		super();
+	public AMainMemoryFxImage(MainMemoryImageData data) {
+		super(data);
 	}
 
 	@Override
 	public void update() {
-			System.err.println("*update");
-			uploadTexture();
-		}
-
-	@Override
-	public ImageData getData() {
-		return data;
+		System.err.println("*update");
+		uploadTexture();
 	}
 
-	@Override
-	public void allocate(ResourceFactory rf) {
-		texture = rf.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, data.size.x, data.size.y);
-		texture.makePermanent();
-		System.err.println("Texture Created! " + this + " / " + texture + " / " + Prism.getTextureHandle(texture));
-	}
-	
 	protected abstract void uploadTexture();
-
-	@Override
-	public void release() {
-		texture.dispose();
-	}
-
-	@Override
-	public Texture getTexture() {
-		return texture;
-	}
 
 }

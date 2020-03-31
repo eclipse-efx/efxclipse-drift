@@ -1,6 +1,7 @@
 #ifndef DRIFTGL_H_
 #define DRIFTGL_H_
 
+#include "Export.h"
 #include "DriftGL_gen.h"
 
 namespace driftgl {
@@ -8,19 +9,19 @@ namespace driftgl {
 	struct Context {
 	};
 
-	bool Initialize();
-	bool Destroy();
+	DRIFTGL_EXPORT bool Initialize();
+	DRIFTGL_EXPORT bool Destroy();
 
-	Context* CreateContext(Context* sharedContext, int majorHint, int minorHint);
-	Context* CreateSharedCompatContext(Context* sharedContext);
+	DRIFTGL_EXPORT Context* CreateContext(Context* sharedContext, int majorHint, int minorHint);
+	DRIFTGL_EXPORT Context* CreateSharedCompatContext(Context* sharedContext);
 
-	Context* WrapContext(long nativeContextHandle);
+	DRIFTGL_EXPORT Context* WrapContext(long long nativeContextHandle);
 
-	void DestroyContext(Context* context);
-	bool MakeContextCurrent(Context* context);
-	bool IsContextCurrent(Context* context);
+	DRIFTGL_EXPORT void DestroyContext(Context* context);
+	DRIFTGL_EXPORT bool MakeContextCurrent(Context* context);
+	DRIFTGL_EXPORT bool IsContextCurrent(Context* context);
 
-	void* GetNativeContextHandle(Context* context);
+	DRIFTGL_EXPORT void* GetNativeContextHandle(Context* context);
 }
 
 

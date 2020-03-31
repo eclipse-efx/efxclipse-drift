@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.eclipse.fx.drift.internal.FPSCounter2;
 import org.eclipse.fx.drift.internal.backend.BackSwapChain.PresentationMode;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.math.Vec2i;
@@ -27,6 +28,7 @@ public class SimpleFrontSwapChain implements FrontSwapChain {
 	private int imageCount;
 	private PresentationMode presentationMode;
 	
+	public FPSCounter2 fpsCounter = new FPSCounter2(100);
 	
 	public SimpleFrontSwapChain(List<ImageData> images, PresentationMode presentationMode, Consumer<ImageData> onRelease) {
 		for (ImageData image : images) {
@@ -37,6 +39,10 @@ public class SimpleFrontSwapChain implements FrontSwapChain {
 		
 		this.presentationMode = presentationMode;
 		this.onRelease = onRelease;
+	}
+	
+	public Vec2i getSize() {
+		return images.get(0).getData().size;
 	}
 	
 	public void allocate(ResourceFactory rf) {
@@ -62,11 +68,12 @@ public class SimpleFrontSwapChain implements FrontSwapChain {
 	
 	// => called by backend
 	public void present(ImageData image) {
-//		System.err.println("DriftFX Frontend: Swapchain#present " + image.number);
+		System.err.println("DriftFX Frontend: Swapchain#present " + image.number);
 		ImageData old = mailbox.getAndSet(image);
 		if (old != null) {
 			release(old);
 		}
+		fpsCounter.tick();
 	}
 
 	// => calls backend

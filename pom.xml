@@ -27,6 +27,10 @@
 		<module>org.eclipse.fx.drift.feature</module>
 		<module>org.eclipse.fx.drift.samples.feature</module>
 		<module>org.eclipse.fx.drift.updatesite</module>
+
+		
+
+		<module>org.eclipse.fx.drift.samples.lwjgl</module>
 	</modules>
 
 	<repositories>

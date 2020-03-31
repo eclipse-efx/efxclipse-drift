@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 
 project(releng)
 
+set( CMAKE_VERBOSE_MAKEFILE on )
+
 if (UNIX AND NOT APPLE)
 	set(LINUX TRUE)
 endif ()
@@ -34,8 +36,11 @@ if (MSVC)
 	# in windows we want to always include the msvc runtime in the dll
 	set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 	set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MT")
+	set (CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /MT")
 	set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MT")
-	set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /VERBOSE:LIB /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:libcd.lib /NODEFAULTLIB:msvcrtd.lib")
+
+	set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:libcd.lib /NODEFAULTLIB:msvcrtd.lib")
+	# /VERBOSE:LIB
 endif (MSVC)
 
 
@@ -120,3 +125,10 @@ add_subdirectory(DriftFX)
 
 
 ENABLE_TESTING()
+
+add_custom_target(copy
+  # todo: check if debug and release folder exist
+  # debug version
+  COMMAND ${CMAKE_COMMAND} -E copy ${Qt5Core_DIR}/../../../bin/libEGLd.dll          ${CMAKE_BINARY_DIR}/Debug
+)
+

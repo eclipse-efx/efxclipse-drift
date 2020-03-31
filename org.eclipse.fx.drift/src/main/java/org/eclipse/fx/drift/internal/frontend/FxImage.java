@@ -6,9 +6,9 @@ import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
 
 @SuppressWarnings("restriction")
-public interface FxImage {
+public interface FxImage<D extends ImageData> {
 	
-	ImageData getData();
+	D getData();
 
 	void allocate(ResourceFactory rf);
 	void release();

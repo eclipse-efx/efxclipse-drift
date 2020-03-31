@@ -151,7 +151,7 @@ namespace driftgl {
 			return ctx;
 		}
 
-	Context* WrapContext(long nativeContextHandle) {
+	Context* WrapContext(long long nativeContextHandle) {
 		DriftGLXContext* ctx = new DriftGLXContext();
 		ctx->glxContext = (GLXContext) nativeContextHandle;
 		return ctx;

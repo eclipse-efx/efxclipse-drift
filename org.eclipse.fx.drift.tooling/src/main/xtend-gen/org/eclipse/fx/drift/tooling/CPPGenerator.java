@@ -176,7 +176,11 @@ public class CPPGenerator {
     _builder.append("#define GL_CONTEXT_GEN_H_");
     _builder.newLine();
     _builder.newLine();
+    _builder.append("#include \"Export.h\"");
+    _builder.newLine();
     _builder.append("#include <cstdint>");
+    _builder.newLine();
+    _builder.append("#include <stddef.h>");
     _builder.newLine();
     _builder.newLine();
     _builder.append("namespace driftgl {");
@@ -248,7 +252,7 @@ public class CPPGenerator {
     _builder.append("\t");
     _builder.newLine();
     _builder.append("\t");
-    _builder.append("typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);");
+    _builder.append("typedef void (*GLDEBUGPROC)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);");
     _builder.newLine();
     _builder.append("\t");
     _builder.newLine();
@@ -257,7 +261,7 @@ public class CPPGenerator {
     {
       for(final org.eclipse.fx.drift.tooling.Enum e : enums) {
         _builder.append("\t");
-        _builder.append("extern unsigned int ");
+        _builder.append("DRIFTGL_EXPORT extern unsigned int ");
         _builder.append(e.name, "\t");
         _builder.append(";");
         _builder.newLineIfNotEmpty();
@@ -268,6 +272,7 @@ public class CPPGenerator {
     {
       for(final Command c : commands) {
         _builder.append("\t");
+        _builder.append("DRIFTGL_EXPORT ");
         CharSequence _generateAPICall = this.generateAPICall(c);
         _builder.append(_generateAPICall, "\t");
         _builder.newLineIfNotEmpty();

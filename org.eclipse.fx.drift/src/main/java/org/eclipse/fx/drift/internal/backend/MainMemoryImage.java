@@ -68,7 +68,8 @@ public class MainMemoryImage implements Image {
 
 	private void downloadToMemorySimple(int tex, long pPixels) {
 		
-		int format = GL_RGBA; // TODO need GL_BGRA on windows
+//		int format = GL_RGBA; // TODO need GL_BGRA on windows
+		int format = GL_BGRA;
 		glBindTexture(GL_TEXTURE_2D, glTexture);
 		glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_INT_8_8_8_8_REV, memPointer);
 		glBindTexture(GL_TEXTURE_2D, 0);

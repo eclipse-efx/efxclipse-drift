@@ -6,13 +6,11 @@ public class MainMemoryImageData extends ImageData {
 
 	public static final ImageDataType TYPE = new ImageDataType("MainMemory");
 	
-	public final Vec2i size;
 	public final long memPointer;
 	public final int memSize;
 	
 	public MainMemoryImageData(int number, Vec2i size, long memPointer, int memSize) {
-		super(number, TYPE);
-		this.size = size;
+		super(number, TYPE, size);
 		this.memPointer = memPointer;
 		this.memSize = memSize;
 	}

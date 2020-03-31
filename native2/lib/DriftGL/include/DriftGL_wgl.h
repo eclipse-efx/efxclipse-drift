@@ -3,7 +3,10 @@
 #ifndef DRIFTGL_WGL_H_
 #define DRIFTGL_WGL_H_
 
+#include "Export.h"
 #include <windows.h>
+
+#include "DriftGL_gen.h"
 
 namespace driftgl {
 
@@ -28,6 +31,15 @@ namespace driftgl {
 	HGLRC wglCreateContextAttribsARB(HDC hDC, HGLRC hshareContext, const int *attribList);
 	BOOL wglChoosePixelFormatARB(HDC hDC, const int *piAttribList);
 
+
+	DRIFTGL_EXPORT HANDLE wglDXOpenDeviceNV(void* dxDevice);
+	DRIFTGL_EXPORT bool wglDXCloseDeviceNV(HANDLE hDevice);
+	DRIFTGL_EXPORT HANDLE wglDXRegisterObjectNV(HANDLE hDevice, void* dxObject, GLuint name, GLenum type, GLenum access);
+	DRIFTGL_EXPORT bool wglDXUnregisterObjectNV(HANDLE hDevice, HANDLE hObject);
+	DRIFTGL_EXPORT bool wglDXObjectAccess(HANDLE hObject, GLenum access);
+	DRIFTGL_EXPORT bool wglDXLockObjectsNV(HANDLE hDevice, GLint count, HANDLE* hObjects);
+	DRIFTGL_EXPORT bool wglDXUnlockObjectsNV(HANDLE hDevice, GLint count, HANDLE* hObjects);
+	DRIFTGL_EXPORT bool wglDXSetResourceShareHandleNV(void* dxObject, HANDLE shareHandle);
 }
 
 #endif

@@ -6,6 +6,45 @@
 #include <cstdlib>
 #include <cstring>
 
+
+//Returns the last Win32 error, in string format. Returns an empty string if there is no error.
+std::string GetLastErrorAsString()
+{
+    //Get the error message, if any.
+    DWORD errorMessageID = ::GetLastError();
+    if(errorMessageID == 0)
+        return std::string(); //No error message has been recorded
+
+    LPSTR messageBuffer = nullptr;
+    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+    std::string message(messageBuffer, size);
+
+    //Free the buffer.
+    LocalFree(messageBuffer);
+
+    return message;
+}
+
+std::string ToErrorString(DWORD errorMessageID)
+{
+    //Get the error message, if any.
+    if(errorMessageID == 0)
+        return std::string(); //No error message has been recorded
+
+    LPSTR messageBuffer = nullptr;
+    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+    std::string message(messageBuffer, size);
+
+    //Free the buffer.
+    LocalFree(messageBuffer);
+
+    return message;
+}
+
 void testInitialize() {
 	TEST_BEGIN("DriftGL initialize");
 
@@ -13,39 +52,16 @@ void testInitialize() {
 
 	ASSERT_TRUE(driftgl::Destroy());
 
-	TEST_END();
-}
-
-void fuck() {
-	TEST_BEGIN("fuck");
-
-	void* pPixels = malloc(4 * 4 * 4 * sizeof(driftgl::GLubyte));
-
-	driftgl::Initialize();
-	driftgl::Context* ctx = driftgl::CreateContext(0, 3, 2);
-	driftgl::MakeContextCurrent(ctx);
-
-	for (int i = 0; i < 100000; i++) {
-		driftgl::GLuint tex;
-		driftgl::glGenTextures(1, &tex);
-
-		driftgl::glBindTexture(driftgl::GL_TEXTURE_2D, tex);
-
-		driftgl::glTexImage2D(driftgl::GL_TEXTURE_2D, 0, driftgl::GL_RGBA8, 4, 4, 0, driftgl::GL_RGBA, driftgl::GL_UNSIGNED_INT_8_8_8_8_REV, pPixels);
-
-		driftgl::glDeleteTextures(1, &tex);
-	}
-
-	driftgl::DestroyContext(ctx);
-
-	driftgl::Destroy();
-
-
-	free(pPixels);
+	HANDLE result = driftgl::wglDXOpenDeviceNV((void*)1337);
+	std::cout << "result = " << result << std::endl;
+	DWORD err = GetLastError();
+	std::string errStr = ToErrorString(err);
+	std::cout << "0x" << std::hex << err << ": '" << errStr << "'" << std::endl;
 
 	TEST_END();
 }
+
 
 int main(int count, char** arg) {
-	fuck();
+	testInitialize();
 }

@@ -12,8 +12,27 @@ package org.eclipse.fx.drift.impl;
 
 import java.util.Optional;
 import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
+
+import org.eclipse.fx.drift.DriftFXSurface2;
+import org.eclipse.fx.drift.internal.FPSCounter;
+import org.eclipse.fx.drift.internal.FPSCounter2;
+import org.eclipse.fx.drift.internal.Frame;
+import org.eclipse.fx.drift.internal.FrameProfiler;
+import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
+import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.NativeAPI;
+import org.eclipse.fx.drift.internal.Placement;
+import org.eclipse.fx.drift.internal.QuantumRendererHelper;
+import org.eclipse.fx.drift.internal.QuantumRendererHelper.WithFence;
+import org.eclipse.fx.drift.internal.SurfaceData;
+import org.eclipse.fx.drift.internal.SwapChainImage;
+import org.eclipse.fx.drift.internal.frontend.FrontSwapChain;
+import org.eclipse.fx.drift.internal.frontend.FxImage;
+import org.eclipse.fx.drift.internal.frontend.SimpleFrontSwapChain;
 
 import com.sun.javafx.font.FontStrike;
 import com.sun.javafx.font.PGFont;
@@ -31,25 +50,14 @@ import com.sun.prism.Texture;
 import com.sun.prism.paint.Color;
 import com.sun.prism.paint.Paint;
 
-import org.eclipse.fx.drift.DriftFXSurface2;
-import org.eclipse.fx.drift.internal.FPSCounter;
-import org.eclipse.fx.drift.internal.Frame;
-import org.eclipse.fx.drift.internal.FrameProfiler;
-import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
-import org.eclipse.fx.drift.internal.Log;
-import org.eclipse.fx.drift.internal.NativeAPI;
-import org.eclipse.fx.drift.internal.Placement;
-import org.eclipse.fx.drift.internal.QuantumRendererHelper;
-import org.eclipse.fx.drift.internal.QuantumRendererHelper.WithFence;
-import org.eclipse.fx.drift.internal.SurfaceData;
-import org.eclipse.fx.drift.internal.SwapChainImage;
-import org.eclipse.fx.drift.internal.frontend.FrontSwapChain;
-import org.eclipse.fx.drift.internal.frontend.FxImage;
-
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import javafx.util.Duration;
+import javafx.event.*;
 
 // Note: this implementation is against internal JavafX API
 @SuppressWarnings("restriction")
@@ -83,6 +91,8 @@ public class NGDriftFXSurface2 extends NGNode {
 	FPSCounter renderContent = new FPSCounter();
 	FPSCounter renderTexture = new FPSCounter();
 	
+	FPSCounter2 surfaceCounter = new FPSCounter2(100);
+	
 	public void present(Frame frame) {
 		nextFrame.offer(frame);
 	}
@@ -104,6 +114,26 @@ public class NGDriftFXSurface2 extends NGNode {
 		this.nativeSurfaceHandle = nativeSurfaceId;
 		Log.debug("NGNativeSurface got handle: " + this.nativeSurfaceHandle);
 		this.resourceFactory = GraphicsPipelineUtil.getResourceFactory();
+		
+//		Timer t = new Timer();
+//		TimerTask historyTick = new TimerTask() {
+//			@Override
+//			public void run() {
+//				surfaceCounter.historyTick();
+//				if (swapChain != null) ((SimpleFrontSwapChain)swapChain).fpsCounter.historyTick();
+//			}
+//		};
+//		t.scheduleAtFixedRate(historyTick, 0, 100);
+		Timeline historyTick = new Timeline(new KeyFrame(Duration.millis(100), new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				surfaceCounter.historyTick();
+				if (swapChain != null) ((SimpleFrontSwapChain)swapChain).fpsCounter.historyTick();
+			}
+		}));
+		historyTick.setCycleCount(Timeline.INDEFINITE);
+		historyTick.play();
+			
 	}
 	
 	public void destroy() {
@@ -287,24 +317,65 @@ public class NGDriftFXSurface2 extends NGNode {
 //		else {
 			stats0 = "" + nativeSurfaceHandle;
 //		}
+			if (swapChain != null)
+		stats0 = swapChain.getSize().x + "x" + swapChain.getSize().y;
 		String stats = String.format("%s\nfx:  %5.1ffps\ntex: %5.1ffps", stats0, renderContent.avgFps(), renderTexture.avgFps());
 		Platform.runLater(() -> {
 			this.stats.set(stats);
 		});
 		
-//		
-//		
-//		String stats0;
-////		if (currentFrame != null) {
-////			stats0 = String.format("%d.%d (%d x %d)", nativeSurfaceHandle, currentFrame.frameId, currentFrame.textureWidth, currentFrame.textureHeight);
-////		}
-////		else {
-//			stats0 = "" + nativeSurfaceHandle;
-////		}
-//		
-//		String stats = String.format("%s\nfx:  %5.1ffps\ntex: %5.1ffps", stats0, renderContent.avgFps(), renderTexture.avgFps());
-//		
-		Font font = Font.font(40);
+		if (swapChain != null) {
+			String info = "Texture: " + swapChain.getSize().x + "x" + swapChain.getSize().y;
+			info += "\nTransfer: MainMemory (TODO)";
+			writeText(g, -150, 0, 12, info, Color.RED);
+		}
+		{
+			int count = 30;
+			float x = 0;
+			float y = 0;
+			float width = 150;
+			float height = 40;
+			float padding = 2;
+			
+			g.setPaint(new Color(1,0,0,0.3f));
+			g.fillRect(x, y, width, height);
+			
+			float lineAvail = width / count;
+			float lineWidth = lineAvail * 8/10f;
+			
+			for (int i = 0; i < count; i++) {
+				double fps = surfaceCounter.fpsHistory[i];
+				int norm = (int) Math.round(Math.min(height, fps / 60 * height));
+				g.fillRect(x + width - i * lineAvail - lineAvail, y + height - norm, lineWidth, norm);
+			}
+			writeText(g, x, y, 12, String.format("JavaFX - %5.1ffps", surfaceCounter.fps), new Color(1, 0, 0, 1));
+		}
+		if (swapChain != null) {
+			FPSCounter2 c = ((SimpleFrontSwapChain)swapChain).fpsCounter;
+			int count = 30;
+			float x = 0;
+			float y = 40;
+			float width = 150;
+			float height = 40;
+			float padding = 2;
+			
+			g.setPaint(new Color(0,1,0,0.3f));
+			g.fillRect(x, y, width, height);
+			
+			float lineAvail = width / count;
+			float lineWidth = lineAvail * 8/10f;
+			
+			for (int i = 0; i < count; i++) {
+				double fps = c.fpsHistory[i];
+				int norm = (int) Math.round(Math.min(height, fps / 100 * height));
+				g.fillRect(x + width - i * lineAvail - lineAvail, y + height - norm, lineWidth, norm);
+			}
+			writeText(g, x, y, 12, String.format("Renderer - %5.1ffps", c.fps), new Color(0, 1, 0, 1));
+		}
+
+	}
+	private void writeText(Graphics g, float x, float y, int fontSize, String text, Color color) {
+		Font font = Font.font(fontSize);
 		PGFont pgFont = (PGFont) font.impl_getNativeFont();
 		
 		FontStrike strike = pgFont.getStrike(BaseTransform.IDENTITY_TRANSFORM);
@@ -312,26 +383,25 @@ public class NGDriftFXSurface2 extends NGNode {
 		TextLayoutFactory factory = Toolkit.getToolkit().getTextLayoutFactory();
 		TextLayout layout = factory.createLayout();
 		
-		layout.setContent(stats, pgFont);
+		layout.setContent(text, pgFont);
 		layout.setAlignment(TextAlignment.LEFT.ordinal());
 		layout.setLineSpacing(0);
 		layout.setWrapWidth(0);
 		
 		GlyphList[] runs = layout.getRuns();
 		
-		float layoutX = 0;
-		float layoutY = -pgFont.getSize();
+		float layoutX = x;
+		float layoutY = -pgFont.getSize() - y;
 		
-		g.setPaint(Color.RED);
+		g.setPaint(color);
 		for (int i = 0; i < runs.length; i++) {
 			GlyphList run = runs[i];
 			Point2D pt = run.getLocation();
-            float x = pt.x- layoutX;
-            float y = pt.y - layoutY;
-			BaseTransform t = BaseTransform.getTranslateInstance(x, y);
+            float gx = pt.x- layoutX;
+            float gy = pt.y - layoutY;
+			BaseTransform t = BaseTransform.getTranslateInstance(gx, gy);
 			g.fill(strike.getOutline(run,  t));
 		}
-
 	}
 	
 	private void drawTexture(Graphics g, Frame frame, Texture t) {
@@ -415,6 +485,7 @@ public class NGDriftFXSurface2 extends NGNode {
 	@Override
 	protected void renderContent(Graphics g) {
 		DriftDebug.assertQuantumRenderer();
+		surfaceCounter.tickStart();
 		if (showFPS) renderContent.frame();
 		
 		if (nextSwapChain != null) {
@@ -467,7 +538,10 @@ public class NGDriftFXSurface2 extends NGNode {
 		}
 		
 		g.setTransform(saved);
-	
+
+		
+		surfaceCounter.tick();
+		
 		if (showFPS) {
 			drawStats(g);
 		}

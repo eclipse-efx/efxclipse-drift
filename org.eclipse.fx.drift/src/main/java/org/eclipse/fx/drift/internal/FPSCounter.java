@@ -2,17 +2,23 @@ package org.eclipse.fx.drift.internal;
 
 import java.time.Duration;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 public class FPSCounter {
 	long lastFrame;
 	Queue<Long> framesTimes = new LinkedList<>();
+	int size = 100;
 	
 	double avgFps;
 	
+	List<Long> getFrameDurations() {
+		return (List<Long>) framesTimes;
+	}
+	
 	public void frame() {
 		long lastFrameDur = System.nanoTime() - lastFrame;
-		if (framesTimes.size() > 10) framesTimes.poll();
+		if (framesTimes.size() > size) framesTimes.poll();
 		framesTimes.offer(lastFrameDur);
 		
 		lastFrame = System.nanoTime();

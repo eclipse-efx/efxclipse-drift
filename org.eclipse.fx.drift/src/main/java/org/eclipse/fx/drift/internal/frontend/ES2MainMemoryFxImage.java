@@ -16,13 +16,10 @@ import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
 import org.eclipse.fx.drift.internal.prism.PrismES2;
 
 public class ES2MainMemoryFxImage extends AMainMemoryFxImage {
-
 	
 	public ES2MainMemoryFxImage(MainMemoryImageData data) {
-		this.data = data;
+		super(data);
 	}
-	
-	
 	
 	@Override
 	protected void uploadTexture() {
@@ -50,7 +47,5 @@ public class ES2MainMemoryFxImage extends AMainMemoryFxImage {
 //		glFlush();
 //		glFinish();
 	}
-
-	
 	
 }
