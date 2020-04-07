@@ -91,7 +91,7 @@ extern "C" JNIEXPORT void JNICALL Java_DriftFXDemo_nRun(JNIEnv* env, jclass cls,
 
 The different ways to transfer the texture to JavaFX are now implemented as `TransferMode`s. There is an API on the `DriftFXSurface` to query the available transfer modes (`DriftFXSurface.getAvailableTransferModes()`), the platform default transfer mode (`DriftFXSurface.getPlatformDefaultTransferMode()`) and the fallback transfer mode (`DriftFXSurface.getFallbackTransferMode()`). Each instance of `DriftFXSurface` has a transfer mode property. It is initialized with the default transfer mode, which is either the platform default or, if the configuration is set to fallback the fallback transfer mode.
 
-```
+```java
 DriftFXSurface.getAvailableTransferModes(); // returns a list of available transfer modes.
 DriftFXSurface.getPlatformDefaultTransferMode(); // returns the platform default transfer mode.
 DriftFXSurface.getFallbackTransferMode(); // returns the fallback transfer mode.
