@@ -10,7 +10,7 @@ public interface FxImage<D extends ImageData> {
 	
 	D getData();
 
-	void allocate(ResourceFactory rf);
+	void allocate(ResourceFactory rf) throws Exception;
 	void release();
 	
 	void update();

@@ -3,9 +3,9 @@ package org.eclipse.fx.drift.internal.backend;
 import static org.eclipse.fx.drift.internal.GL.*;
 import static org.eclipse.fx.drift.internal.SYS.*;
 
+import org.eclipse.fx.drift.Vec2i;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
-import org.eclipse.fx.drift.internal.math.Vec2i;
 
 public class MainMemoryImage implements Image {
 

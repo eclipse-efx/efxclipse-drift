@@ -14,8 +14,12 @@ public class VMTransport {
 	}
 	
 	public void start() {
-		frontend.setOnRelease(backend::release);
-		backend.setOnPresent(frontend::present);
-		backend.setOnCreateSwapchain(frontend::createSwapchain);
+//		frontend.setOnRelease(backend::release);
+//		backend.setOnPresent(frontend::present);
+//		backend.setOnCreateSwapchain(frontend::createSwapchain);
+		
+		
+		frontend.setCommandChannel(backend::receiveCommand);
+		backend.setCommandChannel(frontend::receiveCommand);
 	}
 }

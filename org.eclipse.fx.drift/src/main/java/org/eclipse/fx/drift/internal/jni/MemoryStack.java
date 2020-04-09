@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Stack;
 
 
-public class MemoryStack {
+public class MemoryStack implements IMemoryStack {
 
 	public class StackData implements Pointer {
 		public final int offset;
@@ -62,6 +62,27 @@ public class MemoryStack {
 		}
 		return localStack.get();
 	}
+	public static IScopedMemeoryStack scoped() {
+		return MemoryStack.get().new ScopedMemoryStack();
+	}
+	
+	class ScopedMemoryStack implements IScopedMemeoryStack {
+		ScopedMemoryStack() {
+			push();
+		}
+		@Override
+		public void close() {
+			pop();
+		}
+		@Override
+		public Long allocateLong() {
+			return MemoryStack.this.allocateLong();
+		}
+		@Override
+		public Long allocateLong(long initialValue) {
+			return MemoryStack.this.allocateLong(initialValue);
+		}
+	}
 	
 	public MemoryStack() {
 		buffer = ByteBuffer.allocateDirect(1024 * 1024);
@@ -69,15 +90,24 @@ public class MemoryStack {
 		beginOffset = 0;
 	}
 	
+	
 	private native long nGetBufferAddress(ByteBuffer buffer);
 	
 	public long getAddress() {
 		return address;
 	}
 	
+	@Override
 	public Long allocateLong() {
 		Long value = new Long(beginOffset);
 		value.allocate();
+		return value;
+	}
+	
+	@Override
+	public Long allocateLong(long initialValue) {
+		Long value = allocateLong();
+		value.set(initialValue);
 		return value;
 	}
 	
@@ -92,7 +122,7 @@ public class MemoryStack {
 	private static native void nSetLong(long target, long value);
 	private static native void nOutputLong(long target);
 	
-	public static void output(MemoryStack stack, Long t) {
+	public static void output(IMemoryStack stack, Long t) {
 		System.err.println("J 0x" + java.lang.Long.toHexString(t.get()) + " (" + t.get() + ")");
 		nOutputLong(t.getAddress());
 	}

@@ -10,199 +10,74 @@
  *******************************************************************************/
 package org.eclipse.fx.drift.impl;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Optional;
 
-import com.sun.javafx.font.FontStrike;
-import com.sun.javafx.font.PGFont;
-import com.sun.javafx.geom.Point2D;
+import org.eclipse.fx.drift.BaseDriftFXSurface;
+import org.eclipse.fx.drift.internal.FPSCounter2;
+import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.Placement;
+import org.eclipse.fx.drift.internal.SurfaceData;
+import org.eclipse.fx.drift.internal.frontend.FrontSwapChain;
+import org.eclipse.fx.drift.internal.frontend.FxImage;
+import org.eclipse.fx.drift.internal.frontend.SimpleFrontSwapChain;
+
 import com.sun.javafx.geom.transform.BaseTransform;
-import com.sun.javafx.scene.text.GlyphList;
-import com.sun.javafx.scene.text.TextLayout;
-import com.sun.javafx.scene.text.TextLayoutFactory;
 import com.sun.javafx.sg.prism.NGNode;
-import com.sun.javafx.tk.Toolkit;
 import com.sun.prism.Graphics;
-import com.sun.prism.PixelFormat;
-import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
 import com.sun.prism.paint.Color;
-import com.sun.prism.paint.Paint;
 
-import org.eclipse.fx.drift.DriftFXSurface;
-import org.eclipse.fx.drift.internal.FPSCounter;
-import org.eclipse.fx.drift.internal.Frame;
-import org.eclipse.fx.drift.internal.FrameProfiler;
-import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
-import org.eclipse.fx.drift.internal.Log;
-import org.eclipse.fx.drift.internal.NativeAPI;
-import org.eclipse.fx.drift.internal.Placement;
-import org.eclipse.fx.drift.internal.QuantumRendererHelper;
-import org.eclipse.fx.drift.internal.QuantumRendererHelper.WithFence;
-import org.eclipse.fx.drift.internal.SurfaceData;
-import org.eclipse.fx.drift.internal.SwapChain;
-import org.eclipse.fx.drift.internal.SwapChainImage;
-
-import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.util.Duration;
 
 // Note: this implementation is against internal JavafX API
 @SuppressWarnings("restriction")
 public class NGDriftFXSurface extends NGNode {
 
-	private long nativeSurfaceHandle;
-	
-	private SurfaceData surfaceData;
-	
-	private ResourceFactory resourceFactory;
-	private DriftFXSurface node;
-	
-	
-	private int currentFrameDataHash;
-	private Texture currentTexture;
-	
-	private Frame currentFrame;
-	
-	private SwapChain swapChain;
-	
-	private int renderedHash;
-	
-	private Texture renderedTexture;
-	
-	private SwapChainImage renderedImage;
-	
-	private Queue<Frame> nextFrame = new ConcurrentLinkedQueue<>();
-	
 	private final static boolean showFPS = Boolean.getBoolean("driftfx.showfps");
-	FPSCounter renderContent = new FPSCounter();
-	FPSCounter renderTexture = new FPSCounter();
+	private final static boolean profile = Boolean.getBoolean("driftfx.profile");
+
+	private SurfaceData surfaceData;
+	private FrontSwapChain nextSwapChain;
+	private FrontSwapChain swapChain;
 	
-	public void present(Frame frame) {
-		nextFrame.offer(frame);
+	private BaseDriftFXSurface node;
+	
+	/** image currently in use by javafx renderer - we may not dispose it */
+	private FxImage<?> curImage;
+	
+	private FPSCounter2 fxFpsCounter = new FPSCounter2(100);
+	
+	public void setSwapChain(FrontSwapChain swapChain) {
+		this.nextSwapChain = swapChain;
 	}
 	
-	public void setSwapChain(SwapChain swapChain) {
-		this.swapChain = swapChain;
-	}
-	
-	private static boolean profile = Boolean.getBoolean("driftfx.profile");
-	
-	private void dispose(Frame frame) {
-		if (profile) FrameProfiler.addFrame(frame);
-		NativeAPI.disposeFrame(frame);
-	}
-	
-	public NGDriftFXSurface(DriftFXSurface node, long nativeSurfaceId) {
+	public NGDriftFXSurface(BaseDriftFXSurface node) {
 		this.node = node;
-		this.nativeSurfaceHandle = nativeSurfaceId;
-		Log.debug("NGNativeSurface got handle: " + this.nativeSurfaceHandle);
-		this.resourceFactory = GraphicsPipelineUtil.getResourceFactory();
+		
+		Timeline historyTick = new Timeline(new KeyFrame(Duration.millis(100), new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				fxFpsCounter.historyTick();
+				if (swapChain != null) ((SimpleFrontSwapChain)swapChain).fpsCounter.historyTick();
+			}
+		}));
+		historyTick.setCycleCount(Timeline.INDEFINITE);
+		historyTick.play();
+			
 	}
 	
 	public void destroy() {
-		NativeAPI.destroyNativeSurface(this.nativeSurfaceHandle);
+		
 	}
 	
 	@Override
 	protected void finalize() throws Throwable {
 		super.finalize();
 		destroy();
-	}
-	
-	// TODO output some kind of placeholder info
-	private void renderPlaceholder(Graphics g)
-	{
-		float width = (float) surfaceData.width;
-		float height = (float) surfaceData.height;
-		
-//		Paint white = (Paint)Toolkit.getPaintAccessor().getPlatformPaint(javafx.scene.paint.Color.WHITE);
-//		g.setPaint(white);
-//		g.fillQuad(0, 0, width, height);
-
-		Paint red = (Paint)Toolkit.getPaintAccessor().getPlatformPaint(javafx.scene.paint.Color.RED);
-		g.setPaint(red);
-		g.drawRect(0, 0, width - 1, height - 1);
-	}
-
-	private Texture createTexture(Graphics g, Frame frame) {
-		if (showFPS) renderTexture.frame();
-		frame.begin("NGDriftFXSurface#renderTexture");
-
-		int w = frame.textureWidth;
-		int h = frame.textureHeight;
-		
-		Texture texture = resourceFactory.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, w, h);
-		if (texture == null) {
-			Log.error("[J] Allocation of requested texture failed! This is FATAL! requested size was " + w + "x" + h);
-			return null;
-		}
-		texture.makePermanent();
-		Log.debug("Created Texture @ " + texture.getContentWidth() + " x " + texture.getContentHeight());
-		
-		//int result = QuantumRendererHelper.syncExecute(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame));
-		
-		WithFence<Integer> exec = QuantumRendererHelper.syncExecuteWithFence(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame) );
-		
-		//exec.getFence().ClientWaitSync(Duration.ZERO);
-		exec.getFence().WaitSync();
-		exec.getFence().Delete();
-		
-		int result = exec.getResult();
-		
-		frame.end("NGDriftFXSurface#renderTexture");
-		if (result == 0) {
-			// once the texture is ready we want to dispose the frame
-			dispose(frame);
-			return texture;
-		}
-		else {
-			Log.error("[J] Could not connect the texture to actual data.");
-			texture.dispose();
-			return null;
-		}
-	}
-	
-	
-	private Texture createTexture(Graphics g, SwapChainImage image) {
-		if (showFPS) renderTexture.frame();
-		System.out.println("[J] NGDriftFXSurface#createTexture " + image);
-		
-		int w = swapChain.width;
-		int h = swapChain.height;
-		
-		Texture texture = resourceFactory.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, w, h);
-		if (texture == null) {
-			Log.error("[J] Allocation of requested texture failed! This is FATAL! requested size was " + w + "x" + h);
-			return null;
-		}
-		texture.makePermanent();
-		Log.debug("Created Texture @ " + texture.getContentWidth() + " x " + texture.getContentHeight());
-		
-		//int result = QuantumRendererHelper.syncExecute(() -> GraphicsPipelineUtil.onTextureCreated(texture, frame));
-		
-		WithFence<Integer> exec = QuantumRendererHelper.syncExecuteWithFence(() -> image.onTextureCreated(texture) );
-		
-		//exec.getFence().ClientWaitSync(Duration.ZERO);
-		exec.getFence().WaitSync();
-		exec.getFence().Delete();
-		
-		int result = exec.getResult();
-		
-		if (result == 0) {
-			return texture;
-		}
-		else {
-			Log.error("[J] Could not connect the texture to actual data.");
-			texture.dispose();
-			return null;
-		}
-	}
-	
-	private int toPixels(double value) {
-		return (int) Math.ceil(value);
 	}
 	
 	private float center(float dst, float src) {
@@ -307,117 +182,29 @@ public class NGDriftFXSurface extends NGNode {
 		return Placement.values()[placement];
 	}
 	
-	private void renderFrame(Graphics g, Frame frame) {
-		if (frame == null) {
-			return;
-		}
-		
-		if (renderedHash != frame.hashCode()) {
-			// re-create texture
-			
-			
-			Texture texture = createTexture(g, frame);
-			if (texture != null) {
-				if (renderedTexture != null) {
-					renderedTexture.dispose();
-				}
-				renderedTexture = texture;
-				renderedHash = frame.hashCode();
-			}
-			else {
-				// failed frame
-				currentFrame = null;
-			}
-		}
-		
-		if (renderedTexture != null) {
-			drawTexture(g, currentFrame, renderedTexture);
-		}
-		
-	}
-	
-	
 	private void drawStats(Graphics g) {
-		
-		String stats0;
-		if (currentFrame != null) {
-			stats0 = String.format("%d.%d (%d x %d)", nativeSurfaceHandle, currentFrame.frameId, currentFrame.textureWidth, currentFrame.textureHeight);
+		DriftDebug.assertQuantumRenderer();
+		if (swapChain != null) {
+			g.setPaint(new Color(0,0,0,0.5f));
+			g.fillRect(155, 0, 150, 85);
+			String info = "Texture: " + swapChain.getSize().x + "x" + swapChain.getSize().y;
+			info += "\nTransfer: " + swapChain.getTransferType().id;
+			NGRenderUtil.writeText(g, -155, 0, 12, info, Color.WHITE, false);
 		}
-		else {
-			stats0 = "" + nativeSurfaceHandle;
+		NGRenderUtil.drawFPSGraph(g, 0, 0, 150, 40, "JavaFX", fxFpsCounter);
+		if (swapChain != null) {
+			FPSCounter2 c = ((SimpleFrontSwapChain)swapChain).fpsCounter;
+			NGRenderUtil.drawFPSGraph(g, 0, 45, 150, 40, "Renderer", c);
 		}
-		
-		String stats = String.format("%s\nfx:  %5.1ffps\ntex: %5.1ffps", stats0, renderContent.avgFps(), renderTexture.avgFps());
-		
-		Font font = Font.font(18);
-		PGFont pgFont = (PGFont) font.impl_getNativeFont();
-		
-		FontStrike strike = pgFont.getStrike(BaseTransform.IDENTITY_TRANSFORM);
-		
-		TextLayoutFactory factory = Toolkit.getToolkit().getTextLayoutFactory();
-		TextLayout layout = factory.createLayout();
-		
-		layout.setContent(stats, pgFont);
-		layout.setAlignment(TextAlignment.LEFT.ordinal());
-		layout.setLineSpacing(0);
-		layout.setWrapWidth(0);
-		
-		GlyphList[] runs = layout.getRuns();
-		
-		float layoutX = 0;
-		float layoutY = -pgFont.getSize();
-		
-		g.setPaint(Color.RED);
-		for (int i = 0; i < runs.length; i++) {
-			GlyphList run = runs[i];
-			Point2D pt = run.getLocation();
-            float x = pt.x- layoutX;
-            float y = pt.y - layoutY;
-			BaseTransform t = BaseTransform.getTranslateInstance(x, y);
-			g.fill(strike.getOutline(run,  t));
-		}
-
-	}
-	
-	private void drawTexture(Graphics g, Frame frame, Texture t) {
-		float frameContainerWidth = frame.surfaceData.width;
-		float frameContainerHeight = frame.surfaceData.height;
-		
-		Placement placement = toPlacement(frame.presentationHint);
-		
-		float textureRatio = t.getContentWidth() / (float) t.getContentHeight();
-		float frameRatio = frame.surfaceData.width / frame.surfaceData.height;
-		
-		Pos framePos = new Pos(0, frameContainerWidth, 0, frameContainerHeight);
-		
-		if (Math.abs(textureRatio - frameRatio) > 0.001f) {
-			// aspect ratio is not matching, we need to do compute the position within the frame container
-			framePos = computeContain(frameContainerWidth, frameContainerHeight, t.getContentWidth(), t.getContentHeight());
-		}
-		
-		int frameTextureWidth = t.getContentWidth();
-		int frameTextureHeight = t.getContentHeight();
-		
-		float currentContainerWidth = this.surfaceData.width;
-		float currentContainerHeight = this.surfaceData.height;	
-
-		Pos pos = computePlacement(placement, currentContainerWidth, currentContainerHeight, framePos.width, framePos.height);
-
-		// flip it vertically
-		g.scale(1, -1);
-		g.translate(0, -currentContainerHeight);		
-			
-		pos.y = currentContainerHeight - pos.y - pos.height;
-
-		g.drawTexture(t, pos.x, pos.y, 
-				pos.x + pos.width, pos.y + pos.height, 0, 0, frameTextureWidth, frameTextureHeight);
 	}
 	
 	private void drawTexture(Graphics g, Texture t) {
 		float frameContainerWidth = surfaceData.width;
 		float frameContainerHeight = surfaceData.height;
 		
-		Placement placement = toPlacement(swapChain.presentationHint);
+		// TODO
+		//Placement placement = toPlacement(swapChain.presentationHint);
+		Placement placement = Placement.CENTER;
 		
 		float textureRatio = t.getContentWidth() / (float) t.getContentHeight();
 		float frameRatio = surfaceData.width / surfaceData.height;
@@ -447,91 +234,105 @@ public class NGDriftFXSurface extends NGNode {
 				pos.x + pos.width, pos.y + pos.height, 0, 0, frameTextureWidth, frameTextureHeight);
 	}
 	
-	private Frame getNextFrame() {
-		Frame next = null;
-		List<Frame> skipped = new LinkedList<>();
-		do {
-			if (next != null) {
-				skipped.add(next);
-			}
-			next = nextFrame.poll();
-			
-		} while (!nextFrame.isEmpty());
-		if (!skipped.isEmpty()) {
-			Log.debug("Skipped " + skipped.size() + " frames! " + skipped);
-			skipped.forEach(this::dispose);
-		}
-		return next;
-	}
-	
-	@Override
+//	@Override
 	protected void renderContent(Graphics g) {
-		if (showFPS) renderContent.frame();
+		DriftDebug.assertQuantumRenderer();
+		fxFpsCounter.tickStart();
+		
+		if (nextSwapChain != null) {
+			try {
+				if (swapChain != null) {
+					if (curImage != null) {
+//						System.err.println("Surface -> releasing curImage because swapchain recreation");
+						swapChain.release(curImage);
+						curImage = null;
+					}
+					swapChain.release();
+				}
+				nextSwapChain.allocate(g.getResourceFactory());
+				swapChain = nextSwapChain;
+				nextSwapChain = null;
+			}
+			catch (Exception e) {
+				System.err.println("ERROR during swapchain recreation");
+			}
+		}
+		
+		if (swapChain != null) {
+			if (swapChain.isDisposeScheduled()) {
+				if (curImage != null) {
+					swapChain.release(curImage);
+					curImage = null;
+				}
+				Optional<FxImage<?>> next = swapChain.getNext();
+				if (next.isPresent()) {
+					swapChain.release(next.get());
+				}
+				swapChain.release();
+				swapChain = null;
+			}
+		}
 		
 		BaseTransform saved = g.getTransformNoClone().copy();
 		
-		if (swapChain == null) {
-		
-			Frame next = getNextFrame();
-			if (next != null) {
-				currentFrame = next;
-			}
-			
-			if (currentFrame != null) {
-				renderFrame(g, currentFrame);
-			}
-		
-		}
-		else {
-			SwapChainImage image = swapChain.getNextImage();
-			
-			if (image != null) {
-				// (re)-create texture
-				Texture texture = createTexture(g, image);
-				if (texture != null) {
-					if (renderedTexture != null) {
-						renderedTexture.dispose();
-					}
-					renderedTexture = texture;
+		if (swapChain != null) {
+			Optional<FxImage<?>> nextImage = swapChain.getNext();
+			if (nextImage.isPresent()) {
+				if (curImage != null) {
+//					System.err.println("Surface -> releasing curImage");
+					swapChain.release(curImage);
 				}
-				swapChain.Release(image);
+				curImage = nextImage.get();
+//				System.err.println("DriftFX Surface: Showing " + curImage.getData().number + " " + curImage.getTexture().getContentWidth() + " x " + curImage.getTexture().getContentHeight());
+				
+				curImage.update();
+				
+//				QuantumRendererHelper.syncExecute(() -> {
+//					boolean isCtx = GL.isContextCurrent(QuantumRendererHelper.context);
+//					if (!isCtx) throw new RuntimeException("QuantumRendererHelper has no context!");
+//					curImage.update();
+//				});
+//				GL.glFinish();
+				
+//				GPUSync sync = QuantumRendererHelper.syncExecuteWithFence(curImage::update);
+//				WaitSyncResult r = sync.ClientWaitSync(Duration.ZERO);
+//				System.err.println("=> " + r);
+//				sync.Delete();
+				
 			}
 			
-			if (renderedTexture != null) {
-				drawTexture(g, renderedTexture);
+			if (curImage != null) {
+				drawTexture(g, curImage.getTexture());
 			}
-			
 		}
 		
+		// restore transform
 		g.setTransform(saved);
+
+		
+		fxFpsCounter.tick();
 		
 		if (showFPS) {
 			drawStats(g);
 		}
+		
 	}
 	
 	public void updateSurface(SurfaceData surfaceData)  {
 		Log.debug("[J] NativeSurface updateSurface("+surfaceData+")");
 		if (isValid(surfaceData)) {
 			this.surfaceData = surfaceData;
-			CompletableFuture.runAsync(() -> {
-				NativeAPI.updateSurface(nativeSurfaceHandle, surfaceData);
-			});
 		}
 	}
 	
 	private boolean isValid(SurfaceData data) {
 		return true;
 	}
-	
-	
-	
 
 	@Override
 	protected boolean hasOverlappingContents() {
 		return false;
 	}
 
-	
 
 }

@@ -240,7 +240,7 @@ public class GraphicsPipelineUtil {
 			contextHandleD3D = D3D.getContextHandle(iD3DContext);
 			Log.debug(" * D3D Context handle = " + contextHandleD3D);
 			
-			NativeAPI.initializeD3DPipeline(contextHandleD3D);
+//			NativeAPI.initializeD3DPipeline(contextHandleD3D);
 		}
 		else if (isES2) {
 			ES2.initialize();
@@ -248,7 +248,7 @@ public class GraphicsPipelineUtil {
 			iGLContext = ES2.getGLContext(iES2Context);
 			contextHandleES2 = ES2.getNativeHandle(iGLContext);
 			
-			NativeAPI.initializeES2Pipeline(contextHandleES2);
+//			NativeAPI.initializeES2Pipeline(contextHandleES2);
 		}
 		else if (isSW) {
 			throw new UnsupportedOperationException("SW Support not yet implemented!");
@@ -273,7 +273,7 @@ public class GraphicsPipelineUtil {
 	}
 
 	public static void destroy() {
-		NativeAPI.destroyD3DPipeline();
+//		NativeAPI.destroyD3DPipeline();
 	}
 
 	
@@ -301,10 +301,6 @@ public class GraphicsPipelineUtil {
 	}
 
 	
-	
-	public static int onTextureCreated(Texture texture, Frame frame) {
-		return NativeAPI.nOnTextureCreated(frame.surfaceId, frame.frameId, texture);
-	}
-	
+
 
 }

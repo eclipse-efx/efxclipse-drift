@@ -1,8 +1,7 @@
 package org.eclipse.fx.drift.internal.jni.win32;
 
-import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
-
+import org.eclipse.fx.drift.internal.jni.IMemoryStack.IScopedMemeoryStack;
+import org.eclipse.fx.drift.internal.ResourceLogger;
 import org.eclipse.fx.drift.internal.jni.MemoryStack;
 
 public class Win32 {
@@ -11,6 +10,10 @@ public class Win32 {
 		public final long value;
 		public HRESULT(long value) {
 			this.value = value;
+		}
+		
+		public boolean isOk() {
+			return 0 == value;
 		}
 	}
 	
@@ -61,44 +64,33 @@ public class Win32 {
 			super(address);
 		}
 		
-		public IDirect3DTexture9 CreateTexture(int width, int height, int levels, int usage, int format, int pool) {
-			MemoryStack memoryStack = MemoryStack.get();
-			memoryStack.push();
-			try {
-				MemoryStack.Long texture = memoryStack.allocateLong();
-				texture.set(0); // it seems createTexture produces an INVALID_CALL if texture is not set to 0
-				MemoryStack.Long shareHandle = memoryStack.allocateLong();
-				shareHandle.set(0); // shareHandle value needs to be NULL to get one allocated
-				// TODO HRESULT handling
+		public IDirect3DTexture9 CreateTexture(int width, int height, int levels, int usage, int format, int pool) throws WindowsError {
+			try (IScopedMemeoryStack memoryStack = MemoryStack.scoped()) {
+				MemoryStack.Long texture = memoryStack.allocateLong(0); // it seems createTexture produces an INVALID_CALL if texture is not set to 0
+				MemoryStack.Long shareHandle = memoryStack.allocateLong(0); // shareHandle value needs to be NULL to get one allocated
+
 				long hresult = nIDirect3DDevice9CreateTexture(this.address, width, height, levels, usage, format, pool, texture.getAddress(), shareHandle.getAddress());
 				
-				if (texture.get() == 0) {
-					throw new RuntimeException("Error creating texture!");
-				}
+				WindowsError.checkHResult(hresult);
+				
+				ResourceLogger.resourceAllocated(texture.get(), "DXTex", "shareHandle="+Long.toHexString(shareHandle.get()));
 				
 				return new IDirect3DTexture9(texture.get(), new Win32.HANDLE(shareHandle.get()));
 			}
-			finally {
-				memoryStack.pop();
-			}
 		}
 		
-		public IDirect3DTexture9 CreateTexture(int width, int height, int levels, int usage, int format, int pool, HANDLE shareHandle) {
-			MemoryStack memoryStack = MemoryStack.get();
-			memoryStack.push();
-			try {
-				MemoryStack.Long texture = memoryStack.allocateLong();
-				texture.set(0);
-				MemoryStack.Long shareHandlev = memoryStack.allocateLong();
-				shareHandlev.set(shareHandle.address);
+		public IDirect3DTexture9 CreateTexture(int width, int height, int levels, int usage, int format, int pool, HANDLE shareHandle) throws WindowsError {
+			try (IScopedMemeoryStack memoryStack = MemoryStack.scoped()) {
+				MemoryStack.Long texture = memoryStack.allocateLong(0);
+				MemoryStack.Long shareHandlev = memoryStack.allocateLong(shareHandle.address);
 				
-				// TODO HRESULT handling
 				long hresult = nIDirect3DDevice9CreateTexture(this.address, width, height, levels, usage, format, pool, texture.getAddress(), shareHandlev.getAddress());
 				
+				WindowsError.checkHResult(hresult);
+				
+				ResourceLogger.resourceAllocated(texture.get(), "DXTex", "shareHandle="+Long.toHexString(shareHandlev.get()));
+				
 				return new IDirect3DTexture9(texture.get(), new Win32.HANDLE(shareHandlev.get()));
-			}
-			finally {
-				memoryStack.pop();
 			}
 		}
 	}
@@ -132,6 +124,15 @@ public class Win32 {
 		
 		public IDirect3DTexture9(long address) {
 			this(address, null);
+		}
+		
+		@Override
+		public long Release() {
+			long res = super.Release();
+			if (res == 0) {
+				ResourceLogger.resourceDisposed(address);
+			}
+			return res;
 		}
 	}
 	

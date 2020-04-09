@@ -14,6 +14,11 @@ import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DDevice9Ex;
 @SuppressWarnings("restriction")
 public class Prism {
 
+	static {
+			System.loadLibrary("DriftGL");
+			System.loadLibrary("driftfx");
+	}
+	
 	private static Class<?> cGraphicsPipeline;
 	private static Method mGraphicsPipelineGetDefaultResourceFactory;
 

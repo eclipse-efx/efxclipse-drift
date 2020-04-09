@@ -98,7 +98,8 @@ public class ScreenObserver {
 				node.sceneProperty(),
 				Screen.getScreens()));
 		currentRenderScale.bind(Bindings.createDoubleBinding(() -> {
-			return (double) ScreenHelper.getScreenAccessor().getRenderScale(getCurrentScreen());
+			return DriftUtil.getRenderScale(getCurrentScreen());
 		}, currentScreen));
 	}
+	
 }

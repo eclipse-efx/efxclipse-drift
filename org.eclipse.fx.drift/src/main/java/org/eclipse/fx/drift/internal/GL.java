@@ -53,6 +53,7 @@ public class GL {
 	public static native void destroyContext(long context);
 	public static native boolean makeContextCurrent(long context);
 	public static native boolean isContextCurrent(long context);
+	public static native long getCurrentContext();
 	
 	public static final int GL_COLOR_BUFFER_BIT = 0x00004000;
 	public static final int GL_FRAMEBUFFER = 0x8D40;

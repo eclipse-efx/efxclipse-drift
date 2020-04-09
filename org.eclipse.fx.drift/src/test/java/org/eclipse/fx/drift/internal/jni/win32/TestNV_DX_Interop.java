@@ -1,7 +1,6 @@
 package org.eclipse.fx.drift.internal.jni.win32;
 
 import org.eclipse.fx.drift.internal.GL;
-import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DTexture9;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,7 +22,7 @@ public class TestNV_DX_Interop {
 	}
 	
 	@Before
-	public void before() {
+	public void before() throws WindowsError {
 		glContext = GL.createContext(0, 3, 2);
 		dxDevice = D3D9.CreateOffscreenDevice();
 		

@@ -1,23 +1,32 @@
 package org.eclipse.fx.drift.internal.frontend;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 
-import org.eclipse.fx.drift.DriftFXSurface2;
-import org.eclipse.fx.drift.internal.backend.BackSwapChain.PresentationMode;
+import org.eclipse.fx.drift.DriftFXSurface;
+import org.eclipse.fx.drift.PresentationMode;
+import org.eclipse.fx.drift.Vec2i;
 import org.eclipse.fx.drift.internal.common.ImageData;
-import org.eclipse.fx.drift.internal.math.Vec2i;
+import org.eclipse.fx.drift.internal.transport.Command;
+import org.eclipse.fx.drift.internal.transport.command.CreateSwapchainCommand;
+import org.eclipse.fx.drift.internal.transport.command.DisposeSwapchainCommand;
+import org.eclipse.fx.drift.internal.transport.command.PresentCommand;
+import org.eclipse.fx.drift.internal.transport.command.ReleaseCommand;
 
 public class FrontendImpl implements Frontend {
 
-	private DriftFXSurface2 surface;
+	private DriftFXSurface surface;
 	
 	private FrontSwapChain swapChain;
+	private Map<UUID, FrontSwapChain> swapChains = new HashMap<>();
 	
-	private Consumer<ImageData> onRelease;
+	private Consumer<Command> commandChannel;
 	
 	
-	public FrontendImpl(DriftFXSurface2 surface) {
+	public FrontendImpl(DriftFXSurface surface) {
 		this.surface = surface;
 	}
 	
@@ -34,23 +43,50 @@ public class FrontendImpl implements Frontend {
 		return new Vec2i(x, y);
 	}
 
-	@Override
-	public void createSwapchain(List<ImageData> images, PresentationMode presentationMode) {
-		swapChain = new SimpleFrontSwapChain(images, presentationMode, imageData -> this.onRelease.accept(imageData));
-		
+	public void doCreateSwapchain(UUID id, List<ImageData> images, PresentationMode presentationMode) {
+		swapChain = new SimpleFrontSwapChain(id, images, presentationMode, this::sendRelease);
+		swapChains.put(id, swapChain);
 		surface.setSwapChain(swapChain);
 	}
 
-	@Override
-	public void present(ImageData image) {
+	public void doPresent(ImageData image) {
 		swapChain.present(image);
-		
 		surface.dirty();
+	}
+	
+	private void sendRelease(UUID id, ImageData image) {
+		commandChannel.accept(new ReleaseCommand(id, image));
 	}
 
 	@Override
-	public void setOnRelease(Consumer<ImageData> onRelease) {
-		this.onRelease = onRelease;
+	public void setCommandChannel(Consumer<Command> commandChannel) {
+		this.commandChannel = commandChannel;
+	}
+	
+	@Override
+	public void receiveCommand(Command command) {
+//		System.err.println("Frontend received " + command);
+		
+		if (command instanceof CreateSwapchainCommand) {
+			System.err.println("Frontend received " + command);
+			CreateSwapchainCommand cmd = (CreateSwapchainCommand) command;
+			doCreateSwapchain(cmd.getId(), cmd.getImages(), cmd.getPresentatioMode());
+		}
+		else if (command instanceof PresentCommand) {
+			PresentCommand cmd = (PresentCommand) command;
+			if (cmd.getSwapChainId().equals(swapChain.getId())) {
+				doPresent(cmd.getImageData());
+			}
+			else {
+				System.err.println("!!! Instant release");
+				sendRelease(cmd.getSwapChainId(), cmd.getImageData());
+			}
+		}
+		else if (command instanceof DisposeSwapchainCommand) {
+			System.err.println("Frontend received " + command);
+			DisposeSwapchainCommand cmd = (DisposeSwapchainCommand) command;
+			swapChains.get(cmd.getId()).scheduleDispose();
+		}
 	}
 
 }

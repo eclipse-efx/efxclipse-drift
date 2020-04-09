@@ -36,6 +36,10 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_eclipse_fx_drift_internal_GL_wrapCon
 	return (jlong) WrapContext((jlong) nativeContextHandle);
 }
 
+extern "C" JNIEXPORT jlong JNICALL Java_org_eclipse_fx_drift_internal_GL_getCurrentContext(JNIEnv *env, jclass cls) {
+	return (jlong) GetCurrentContext();
+}
+
 extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_GL_destroyContext(JNIEnv *env, jclass cls, jlong context) {
 	DestroyContext((Context*) context);
 }

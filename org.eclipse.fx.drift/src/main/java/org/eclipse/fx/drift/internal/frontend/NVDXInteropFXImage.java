@@ -16,7 +16,7 @@ public class NVDXInteropFXImage extends AFxImage<NVDXInteropImageData> {
 	}
 
 	@Override
-	public void allocate(ResourceFactory rf) {
+	public void allocate(ResourceFactory rf) throws Exception {
 		super.allocate(rf);
 		
 		// replace the prism texture with a shared one

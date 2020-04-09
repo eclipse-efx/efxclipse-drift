@@ -3,6 +3,8 @@
 #include "DriftGL_wgl.h"
 
 #include <iostream>
+#include <mutex>
+#include <map>
 
 #pragma comment (lib, "opengl32.lib")
 
@@ -28,6 +30,26 @@ namespace driftgl {
 
 	int WGL_CONTEXT_CORE_PROFILE_BIT_ARB = 0x00000001;
 	int WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB = 0x00000002;
+
+	std::mutex knownContextsMutex;
+	std::map<HGLRC, Context*> knownContexts;
+
+	void registerContext(HGLRC hglrc, Context* context) {
+		knownContextsMutex.lock();
+		knownContexts[hglrc] = context;
+		knownContextsMutex.unlock();
+	}
+	void unregisterContext(HGLRC hglrc) {
+		knownContextsMutex.lock();
+		knownContexts.erase(hglrc);
+		knownContextsMutex.unlock();
+	}
+	Context* getContext(HGLRC hglrc) {
+		knownContextsMutex.lock();
+		Context* context = knownContexts[hglrc];
+		knownContextsMutex.unlock();
+		return context;
+	}
 
 
 	typedef HGLRC(APIENTRY * PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC hDC, HGLRC hShareContext, const int *attribList);
@@ -290,6 +312,8 @@ Context* CreateContext(Context* sharedContext, int majorHint, int minorHint) {
 		return NULL;
 	}
 
+	registerContext(ctx->hGLRC, ctx);
+
 	return ctx;
 }
 
@@ -297,6 +321,8 @@ Context* WrapContext(long long nativeContextHandle) {
 	// TODO win32 wrapped context missing hdc
 	WGLContext* ctx = new WGLContext();
 	ctx->hGLRC = (HGLRC) nativeContextHandle;
+
+	//registerContext(ctx->hGLRC, ctx);
 	return ctx;
 }
 
@@ -350,11 +376,14 @@ Context* CreateSharedCompatContext(Context* sharedContext) {
 		return NULL;
 	}
 
+	registerContext(ctx->hGLRC, ctx);
+
 	return ctx;
 }
 
 void DestroyContext(Context* context) {
 	WGLContext* ctx = (WGLContext*)context;
+	unregisterContext(ctx->hGLRC);
 	wglDeleteContext(ctx->hGLRC);
 	ReleaseDC(GetDesktopWindow(), ctx->hDC);
 	DestroyWindow(ctx->hWND);
@@ -379,7 +408,13 @@ bool IsContextCurrent(Context* context) {
 
 void* GetNativeContextHandle(Context* context) {
 	WGLContext* ctx = (WGLContext*)context;
+	
 	return ctx->hGLRC;
+}
+
+Context* GetCurrentContext() {
+	HGLRC currentContext = wglGetCurrentContext();
+	return getContext(currentContext);
 }
 
 }

@@ -24,10 +24,11 @@ import static org.eclipse.fx.drift.internal.SYS.free;
 import static org.eclipse.fx.drift.internal.SYS.malloc;
 import static org.eclipse.fx.drift.internal.SYS.memcpy;
 
+import org.eclipse.fx.drift.Vec2i;
+
 import com.sun.prism.Texture;
 
 import org.eclipse.fx.drift.internal.GraphicsPipelineUtil;
-import org.eclipse.fx.drift.internal.math.Vec2i;
 import org.eclipse.fx.drift.internal.transfer.SharedTexture;
 
 @SuppressWarnings("restriction")

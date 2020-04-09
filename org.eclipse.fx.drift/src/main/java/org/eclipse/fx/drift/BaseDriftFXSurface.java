@@ -12,38 +12,50 @@ package org.eclipse.fx.drift;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.sun.javafx.geom.BaseBounds;
-import com.sun.javafx.geom.RectBounds;
-import com.sun.javafx.geom.transform.BaseTransform;
-import com.sun.javafx.jmx.MXNodeAlgorithm;
-import com.sun.javafx.jmx.MXNodeAlgorithmContext;
-import com.sun.javafx.scene.DirtyBits;
-import com.sun.javafx.sg.prism.NGNode;
-
 import org.eclipse.fx.drift.impl.DriftDebug;
-import org.eclipse.fx.drift.impl.NGDriftFXSurface2;
+import org.eclipse.fx.drift.impl.NGDriftFXSurface;
 import org.eclipse.fx.drift.internal.ScreenObserver;
 import org.eclipse.fx.drift.internal.SurfaceData;
 import org.eclipse.fx.drift.internal.frontend.FrontSwapChain;
+import org.eclipse.fx.drift.internal.prism.Prism;
+
+import com.sun.javafx.scene.DirtyBits;
 
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.Node;
 
 //Note: this implementation is against internal JavafX API
-@SuppressWarnings({"restriction", "deprecation"})
-public class DriftFXSurface2 extends Node {
-	
+@SuppressWarnings({"restriction"})
+public abstract class BaseDriftFXSurface extends Node {
+	static {
+		try {
+			Prism.initialize();
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+	}
 	
 	private AtomicReference<SurfaceData> surfaceData = new AtomicReference<>(null);
 	
 	private final ReadOnlyDoubleWrapper screenScaleFactor = new ReadOnlyDoubleWrapper(this, "screenScaleFactor", 1.0);
 	private final DoubleProperty userScaleFactor = new SimpleDoubleProperty(this, "userScaleFactor", 1.0);
+	
+	private ScreenObserver screenObserver;
+	
+	public BaseDriftFXSurface() {
+	}
+	
+	protected void init() {
+		// observe current screen render factor
+		screenObserver = new ScreenObserver(this);
+		screenScaleFactor.bind(screenObserver.currentRenderScaleProperty());
+		screenScaleFactor.addListener((x, o, n) -> updateSurfaceData());
+	}
+	
 	
 	public ReadOnlyDoubleProperty screenScaleFactorProperty() {
 		return screenScaleFactor.getReadOnlyProperty();
@@ -64,39 +76,7 @@ public class DriftFXSurface2 extends Node {
 	public void setUserScaleFactor(double value) {
 		userScaleFactorProperty().set(value);
 	}
-	
-	public long getNativeSurfaceHandle() {
-		return nativeSurfaceId;
-	}
-	
-	private long nativeSurfaceId;
-	
-	private ScreenObserver screenObserver = new ScreenObserver(this);
-	
-	
-	private ReadOnlyStringWrapper stats = new ReadOnlyStringWrapper(this, "stats", "");
-	
-	public ReadOnlyStringProperty statsProperty() {
-		return stats;
-	}
-	
-	public DriftFXSurface2() {
 
-		
-		// observe current screen render factor
-		screenScaleFactor.bind(screenObserver.currentRenderScaleProperty());
-		screenScaleFactor.addListener((x, o, n) -> updateSurfaceData());
-		
-		
-	}
-
-	@Override
-	protected NGNode impl_createPeer() {
-		DriftDebug.outputThread();
-		NGDriftFXSurface2 peer = new NGDriftFXSurface2(this, nativeSurfaceId, stats);
-		return peer;
-	}
-	
 	@Override
 	public double minHeight(double width) {
 		return 0;
@@ -127,35 +107,14 @@ public class DriftFXSurface2 extends Node {
 		return Double.MAX_VALUE;
 	}
 
-	
-	@Override
-	public BaseBounds impl_computeGeomBounds(BaseBounds bounds, BaseTransform tx) {
-		DriftDebug.outputThread();
-		bounds = new RectBounds(0f, 0f, (float) getWidth(), (float) getHeight());
-		bounds = tx.transform(bounds, bounds);
-		return bounds;
-	}
-
-	@Override
-	protected boolean impl_computeContains(double localX, double localY) {
-		double w = getWidth();
-		double h = getHeight();
-		return (w > 0 && h > 0 && localX >= 0 && localY >= 0 && localX < w && localY < h);
-	}
-
-	@Override
-	public Object impl_processMXNode(MXNodeAlgorithm alg, MXNodeAlgorithmContext ctx) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
 	private void widthChanged(double value) {
         if (value != _width) {
             _width = value;
             
-            impl_layoutBoundsChanged();
-            impl_geomChanged();
+            getHelper().geomChanged();
+            getHelper().layoutBoundsChanged();
             updateSurfaceData();
-            impl_markDirty(DirtyBits.NODE_GEOMETRY);
+            getHelper().markDirty(DirtyBits.NODE_GEOMETRY);
         }
 	}
 	
@@ -166,7 +125,7 @@ public class DriftFXSurface2 extends Node {
         if (width == null) {
             width = new ReadOnlyDoubleWrapper(_width) {
                 @Override protected void invalidated() { widthChanged(get()); }
-                @Override public Object getBean() { return DriftFXSurface2.this; }
+                @Override public Object getBean() { return BaseDriftFXSurface.this; }
                 @Override public String getName() { return "width"; }
             };
         }
@@ -184,10 +143,10 @@ public class DriftFXSurface2 extends Node {
 	        if (_height != value) {
 	            _height = value;
 	            
-	            impl_geomChanged();
-	            impl_layoutBoundsChanged();
+	            getHelper().geomChanged();
+	            getHelper().layoutBoundsChanged();
 	            updateSurfaceData();
-	            impl_markDirty(DirtyBits.NODE_GEOMETRY);
+	            getHelper().markDirty(DirtyBits.NODE_GEOMETRY);
 	        }
 	    }
 	private double _height;
@@ -197,7 +156,7 @@ public class DriftFXSurface2 extends Node {
        if (height == null) {
            height = new ReadOnlyDoubleWrapper(_height) {
                @Override protected void invalidated() { heightChanged(get()); }
-               @Override public Object getBean() { return DriftFXSurface2.this; }
+               @Override public Object getBean() { return BaseDriftFXSurface.this; }
                @Override public String getName() { return "height"; }
            };
        }
@@ -221,28 +180,34 @@ public class DriftFXSurface2 extends Node {
 	   
    }
    
-	@Deprecated
-	@Override
-	public void impl_updatePeer() {
-		DriftDebug.outputThread();
-		super.impl_updatePeer();
-		NGDriftFXSurface2 peer = impl_getPeer();
-		
-		if (impl_isDirty(DirtyBits.NODE_GEOMETRY)) {
+   protected static interface InnerHelper {
+	   NGDriftFXSurface getPeer();
+	   boolean isDirty(DirtyBits bit);
+	   void markDirty(DirtyBits bit);
+	   void geomChanged();
+	   void layoutBoundsChanged();
+	   void beginPeerAccess();
+	   void endPeerAccess();
+   }
+   protected abstract InnerHelper getHelper();
+   
+   public void drift_updatePeer() {
+	   NGDriftFXSurface peer = getHelper().getPeer();
+	   
+	   if (getHelper().isDirty(DirtyBits.NODE_GEOMETRY)) {
 			SurfaceData data = surfaceData.get();
 			peer.updateSurface(data);
 			peer.markDirty();
-		}
-		
-		if (impl_isDirty(DirtyBits.NODE_CONTENTS)) {
-			FrontSwapChain swapChain = swapChainBuf.getAndSet(null);
+	   }
+	   
+	   if (getHelper().isDirty(DirtyBits.NODE_CONTENTS)) {
+		   FrontSwapChain swapChain = swapChainBuf.getAndSet(null);
 			if (swapChain != null) {
 				peer.setSwapChain(swapChain);
 			}
 			peer.markDirty();
-		}
-		
-	}
+	   }
+   }
    
    @Override
 	public boolean isResizable() {
@@ -262,25 +227,13 @@ public class DriftFXSurface2 extends Node {
 	   SurfaceData data = computeSurfaceData();
 	   if (!data.equals(surfaceData.get())) {
 		   surfaceData.set(data);
-		   impl_markDirty(DirtyBits.NODE_GEOMETRY);
+		   getHelper().markDirty(DirtyBits.NODE_GEOMETRY);
 	   }
    }
    
-   @Override
-	public void relocate(double x, double y) {
-	   DriftDebug.outputThread();
-		super.relocate(x, y);
-	}
-   
 	public void dirty() {
 		DriftDebug.outputThread();
-		Platform.runLater(() ->  impl_markDirty(DirtyBits.NODE_CONTENTS));
-	}
-	
-	@Override
-	protected void impl_markDirty(DirtyBits dirtyBit) {
-		DriftDebug.assertJavaFXApplicationThread();
-		super.impl_markDirty(dirtyBit);
+		Platform.runLater(() ->  getHelper().markDirty(DirtyBits.NODE_CONTENTS));
 	}
 
 	private AtomicReference<FrontSwapChain> swapChainBuf = new AtomicReference<>();
@@ -288,8 +241,39 @@ public class DriftFXSurface2 extends Node {
 	public void setSwapChain(FrontSwapChain swapChain) {
 		DriftDebug.outputThread();
 		FrontSwapChain leftover = swapChainBuf.getAndSet(swapChain);
-		System.err.println("Leftover swapchain!!! This is not good! " + leftover);
-		Platform.runLater(() ->  impl_markDirty(DirtyBits.NODE_CONTENTS));
+		if (leftover != null) System.err.println("Leftover swapchain!!! This is not good! " + leftover);
+		Platform.runLater(() ->  getHelper().markDirty(DirtyBits.NODE_CONTENTS));
+	}
+	
+	
+	
+	
+	// Internal Type access
+	
+	@SuppressWarnings("restriction")
+	private static void drift_addShutdownHook(Runnable hook) {
+		com.sun.javafx.tk.Toolkit.getToolkit().addShutdownHook(hook);
+	}
+
+	// JDK-Version specific methods
+	
+	@SuppressWarnings("restriction")
+	protected com.sun.javafx.geom.BaseBounds drift_computeGeomBounds(com.sun.javafx.geom.BaseBounds bounds, com.sun.javafx.geom.transform.BaseTransform tx) {
+		com.sun.javafx.geom.BaseBounds rv = new com.sun.javafx.geom.RectBounds(0f, 0f, (float) getWidth(), (float) getHeight());
+		rv = tx.transform(rv, rv);
+		return rv;
+	}
+
+	protected boolean drift_computeContains(double localX, double localY) {
+		double w = getWidth();
+		double h = getHeight();
+		return (w > 0 && h > 0 && localX >= 0 && localY >= 0 && localX < w && localY < h);
+	}
+	
+	@SuppressWarnings("restriction")
+	protected com.sun.javafx.sg.prism.NGNode drift_createPeer() {
+		NGDriftFXSurface peer = new NGDriftFXSurface(this);
+		return peer;
 	}
 	
 }

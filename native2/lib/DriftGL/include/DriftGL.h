@@ -22,6 +22,8 @@ namespace driftgl {
 	DRIFTGL_EXPORT bool IsContextCurrent(Context* context);
 
 	DRIFTGL_EXPORT void* GetNativeContextHandle(Context* context);
+
+	DRIFTGL_EXPORT Context* GetCurrentContext();
 }
 
 

@@ -23,6 +23,9 @@
 
 	<modules>
 		<module>org.eclipse.fx.drift</module>
+		<module>org.eclipse.fx.drift.java8</module>
+		<module>org.eclipse.fx.drift.java11</module>
+		<module>org.eclipse.fx.drift.mr</module>
 		<module>org.eclipse.fx.drift.samples</module>
 		<module>org.eclipse.fx.drift.feature</module>
 		<module>org.eclipse.fx.drift.samples.feature</module>

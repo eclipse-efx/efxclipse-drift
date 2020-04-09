@@ -1,10 +1,11 @@
 package org.eclipse.fx.drift.internal.common;
 
-import org.eclipse.fx.drift.internal.math.Vec2i;
+import org.eclipse.fx.drift.TransferType;
+import org.eclipse.fx.drift.Vec2i;
 
 public class MainMemoryImageData extends ImageData {
 
-	public static final ImageDataType TYPE = new ImageDataType("MainMemory");
+	public static final TransferType TYPE = new TransferType("MainMemory");
 	
 	public final long memPointer;
 	public final int memSize;

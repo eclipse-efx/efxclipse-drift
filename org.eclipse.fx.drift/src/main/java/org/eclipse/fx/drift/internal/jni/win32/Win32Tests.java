@@ -6,7 +6,7 @@ import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DTexture9;
 import static org.eclipse.fx.drift.internal.jni.win32.Win32.*;
 public class Win32Tests {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws WindowsError {
 		System.loadLibrary("DriftGL");
 		System.loadLibrary("driftfx");
 		

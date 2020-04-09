@@ -7,6 +7,7 @@ import com.sun.prism.PixelFormat;
 import com.sun.prism.ResourceFactory;
 import com.sun.prism.Texture;
 
+@SuppressWarnings("restriction")
 public abstract class AFxImage<D extends ImageData> implements FxImage<D> {
 
 	private Texture texture;
@@ -23,7 +24,7 @@ public abstract class AFxImage<D extends ImageData> implements FxImage<D> {
 	}
 
 	@Override
-	public void allocate(ResourceFactory rf) {
+	public void allocate(ResourceFactory rf) throws Exception {
 		texture = rf.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, data.size.x, data.size.y);
 		texture.makePermanent();
 		System.err.println("Texture Created! " + this + " / " + texture + " / " + Prism.getTextureHandle(texture));
