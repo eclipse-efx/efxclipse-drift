@@ -74,7 +74,7 @@ public class Prism {
 			iGLContext = PrismES2.getGLContext(iES2Context);
 			contextHandleES2 = PrismES2.getNativeHandle(iGLContext);
 
-			QuantumRendererHelper.initialize(contextHandleES2);
+	//		QuantumRendererHelper.initialize(contextHandleES2);
 			
 			//NativeAPI.initializeES2Pipeline(contextHandleES2);
 		} else if (isSW) {
@@ -95,6 +95,10 @@ public class Prism {
 	
 	public static boolean isES2() {
 		return isES2;
+	}
+	
+	public static long getES2ContextHandle() {
+		return contextHandleES2;
 	}
 	
 	public static long getTextureHandle(Texture texture) {

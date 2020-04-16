@@ -59,14 +59,21 @@ public class GL {
 	public static final int GL_FRAMEBUFFER = 0x8D40;
 	public static final int GL_COLOR_ATTACHMENT0 = 0x8CE0;
 	
+	public static final int GL_LINEAR = 0x2601;
+	public static final int GL_READ_FRAMEBUFFER = 0x8CA8;
+	public static final int GL_DRAW_FRAMEBUFFER = 0x8CA9;
 	
 	public static native void glClearColor(float red, float green, float blue, float alpha);
 	public static native void glClear(int mask);
+	
+	public static native int glGetError();
 	
 	public static native int glGenFramebuffer();
 	public static native void glBindFramebuffer(int target, int framebuffer);
 	public static native void glFramebufferTexture(int target, int attachment, int texture, int level);
 	public static native void glDeleteFramebuffer(int framebuffer);
+	public static native void glBlitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, int mask, int filter);
+	
 	
 	public static native void glFlush();
 	public static native void glFinish();

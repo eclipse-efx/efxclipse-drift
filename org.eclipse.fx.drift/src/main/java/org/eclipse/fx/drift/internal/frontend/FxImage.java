@@ -13,6 +13,7 @@ public interface FxImage<D extends ImageData> {
 	void allocate(ResourceFactory rf) throws Exception;
 	void release();
 	
+	/** is called by the quantum renderer before the texture is rendered */
 	void update();
 
 	Texture getTexture();

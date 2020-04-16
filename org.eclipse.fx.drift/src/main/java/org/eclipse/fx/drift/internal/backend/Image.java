@@ -20,8 +20,10 @@ public interface Image extends RenderTarget {
 	
 	void allocate();
 	void release();
-	void beforeRender();
-	void afterRender();
+	/** called on acquire before the image is returned to the renderer */
+	void onAcquire();
+	/** called right before the image is presented to the frontend */
+	void onPresent();
 	
 	
 	

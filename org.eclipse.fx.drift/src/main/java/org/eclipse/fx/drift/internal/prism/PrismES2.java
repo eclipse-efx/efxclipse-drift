@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.eclipse.fx.drift.internal.jni.macos.MacOS;
+
 import com.sun.prism.Texture;
 
 @SuppressWarnings("restriction")
@@ -94,7 +96,8 @@ public class PrismES2 {
 	
 	static long getNativeHandle(Object iGLContext) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		if (isMac) {
-			return (long) mMacGLContext_getNativeHandle.invoke(iGLContext);
+			long nsJContextHandle =  (long) mMacGLContext_getNativeHandle.invoke(iGLContext);
+			return MacOS.callGetCGLContextObjFromNSJContext(nsJContextHandle);
 		}
 		else if (isX11) {
 			return (long) mX11GLContext_getNativeHandle.invoke(iGLContext);

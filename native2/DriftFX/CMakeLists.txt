@@ -55,6 +55,9 @@ endif (LINUX)
 
 if (APPLE)
 
+list(APPEND DriftFX-Sources src/jni/macos/MacOS.cpp)
+list(APPEND DriftFX-Sources src/jni/macos/cgl_context.m)
+
 endif (APPLE)
 
 

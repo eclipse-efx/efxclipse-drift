@@ -5,7 +5,7 @@ import org.eclipse.fx.drift.Vec2i;
 
 public class MainMemoryImageData extends ImageData {
 
-	public static final TransferType TYPE = new TransferType("MainMemory");
+	public static final TransferType TYPE = new TransferType("MainMemory", () -> true);
 	
 	public final long memPointer;
 	public final int memSize;

@@ -87,7 +87,7 @@ public class NVDXInteropImage implements Image {
 	}
 	
 	@Override
-	public void beforeRender() {
+	public void onAcquire() {
 		try {
 			NVDXInterop.wglDXLockObjectsNV(device.hDevice, hObject);
 		}
@@ -97,7 +97,7 @@ public class NVDXInteropImage implements Image {
 	}
 	
 	@Override
-	public void afterRender() {
+	public void onPresent() {
 		try {
 			NVDXInterop.wglDXUnlockObjectsNV(device.hDevice, hObject);
 		}

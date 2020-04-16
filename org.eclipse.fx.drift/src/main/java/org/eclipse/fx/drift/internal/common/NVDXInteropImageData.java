@@ -2,10 +2,11 @@ package org.eclipse.fx.drift.internal.common;
 
 import org.eclipse.fx.drift.TransferType;
 import org.eclipse.fx.drift.Vec2i;
+import org.eclipse.fx.drift.internal.prism.Prism;
 
 public class NVDXInteropImageData extends ImageData {
 
-	public static final TransferType TYPE = new TransferType("NVDXInterop");
+	public static final TransferType TYPE = new TransferType("NVDXInterop", Prism::isD3D);
 
 	public final long dxShareHandle;
 	

@@ -6,6 +6,7 @@ import static org.eclipse.fx.drift.internal.SYS.*;
 import org.eclipse.fx.drift.Vec2i;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
+import org.eclipse.fx.drift.internal.prism.Prism;
 
 public class MainMemoryImage implements Image {
 
@@ -55,21 +56,25 @@ public class MainMemoryImage implements Image {
 	}
 
 	@Override
-	public void beforeRender() {
+	public void onAcquire() {
+
+	}
+
+	@Override
+	public void onPresent() {
 		synchronized (data) {
 			downloadToMemorySimple(glTexture, memPointer);
 		}
 	}
 
-	@Override
-	public void afterRender() {
-		
-	}
-
 	private void downloadToMemorySimple(int tex, long pPixels) {
 		
 //		int format = GL_RGBA; // TODO need GL_BGRA on windows
-		int format = GL_BGRA;
+//		int format = GL_BGRA;
+		
+		// we change the colors here for directx upload
+		int format = Prism.isD3D() ? GL_BGRA : GL_RGBA;
+		
 		glBindTexture(GL_TEXTURE_2D, glTexture);
 		glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_INT_8_8_8_8_REV, memPointer);
 		glBindTexture(GL_TEXTURE_2D, 0);

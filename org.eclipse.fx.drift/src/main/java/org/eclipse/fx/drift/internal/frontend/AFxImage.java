@@ -37,8 +37,7 @@ public abstract class AFxImage<D extends ImageData> implements FxImage<D> {
 
 	@Override
 	public void update() {
-		// TODO Auto-generated method stub
-		
+		// default implementation does nothing
 	}
 
 	@Override

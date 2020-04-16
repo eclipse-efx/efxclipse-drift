@@ -80,6 +80,25 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_GL_glBindTe
 	glBindTexture(target, texture);
 }
 
+extern "C" JNIEXPORT jint JNICALL Java_org_eclipse_fx_drift_internal_GL_glGetError(JNIEnv *env, jclass cls) {
+	return (jint) glGetError();
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_GL_glBlitFramebuffer(JNIEnv *env, jclass cls, jint _srcX0, jint _srcY0, jint _srcX1, jint _srcY1, jint _dstX0, jint _dstY0, jint _dstX1, jint _dstY1, jint _mask, jint _filter) {
+	GLint srcX0 = (GLint) _srcX0;
+	GLint srcY0 = (GLint) _srcY0;
+	GLint srcX1 = (GLint) _srcX1;
+	GLint srcY1 = (GLint) _srcY1;
+	GLint dstX0 = (GLint) _dstX0;
+	GLint dstY0 = (GLint) _dstY0;
+	GLint dstX1 = (GLint) _dstX1;
+	GLint dstY1 = (GLint) _dstY1;
+	GLbitfield mask = (GLbitfield) _mask;
+	GLenum filter = (GLenum) _filter;
+	glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+}
+	
+
 extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_GL_glTexImage2D(JNIEnv *env, jclass cls, jint _target, jint _level, jint _internalformat, jint _width, jint _height, jint _border, jint _format, jint _type, jlong _pPixels) {
 	GLenum target = (GLenum) _target;
 	GLint level = (GLint) _level;

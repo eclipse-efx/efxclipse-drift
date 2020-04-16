@@ -89,7 +89,7 @@ public class SimpleSwapChain implements BackSwapChain {
 	public RenderTarget acquire() throws InterruptedException {
 		synchronized (freeImages) {
 			Image image = freeImages.take();
-			image.beforeRender();
+			image.onAcquire();
 			return image;
 		}
 	}
@@ -118,7 +118,7 @@ public class SimpleSwapChain implements BackSwapChain {
 			}
 			else {
 				Image image = freeImages.poll();
-				if (image != null) image.beforeRender();
+				if (image != null) image.onAcquire();
 				return Optional.of(image);
 			}
 		}
@@ -130,7 +130,7 @@ public class SimpleSwapChain implements BackSwapChain {
 	public void present(RenderTarget renderTarget) {
 		Image image = (Image) renderTarget;
 //		System.err.println("DriftFX Backend: Swapchain#present " + image.getData().number);
-		image.afterRender();
+		image.onPresent();
 		backend.sendCommand(new PresentCommand(id, image.getData()));
 	}
 	

@@ -91,7 +91,11 @@ public class MemoryStack implements IMemoryStack {
 	}
 	
 	
-	private native long nGetBufferAddress(ByteBuffer buffer);
+	private static native long nGetBufferAddress(ByteBuffer buffer);
+	
+	public static long getBufferAddress(ByteBuffer buffer) {
+		return nGetBufferAddress(buffer);
+	}
 	
 	public long getAddress() {
 		return address;

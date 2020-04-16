@@ -50,10 +50,8 @@ target_link_libraries(test_create_context PRIVATE DriftGL)
 add_executable(test_initialize test/initialize.cpp)
 target_link_libraries(test_initialize PRIVATE DriftGL)
 
-add_executable(test_fuck test/fuck.cpp)
-target_link_libraries(test_fuck PRIVATE DriftGL)
 
 ENABLE_TESTING()
 ADD_TEST(initialize test_initialize)
 ADD_TEST(create_context test_create_context)
-ADD_TEST(fuck test_fuck)
+
