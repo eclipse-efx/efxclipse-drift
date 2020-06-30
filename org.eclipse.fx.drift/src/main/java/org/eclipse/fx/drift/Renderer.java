@@ -8,7 +8,10 @@ public interface Renderer {
 	 * <p>must be called from the rendering thread with a current OpenGL context</p>
 	 * @return
 	 */
-	SwapChain createSwapChain(Vec2i size, int imageCount, PresentationMode presentationMode, TransferType type);
+	Swapchain createSwapChain(Vec2i size, int imageCount, PresentationMode presentationMode, TransferType type);
+	
+	
+	Swapchain createSwapchain(SwapchainConfig config);
 	
 	Vec2i getSize();
 	

@@ -37,8 +37,8 @@ import javafx.util.Duration;
 @SuppressWarnings("restriction")
 public class NGDriftFXSurface extends NGNode {
 
-	private final static boolean showFPS = Boolean.getBoolean("driftfx.showfps");
-	private final static boolean profile = Boolean.getBoolean("driftfx.profile");
+	private static final boolean showFPS = Boolean.getBoolean("driftfx.showfps");
+	private static final boolean profile = Boolean.getBoolean("driftfx.profile");
 
 	private SurfaceData surfaceData;
 	private FrontSwapChain nextSwapChain;

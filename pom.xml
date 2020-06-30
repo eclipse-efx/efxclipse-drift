@@ -19,6 +19,8 @@
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		
 		<plugin-bnd-maven-plugin>4.0.0</plugin-bnd-maven-plugin>
+		
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<modules>
@@ -26,9 +28,15 @@
 		<module>org.eclipse.fx.drift.java8</module>
 		<module>org.eclipse.fx.drift.java11</module>
 		<module>org.eclipse.fx.drift.mr</module>
-		<module>org.eclipse.fx.drift.samples</module>
 		<module>org.eclipse.fx.drift.feature</module>
+		
+		
+		<module>org.eclipse.fx.drift.samples</module>
+		<module>org.eclipse.fx.drift.samples.cpp</module>
+		
+
 		<module>org.eclipse.fx.drift.samples.feature</module>
+		
 		<module>org.eclipse.fx.drift.updatesite</module>
 
 		

@@ -8,4 +8,9 @@ public class Vec2i {
 		this.x = x;
 		this.y = y;
 	}
+	
+	@Override
+	public String toString() {
+		return "Vec2i(" + x + ", " + y + ")";
+	}
 }

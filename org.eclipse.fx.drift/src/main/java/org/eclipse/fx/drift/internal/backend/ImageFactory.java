@@ -20,6 +20,6 @@ public class ImageFactory {
 			return new IOSurfaceImage(number, size);
 		}
 		
-		throw new RuntimeException();
+		throw new RuntimeException("ImageFactory#createImage: Unknown TransferType (" + type + ")");
 	}
 }
