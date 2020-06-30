@@ -41,6 +41,9 @@ if (MSVC)
 
 	set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB:libc.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:libcd.lib /NODEFAULTLIB:msvcrtd.lib")
 	# /VERBOSE:LIB
+	
+	
+	#set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /showIncludes")
 endif (MSVC)
 
 
@@ -57,25 +60,80 @@ if (APPLE)
 endif (APPLE)
 
 if (WIN32)
+	message ("CMAKE_VS_PLATFORM_NAME: ${CMAKE_VS_PLATFORM_NAME}")
+	message ("CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION: ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
+
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-	find_package(WindowsSDK REQUIRED)
-	get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WINSDK_INCLUDE_DIRS)
-	get_windowssdk_library_dirs(${WINDOWSSDK_LATEST_DIR} WINSDK_LIBRARY_DIRS)
+	set(WinSDK C:/Program Files (x86)/Windows Kits/10)
+	
+	
+	get_filename_component(WinSDK-Root
+		"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots;KitsRoot10]"
+		ABSOLUTE)
+	message("WinSDK-Root: ${WinSDK-Root}")
 
-	message("WinSDK include: ${WINSDK_INCLUDE_DIRS}")
-	message("WinSDK lib: ${WINSDK_LIBRARY_DIRS}")
-	find_path(DIRECTX_INCLUDE_DIRS
-		NAMES d3d9.h
-		HINTS ${WINSDK_INCLUDE_DIRS})
+	list(APPEND WinSDK-Include-Dirs ${WinSDK-Root}/Include/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/shared)
+	list(APPEND WinSDK-Include-Dirs ${WinSDK-Root}/Include/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/um)
+	list(APPEND WinSDK-Include-Dirs ${WinSDK-Root}/Include/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/winrt)
+	list(APPEND WinSDK-Include-Dirs ${WinSDK-Root}/Include/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/ucrt)
 
-	message ("DirectX Include: ${DIRECTX_INCLUDE_DIRS}")
+	list(APPEND WinSDK-Library-Dirs ${WinSDK-Root}/Lib/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/shared/${CMAKE_VS_PLATFORM_NAME})
+	list(APPEND WinSDK-Library-Dirs ${WinSDK-Root}/Lib/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/um/${CMAKE_VS_PLATFORM_NAME})
+	list(APPEND WinSDK-Library-Dirs ${WinSDK-Root}/Lib/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/winrt/${CMAKE_VS_PLATFORM_NAME})
+	list(APPEND WinSDK-Library-Dirs ${WinSDK-Root}/Lib/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/ucrt/${CMAKE_VS_PLATFORM_NAME})
+			
+	message ("Windows SDK includes: ${WinSDK-Include-Dirs}")
+	message ("Windows SDK libs: ${WinSDK-Library-Dirs}")
+	
 
-	find_library(DIRECTX9_LIBRARIES
-		NAMES d3d9
-		PATHS ${WINSDK_LIBRARY_DIRS})
-
-	message ("DirectX9 Lib: ${DIRECTX9_LIBRARIES}")
+	# Should be part of winsdk default include / library
+#	find_path(DirectX9-Include-Dirs
+#		NAMES d3d9.h
+#		HINTS ${WinSDK-Include-Dirs}
+#		NO_DEFAULT_PATH)
+#	find_path(DirectX9-Library-Dirs
+#		NAMES d3d9.lib
+#		HINTS ${WinSDK-Library-Dirs}
+#		NO_DEFAULT_PATH)
+#	
+#	message ("DirectX9 include: ${DirectX9-Include-Dirs}")
+#	message ("DirectX9 library: ${DirectX9-Library-Dirs}")
+	
+	
+#	find_package(WindowsSDK REQUIRED)
+#	
+#	
+#	
+#	#set (WINSDK_INCLUDE_DIRS "${WINDOWSSDK_LATEST_DIRS}/Includes/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION")
+#	#set (WINSDK_LIBRARY_DIRS "${WINDOWSSDK_LATEST_DIRS}/Lib/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION")
+#	
+#	message ("WindowsSDK Latest Dirs: ${WINDOWSSDK_LATEST_DIRS}")
+#	message ("WindowsSDK Latest Name: ${WINDOWSSDK_LATEST_NAME}")
+#	message ("WindowsSDK found preference: ${WINDOWSSDK_FOUND_PREFERENCE}")
+#	
+#	
+#	get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WINSDK_INCLUDE_DIRS)
+#	get_windowssdk_library_dirs(${WINDOWSSDK_LATEST_DIR} WINSDK_LIBRARY_DIRS)
+#
+#	message("WinSDK include dirs: ${WINSDK_INCLUDE_DIRS}")
+#	message("WinSDK library dirs: ${WINSDK_LIBRARY_DIRS}")
+#	
+#	find_path(DIRECTX_INCLUDE_DIRS
+#		NAMES d3d9.h
+#		HINTS ${WINDOWSSDK_LATEST_DIR}
+#		NO_DEFAULT_PATH)
+#
+#	message ("DirectX Include: ${DIRECTX_INCLUDE_DIRS}")
+#
+#	find_library(DIRECTX9_LIBRARIES
+#		NAMES d3d9
+#		PATHS ${WINSDK_LIBRARY_DIRS})
+#
+#	message ("DirectX9 Lib: ${DIRECTX9_LIBRARIES}")
+	
+	
+	include_directories( ${WinSDK-Include-Dirs} )
 endif (WIN32)
 
 
@@ -117,11 +175,9 @@ endif (LINUX)
 add_subdirectory(lib/DriftGL)
 
 add_subdirectory(DriftFX)
+add_subdirectory(driftcpp)
 
-#add_subdirectory(lib/glew)
-#add_subdirectory(lib/utils)
-
-#add_subdirectory(samples)
+add_subdirectory(samples)
 
 
 ENABLE_TESTING()
