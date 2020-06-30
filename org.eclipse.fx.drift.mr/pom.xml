@@ -7,7 +7,7 @@
 		<artifactId>parent</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>org.eclipse.fx.drift.assembly</artifactId>
+	<artifactId>org.eclipse.fx.drift.mr</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>

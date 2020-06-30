@@ -11,13 +11,11 @@
 			<artifactId>org.eclipse.fx.drift</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- 
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-graphics</artifactId>
 			<version>11.0.2</version>
 		</dependency>
-		-->
 	</dependencies>
 	<build>
 		<plugins>

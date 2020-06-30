@@ -15,8 +15,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
 		<attributes>
-			<attribute name="module" value="true"/>
-			<attribute name="add-exports" value="javafx.graphics/com.sun.javafx.font=ALL-UNNAMED:javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED:javafx.graphics/com.sun.javafx.sg.prism=ALL-UNNAMED:javafx.graphics/com.sun.javafx.geom=ALL-UNNAMED:javafx.graphics/com.sun.javafx.geom.transform=ALL-UNNAMED:javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED:javafx.graphics/com.sun.javafx.util=ALL-UNNAMED:javafx.graphics/com.sun.prism=ALL-UNNAMED"/>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
