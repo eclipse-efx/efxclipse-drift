@@ -5,7 +5,7 @@ import java.util.List;
 import org.eclipse.fx.drift.Swapchain;
 import org.eclipse.fx.drift.internal.common.ImageData;
 
-public interface BackSwapChain extends Swapchain {
+public interface BackendSwapchain extends Swapchain {
 
 	void allocate();
 

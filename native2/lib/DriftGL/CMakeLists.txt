@@ -55,3 +55,6 @@ ENABLE_TESTING()
 ADD_TEST(initialize test_initialize)
 ADD_TEST(create_context test_create_context)
 
+add_custom_command(TARGET DriftGL POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE_DIR:DriftGL>/$<TARGET_FILE_NAME:DriftGL> "${CMAKE_SOURCE_DIR}/../org.eclipse.fx.drift/src/main/resources/native"
+	COMMENT "Copy DriftGL shared lib to java project")

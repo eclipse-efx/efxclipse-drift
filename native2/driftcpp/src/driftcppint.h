@@ -26,29 +26,26 @@ namespace driftfx {
 	private:
 		static jclass cSwapchainConfig;
 		static jmethodID mSwapchainConfigConstructor;
+		static jfieldID fSwapchainConfigSize;
+		static jfieldID fSwapchainConfigImageCount;
+		static jfieldID fSwapchainConfigPresentationMode;
+		static jfieldID fSwapchainConfigTransferType;
 	public:
 		static jobject convertSwapchainConfig(JNIEnv* env, SwapchainConfig swapchainConfig);
-
-
-	// RenderTarget
-	private:
-		static jmethodID mRenderTargetGetGLTexture;
-	public:
-		static jint callRenderTargetGetGLTexture(JNIEnv* env, jobject renderTarget);
-
-
+		static SwapchainConfig convertSwapchainConfig(JNIEnv* env, jobject swapchainConfig);
 	// Swapchain
 	private:
 		static jmethodID mSwapchainAcquire;
 		static jmethodID mSwapchainTryAcquire;
 		static jmethodID mSwapchainPresent;
 		static jmethodID mSwapchainDispose;
+		static jmethodID mSwapchainGetConfig;
 	public:
 		static jobject callSwapchainAcquire(JNIEnv* env, jobject swapchain);
 		static jobject callSwapchainTryAcquire(JNIEnv* env, jobject swapchain);
 		static void callSwapchainPresent(JNIEnv* env, jobject swapchain, jobject renderTarget);
 		static void callSwapchainDispose(JNIEnv* env, jobject swapchain);
-
+		static jobject callSwapchainGetConfig(JNIEnv* env, jobject swapchain);
 	// Renderer
 	private:
 		static jmethodID mRendererGetSize;
@@ -57,7 +54,12 @@ namespace driftfx {
 		static jobject callRendererGetSize(JNIEnv* env, jobject renderer);
 		static jobject callRendererCreateSwapchain(JNIEnv* env, jobject renderer, jobject swapchainConfig);
 
-
+	// GLRenderer
+	private:
+		static jclass cGLRenderer;
+		static jmethodID mGLRendererGetGLTextureId;
+	public:
+		static jint callGLRendererGetGLTextureId(JNIEnv* env, jobject renderTarget);
 	};
 
 
@@ -66,7 +68,8 @@ namespace driftfx {
 		JNIEnv* env;
 		jobject javaInstance;
 	public:
-		virtual jobject getJavaInstance() = 0;
+		jobject getJavaInstance();
+		JNIEnv* getJavaEnv();
 	};
 
 
@@ -79,7 +82,6 @@ namespace driftfx {
 
 		Vec2i getSize();
 
-		jobject getJavaInstance();
 	};
 
 	class SwapchainImpl : public Swapchain, public JNIObject {
@@ -87,13 +89,12 @@ namespace driftfx {
 	public:
 		SwapchainImpl(JNIEnv* _env, jobject _javaInstance);
 
+		SwapchainConfig getConfig();
 		RenderTarget* acquire();
 		RenderTarget* tryAcquire();
 		void present(RenderTarget* image);
 		
 		~SwapchainImpl();
-
-		jobject getJavaInstance();
 
 	};
 
@@ -101,9 +102,7 @@ namespace driftfx {
 
 	public:
 		RenderTargetImpl(JNIEnv* _env, jobject _javaInstance);
-		int getGLTexture();
 
-		jobject getJavaInstance();
 	};
 
 	class TransferTypeImpl : public TransferType, public JNIObject {
@@ -113,7 +112,6 @@ namespace driftfx {
 		::std::string getId();
 		bool isAvailable();
 
-		jobject getJavaInstance();
 	};
 
 }

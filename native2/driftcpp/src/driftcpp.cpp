@@ -7,24 +7,34 @@
 
 #include "driftcppint.h"
 
-
+// Vec2i
 jclass driftfx::JNI::cVec2i;
 jmethodID driftfx::JNI::mVec2iConstructor;
 jfieldID driftfx::JNI::fVec2iX;
 jfieldID driftfx::JNI::fVec2iY;
 
+// SwapchainConfig
 jclass driftfx::JNI::cSwapchainConfig;
 jmethodID driftfx::JNI::mSwapchainConfigConstructor;
+jfieldID driftfx::JNI::fSwapchainConfigSize;
+jfieldID driftfx::JNI::fSwapchainConfigImageCount;
+jfieldID driftfx::JNI::fSwapchainConfigPresentationMode;
+jfieldID driftfx::JNI::fSwapchainConfigTransferType;
 
-jmethodID driftfx::JNI::mRenderTargetGetGLTexture;
-
+// Swapchain
 jmethodID driftfx::JNI::mSwapchainAcquire;
 jmethodID driftfx::JNI::mSwapchainTryAcquire;
 jmethodID driftfx::JNI::mSwapchainPresent;
 jmethodID driftfx::JNI::mSwapchainDispose;
+jmethodID driftfx::JNI::mSwapchainGetConfig;
 
+// Renderer
 jmethodID driftfx::JNI::mRendererGetSize;
 jmethodID driftfx::JNI::mRendererCreateSwapchain;
+
+// GLRenderer
+jclass driftfx::JNI::cGLRenderer;
+jmethodID driftfx::JNI::mGLRendererGetGLTextureId;
 
 
 void driftfx::JNI::init(JNIEnv* env) {
@@ -38,31 +48,37 @@ void driftfx::JNI::init(JNIEnv* env) {
 	cSwapchainConfig = env->FindClass("org/eclipse/fx/drift/SwapchainConfig");
 	cSwapchainConfig = (jclass)env->NewGlobalRef(cSwapchainConfig);
 	mSwapchainConfigConstructor = env->GetMethodID(cSwapchainConfig, "<init>", "(Lorg/eclipse/fx/drift/Vec2i;ILorg/eclipse/fx/drift/PresentationMode;Lorg/eclipse/fx/drift/TransferType;)V");
-	// RenderTarget
-	jclass cRenderTarget = env->FindClass("org/eclipse/fx/drift/RenderTarget");
-	mRenderTargetGetGLTexture = env->GetMethodID(cRenderTarget, "getGLTexture", "()I");
+	fSwapchainConfigSize = env->GetFieldID(cSwapchainConfig, "size", "Lorg/eclipse/fx/drift/Vec2i;");
+	fSwapchainConfigImageCount = env->GetFieldID(cSwapchainConfig, "imageCount", "I");
+	fSwapchainConfigPresentationMode = env->GetFieldID(cSwapchainConfig, "presentationMode", "Lorg/eclipse/fx/drift/PresentationMode;");
+	fSwapchainConfigTransferType = env->GetFieldID(cSwapchainConfig, "transferType", "Lorg/eclipse/fx/drift/TransferType;");
 	// Swapchain
 	jclass cSwapchain = env->FindClass("org/eclipse/fx/drift/Swapchain");
 	mSwapchainAcquire = env->GetMethodID(cSwapchain, "acquire", "()Lorg/eclipse/fx/drift/RenderTarget;");
 	// mSwapchainTryAcquire // TODO generics!?
 	mSwapchainPresent = env->GetMethodID(cSwapchain, "present", "(Lorg/eclipse/fx/drift/RenderTarget;)V");
 	mSwapchainDispose = env->GetMethodID(cSwapchain, "dispose", "()V");
+	mSwapchainGetConfig = env->GetMethodID(cSwapchain, "getConfig", "()Lorg/eclipse/fx/drift/SwapchainConfig;");
 	// Renderer
 	jclass cRenderer = env->FindClass("org/eclipse/fx/drift/Renderer");
 	mRendererGetSize = env->GetMethodID(cRenderer, "getSize", "()Lorg/eclipse/fx/drift/Vec2i;");
 	mRendererCreateSwapchain = env->GetMethodID(cRenderer, "createSwapchain", "(Lorg/eclipse/fx/drift/SwapchainConfig;)Lorg/eclipse/fx/drift/Swapchain;");
+	// GLRenderer
+	cGLRenderer = env->FindClass("org/eclipse/fx/drift/GLRenderer");
+	cGLRenderer = (jclass)env->NewGlobalRef(cGLRenderer);
+	mGLRendererGetGLTextureId = env->GetStaticMethodID(cGLRenderer, "getGLTextureId", "(Lorg/eclipse/fx/drift/RenderTarget;)I");
 }
 void driftfx::JNI::dispose(JNIEnv* env) {
 	// Vec2i
 	env->DeleteGlobalRef(cVec2i);
 	// SwapchainConfig
 	env->DeleteGlobalRef(cSwapchainConfig);
-	// RenderTarget
-	// (nothing to dispose)
 	// Swapchain
 	// (nothing to dispose)
 	// Renderer
 	// (nothing to dispose)
+	// GLRenderer
+	env->DeleteGlobalRef(cGLRenderer);
 }
 
 
@@ -90,8 +106,16 @@ jobject driftfx::JNI::convertSwapchainConfig(JNIEnv* env, SwapchainConfig swapch
 	return env->NewObject(cSwapchainConfig, mSwapchainConfigConstructor, size, imageCount, presentationMode, transferType);
 }
 
-jint driftfx::JNI::callRenderTargetGetGLTexture(JNIEnv* env, jobject renderTarget) {
-	return env->CallIntMethod(renderTarget, mRenderTargetGetGLTexture);
+driftfx::SwapchainConfig driftfx::JNI::convertSwapchainConfig(JNIEnv* env, jobject swapchainConfig) {
+	driftfx::SwapchainConfig config;
+
+	jobject size = env->GetObjectField(swapchainConfig, fSwapchainConfigSize);
+	config.size = convertVec2i(env, size);
+	config.imageCount = env->GetIntField(swapchainConfig, fSwapchainConfigImageCount);
+	jobject tt = env->GetObjectField(swapchainConfig, fSwapchainConfigTransferType);
+	// TODO map transfer type
+	config.transferType = nullptr;
+	return config;
 }
 
 jobject driftfx::JNI::callSwapchainAcquire(JNIEnv* env, jobject swapchain) {
@@ -111,21 +135,22 @@ void driftfx::JNI::callSwapchainDispose(JNIEnv* env, jobject swapchain) {
 	env->CallVoidMethod(swapchain, mSwapchainDispose);
 }
 
+jobject driftfx::JNI::callSwapchainGetConfig(JNIEnv* env, jobject swapchain) {
+	return env->CallObjectMethod(swapchain, mSwapchainGetConfig);
+}
+
+
+
 jobject driftfx::JNI::callRendererGetSize(JNIEnv* env, jobject renderer) {
-
-	
-
-
-	std::cout << "calling getSize on " << renderer << " with methodID " << mRendererGetSize << std::endl;
-	std::cout << " btw env = " << env << std::endl;
-	jobject result = env->CallObjectMethod(renderer, mRendererGetSize);
-	std::cout << " -> returning " << result << std::endl;
-	std::cout << std::flush;
-	return result;
+	return env->CallObjectMethod(renderer, mRendererGetSize);
 }
 
 jobject driftfx::JNI::callRendererCreateSwapchain(JNIEnv* env, jobject renderer, jobject swapchainConfig) {
 	return env->CallObjectMethod(renderer, mRendererCreateSwapchain, swapchainConfig);
+}
+
+jint driftfx::JNI::callGLRendererGetGLTextureId(JNIEnv* env, jobject renderTarget) {
+	return env->CallStaticIntMethod(cGLRenderer, mGLRendererGetGLTextureId, renderTarget);
 }
 
 driftfx::Renderer::~Renderer() {
@@ -137,10 +162,6 @@ driftfx::Renderer::~Renderer() {
 driftfx::RendererImpl::RendererImpl(JNIEnv* _env, jobject javaRenderer) {
 	this->env = _env;
 	this->javaInstance = javaRenderer;
-}
-
-jobject driftfx::RendererImpl::getJavaInstance() {
-	return javaInstance;
 }
 
 driftfx::Vec2i driftfx::RendererImpl::getSize() {
@@ -159,10 +180,6 @@ driftfx::Swapchain* driftfx::RendererImpl::createSwapchain(driftfx::SwapchainCon
 driftfx::SwapchainImpl::SwapchainImpl(JNIEnv* _env, jobject _javaInstance) {
 	this->env = _env;
 	this->javaInstance = _javaInstance;
-}
-
-jobject driftfx::SwapchainImpl::getJavaInstance() {
-	return javaInstance;
 }
 
 void driftfx::SwapchainImpl::present(driftfx::RenderTarget* target) {
@@ -186,24 +203,21 @@ driftfx::SwapchainImpl::~SwapchainImpl() {
 	driftfx::JNI::callSwapchainDispose(env, javaInstance);
 }
 
+driftfx::SwapchainConfig driftfx::SwapchainImpl::getConfig() {
+	jobject config = driftfx::JNI::callSwapchainGetConfig(env, javaInstance);
+	return driftfx::JNI::convertSwapchainConfig(env, config);
+}
+
 driftfx::RenderTargetImpl::RenderTargetImpl(JNIEnv* _env, jobject _javaInstance) {
 	this->env = _env;
 	this->javaInstance = _javaInstance;
 }
 
-jobject driftfx::RenderTargetImpl::getJavaInstance() {
-	return javaInstance;
-}
-
-int driftfx::RenderTargetImpl::getGLTexture() {
-	return (int) driftfx::JNI::callRenderTargetGetGLTexture(env, javaInstance);
-}
-
-
 driftfx::TransferTypeImpl::TransferTypeImpl(JNIEnv* _env, jobject _javaInstance) {
 	env = _env;
 	javaInstance = _javaInstance;
 }
+
 
 ::std::string driftfx::TransferTypeImpl::getId() {
 	return nullptr;
@@ -213,10 +227,20 @@ bool driftfx::TransferTypeImpl::isAvailable() {
 	return false;
 }
 
-jobject driftfx::TransferTypeImpl::getJavaInstance() {
+jobject driftfx::JNIObject::getJavaInstance() {
 	return javaInstance;
 }
+JNIEnv* driftfx::JNIObject::getJavaEnv() {
+	return env;
+}
 
+
+GLuint driftfx::GLRenderer::getGLTextureId(driftfx::RenderTarget* renderTarget) {
+
+	driftfx::RenderTargetImpl* targetImpl = (driftfx::RenderTargetImpl*) renderTarget;
+
+	return (GLuint) driftfx::JNI::callGLRendererGetGLTextureId(targetImpl->getJavaEnv(), targetImpl->getJavaInstance());
+}
 
 
 driftfx::Renderer* driftfx::initializeRenderer(JNIEnv* env, jobject javaRenderer) {

@@ -79,3 +79,11 @@ endif (LINUX)
 target_include_directories(driftfx PRIVATE ${IncludeDirectories})
 
 
+find_library(TEST_LIB driftfx)
+message("TEST_LIB: ${TEST_LIB}")
+
+message("Target driftfx: $<TARGET_FILE_DIR:driftfx>")
+
+add_custom_command(TARGET driftfx POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE_DIR:driftfx>/$<TARGET_FILE_NAME:driftfx> "${CMAKE_SOURCE_DIR}/../org.eclipse.fx.drift/src/main/resources/native/"
+	COMMENT "Copy driftfx shared lib to java project")

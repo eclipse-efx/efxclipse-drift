@@ -5,10 +5,7 @@ include_directories(${JNI_INCLUDE_DIRS})
 include_directories(${DRIFTFX_INCLUDE_DIRS})
 
 list(APPEND SourcesList SimpleColorSample)
-#list(APPEND SourcesList SimpleTriangleRenderer)
-#list(APPEND SourcesList SwapChainColorRenderer)
-#list(APPEND SourcesList SimpleColor)
-
+list(APPEND SourcesList SimpleTriangleSample)
 
 
 
@@ -64,3 +61,8 @@ target_include_directories(samples PRIVATE glew)
 set_property(TARGET samples PROPERTY POSITION_INDEPENDENT_CODE ON)
 	
 	
+add_custom_command(TARGET samples POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE_DIR:driftcpp>/$<TARGET_FILE_NAME:driftcpp> "${CMAKE_SOURCE_DIR}/../org.eclipse.fx.drift.samples.cpp/native/"
+	COMMENT "Copy driftcpp shared lib to java project"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE_DIR:samples>/$<TARGET_FILE_NAME:samples> "${CMAKE_SOURCE_DIR}/../org.eclipse.fx.drift.samples.cpp/native/"
+	COMMENT "Copy samples shared lib to java project")

@@ -51,7 +51,6 @@ HWND CreateOffscreenWindow(HINSTANCE hInstance) {
 bool initDone = false;
 
 void shittyInit() {
-	std::cout << "doing shitty init" << std::endl;
 	HINSTANCE hInstance = NULL;
 	ATOM cls = registerClass(hInstance);
 	HWND window = CreateOffscreenWindow(hInstance);

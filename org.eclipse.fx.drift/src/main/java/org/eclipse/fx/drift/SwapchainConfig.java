@@ -11,8 +11,22 @@ public class SwapchainConfig {
 	public SwapchainConfig(Vec2i size, int imageCount, PresentationMode presentationMode, TransferType transferType) {
 		this.size = size;
 		this.imageCount = imageCount;
-		this.presentationMode = presentationMode;
-		this.transferType = transferType;
+		this.presentationMode = check(presentationMode);
+		this.transferType = check(transferType);
 	}
 	
+	
+	private static final PresentationMode check(PresentationMode presentationMode) {
+		if (presentationMode == null) {
+			presentationMode = PresentationMode.MAILBOX;
+		}
+		return presentationMode;
+	}
+	
+	private static final TransferType check(TransferType transferType) {
+		if (transferType == null) {
+			transferType = StandardTransferTypes.MainMemory;
+		}
+		return transferType;
+	}
 }

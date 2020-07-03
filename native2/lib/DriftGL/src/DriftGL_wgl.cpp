@@ -154,8 +154,8 @@ bool wglDXSetResourceShareHandleNV(void* dxObject, HANDLE shareHandle) {
 	return pfnWglDXSetResourceShareHandleNV(dxObject, shareHandle);
 }
 
-bool Initialize() {
-	HINSTANCE hInstance = NULL;
+
+void doInitializeContextCreationPointers(HINSTANCE hInstance) {
 	ATOM cls = registerClass(hInstance);
 	HWND window = CreateDriftGLWindow(hInstance);
 	HDC hDC = GetDC(window);
@@ -184,20 +184,35 @@ bool Initialize() {
 	HGLRC dummyContext = wglCreateContext(hDC);
 	BOOL c = wglMakeCurrent(hDC, dummyContext);
 	if (!c) {
-		std::cout << " ! Could not make context " << dummyContext << " current" << std::endl;
-		// TODO error
+		// big error
 	}
-	pfnWglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC) wglGetProcAddress("wglChoosePixelFormatARB");
-	pfnWglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC) wglGetProcAddress("wglCreateContextAttribsARB");
+	pfnWglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
+	pfnWglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
 
 	wglMakeCurrent(NULL, NULL);
 	wglDeleteContext(dummyContext);
 	ReleaseDC(window, hDC);
 	DestroyWindow(window);
+}
 
-	window = CreateDriftGLWindow(hInstance);
-	hDC = GetDC(window);
+void InitializeContextCreationPointers(HINSTANCE hInstance) {
 
+	if (pfnWglChoosePixelFormatARB == 0) {
+
+		// we do this on a different thread to prevent changes to the calling thread's current gl context
+		std::thread initPointers(doInitializeContextCreationPointers, hInstance);
+		initPointers.join();
+
+	}
+
+}
+
+
+void doInitializeGLPointers(HINSTANCE hInstance) {
+	HWND window = CreateDriftGLWindow(hInstance);
+	HDC hDC = GetDC(window);
+
+	std::cout << "SetupPixelForm from Initialize" << std::endl;
 	SetupPixelFormat(hDC);
 	int attribList[] = {
 			WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
@@ -224,16 +239,16 @@ bool Initialize() {
 			}
 		}
 		return (void*)proc;
-	});
+		});
 
-	pfnWglDXOpenDeviceNV = (PFNWGLDXOPENDEVICENV) wglGetProcAddress("wglDXOpenDeviceNV");
-	pfnWglDXCloseDeviceNV = (PFNWGLDXCLOSEDEVICENV) wglGetProcAddress("wglDXCloseDeviceNV");
-	pfnWglDXRegisterObjectNV = (PFNWGLDXREGISTEROBJECTNV) wglGetProcAddress("wglDXRegisterObjectNV");
-	pfnWglDXUnregisterObjectNV = (PFNWGLDXUNREGISTEROBJECTNV) wglGetProcAddress("wglDXUnregisterObjectNV");
-	pfnWglDXObjectAccessNV = (PFNWGLDXOBJECTACCESSNV) wglGetProcAddress("wglDXObjectAccessNV");
-	pfnWglDXLockObjectsNV = (PFNWGLDXLOCKOBJECTSNV) wglGetProcAddress("wglDXLockObjectsNV");
-	pfnWglDXUnlockObjectsNV = (PFNWGLDXUNLOCKOBJECTSNV) wglGetProcAddress("wglDXUnlockObjectsNV");
-	pfnWglDXSetResourceShareHandleNV = (PFNWGLDXSETRESOURCESHAREHANDLENV) wglGetProcAddress("wglDXSetResourceShareHandleNV");
+	pfnWglDXOpenDeviceNV = (PFNWGLDXOPENDEVICENV)wglGetProcAddress("wglDXOpenDeviceNV");
+	pfnWglDXCloseDeviceNV = (PFNWGLDXCLOSEDEVICENV)wglGetProcAddress("wglDXCloseDeviceNV");
+	pfnWglDXRegisterObjectNV = (PFNWGLDXREGISTEROBJECTNV)wglGetProcAddress("wglDXRegisterObjectNV");
+	pfnWglDXUnregisterObjectNV = (PFNWGLDXUNREGISTEROBJECTNV)wglGetProcAddress("wglDXUnregisterObjectNV");
+	pfnWglDXObjectAccessNV = (PFNWGLDXOBJECTACCESSNV)wglGetProcAddress("wglDXObjectAccessNV");
+	pfnWglDXLockObjectsNV = (PFNWGLDXLOCKOBJECTSNV)wglGetProcAddress("wglDXLockObjectsNV");
+	pfnWglDXUnlockObjectsNV = (PFNWGLDXUNLOCKOBJECTSNV)wglGetProcAddress("wglDXUnlockObjectsNV");
+	pfnWglDXSetResourceShareHandleNV = (PFNWGLDXSETRESOURCESHAREHANDLENV)wglGetProcAddress("wglDXSetResourceShareHandleNV");
 
 	//std::cout << "Initialze OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 	wglMakeCurrent(NULL, NULL);
@@ -241,6 +256,23 @@ bool Initialize() {
 	wglDeleteContext(realContext);
 	ReleaseDC(window, hDC);
 	DestroyWindow(window);
+}
+
+void InitializeGLPointers(HINSTANCE hInstance) {
+
+	// we do this on a different thread to prevent changes to the calling thread's current gl context
+	std::thread initPointers(doInitializeGLPointers, hInstance);
+	initPointers.join();
+
+}
+
+
+bool Initialize() {
+	HINSTANCE hInstance = NULL;
+
+	InitializeContextCreationPointers(hInstance);
+
+	InitializeGLPointers(hInstance);
 
 	return true;
 }
@@ -274,6 +306,7 @@ Context* CreateContext(Context* sharedContext, int majorHint, int minorHint) {
 	}
 	//std::cout << " - hDC = " << ctx->hDC << std::endl;
 
+	std::cout << "SetupPixelForm from CreateContext" << std::endl;
 	SetupPixelFormat(ctx->hDC);
 
 // glfw context creation hints
@@ -351,6 +384,7 @@ Context* CreateSharedCompatContext(Context* sharedContext) {
 	}
 	//std::cout << " - hDC = " << ctx->hDC << std::endl;
 
+	std::cout << "SetupPixelForm from CreateSharedCompatContext" << std::endl;
 	SetupPixelFormat(ctx->hDC);
 
 	

@@ -11,46 +11,41 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
-import org.eclipse.fx.drift.PresentationMode;
 import org.eclipse.fx.drift.RenderTarget;
-import org.eclipse.fx.drift.TransferType;
-import org.eclipse.fx.drift.Vec2i;
+import org.eclipse.fx.drift.SwapchainConfig;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.transport.command.DisposeSwapchainCommand;
 import org.eclipse.fx.drift.internal.transport.command.PresentCommand;
 
-public class SimpleSwapChain implements BackSwapChain {
+public class SimpleSwapchain implements BackendSwapchain {
 
-	private UUID id;
-	
-	private Vec2i size;
-	private int imageCount;
-	private PresentationMode presentationMode;
-	private TransferType type;
+	private final UUID id;
+	private final Backend backend;
+	private final SwapchainConfig config;
 	
 	private Set<Image> images;
 	private Map<ImageData, Image> imageMap;
 	private BlockingQueue<Image> freeImages = new LinkedBlockingQueue<>();
 	
-	private Backend backend;
-	
 	private boolean disposed = false;
 	
-	public SimpleSwapChain(Backend backend, UUID id, Vec2i size, int imageCount, PresentationMode presentationMode, TransferType type) {
+	public SimpleSwapchain(Backend backend, UUID id, SwapchainConfig config) {
 		this.backend = backend;
 		this.id = id;
-		this.size = size;
-		this.imageCount = imageCount;
-		this.presentationMode = presentationMode;
-		this.type = type;
+		this.config = config;
+	}
+	
+	@Override
+	public SwapchainConfig getConfig() {
+		return config;
 	}
 	
 	public void allocate() {
 		synchronized (freeImages) {
 			images = new HashSet<>();
 			imageMap = new HashMap<>();
-			for (int number = 0; number < imageCount; number++) {
-				Image image = ImageFactory.createImage(number, size, type);
+			for (int number = 0; number < config.imageCount; number++) {
+				Image image = ImageFactory.createImage(number, config.size, config.transferType);
 				image.allocate();
 				images.add(image);
 				freeImages.add(image);

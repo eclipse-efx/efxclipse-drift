@@ -4,11 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.fx.drift.DriftFXSurface;
-import org.eclipse.fx.drift.PresentationMode;
 import org.eclipse.fx.drift.Renderer;
 import org.eclipse.fx.drift.Swapchain;
 import org.eclipse.fx.drift.SwapchainConfig;
-import org.eclipse.fx.drift.TransferType;
 import org.eclipse.fx.drift.Vec2i;
 import org.eclipse.fx.drift.internal.backend.Backend;
 import org.eclipse.fx.drift.internal.backend.BackendImpl;
@@ -52,17 +50,10 @@ public class RendererImpl implements Renderer {
 		return new Vec2i(x, y);
 	}
 	
-	@Override
-	public Swapchain createSwapChain(Vec2i size, int imageCount, PresentationMode presentationMode, TransferType type) {
-		if (presentationMode == null) {
-			presentationMode = PresentationMode.MAILBOX;
-		}
-		System.out.println("java createSwapChain(" + size + ", " + imageCount + ", " + presentationMode + ", " + type +")");
-		return backend.createSwapChain(size, imageCount, presentationMode, type);
-	}
 
 	@Override
 	public Swapchain createSwapchain(SwapchainConfig config) {
-		return createSwapChain(config.size, config.imageCount, config.presentationMode, config.transferType);
+		System.out.println("java createSwapchain(" + config +")");
+		return backend.createSwapchain(config);
 	}
 }

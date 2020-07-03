@@ -7,6 +7,11 @@
 
 #include "Export.h"
 
+
+#ifndef GLuint
+typedef unsigned int GLuint;
+#endif
+
 namespace driftfx {
 
 	struct Vec2i {
@@ -21,18 +26,6 @@ namespace driftfx {
 	};
 
 	class RenderTarget {
-	public:
-		virtual int getGLTexture() = 0;
-	};
-
-	class Swapchain {
-	public:
-		virtual RenderTarget* acquire() = 0;
-		virtual RenderTarget* tryAcquire() = 0;
-
-		virtual void present(RenderTarget* image) = 0;
-
-		virtual ~Swapchain() = 0;
 	};
 
 	struct SwapchainConfig {
@@ -41,11 +34,30 @@ namespace driftfx {
 		TransferType* transferType;
 	};
 
+	class Swapchain {
+	public:
+		virtual SwapchainConfig getConfig() = 0;
+		virtual RenderTarget* acquire() = 0;
+		virtual RenderTarget* tryAcquire() = 0;
+
+		virtual void present(RenderTarget* image) = 0;
+
+		virtual ~Swapchain() = 0;
+	};
+
+
+
 	class Renderer {
 	public:
 		virtual Swapchain* createSwapchain(SwapchainConfig config) = 0;
 		virtual Vec2i getSize() = 0;
 		virtual ~Renderer() = 0;
+	};
+
+	class GLRenderer {
+	public:
+		DRIFTCPP_EXPORT static GLuint getGLTextureId(RenderTarget* renderTarget);
+
 	};
 
 

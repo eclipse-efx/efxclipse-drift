@@ -7,6 +7,7 @@
 #include <thread>
 #include <mutex>
 
+#include <vector>
 
 #include <GL/glew.h>
 
@@ -14,11 +15,23 @@
 
 #include <DriftFX/driftcpp.h>
 
+namespace SimpleTriangleSample {
 
-namespace SimpleColorSample {
+	struct Color {
+		GLfloat red;
+		GLfloat green;
+		GLfloat blue;
+	};
+	struct Vertex {
+		GLfloat x;
+		GLfloat y;
+		GLfloat z;
+		Color color;
+	};
 
 	struct RendererInstance {
 		JavaVM* vm;
+		JNIEnv* env; 
 		jobject javaRenderer;
 		bool running;
 		std::mutex mutex;
@@ -31,13 +44,38 @@ namespace SimpleColorSample {
 
 
 		GLuint fb;
+		GLuint program;
+		GLuint rotID;
+
+		GLuint vaID;
+
 
 
 		int widths[10];
 		int heights[10];
 		int idx = 0;
+
+
+		float angle;
 	};
 
+
+	std::string loadResource(RendererInstance* instance, std::string resource) {
+		jclass cSimpleTriangleSample = instance->env->FindClass("org/eclipse/fx/drift/samples/cpp/SimpleTriangleSample");
+		jmethodID mSimpleTriangleSampleLoadResource = instance->env->GetStaticMethodID(cSimpleTriangleSample, "loadResource", "(Ljava/lang/String;)Ljava/lang/String;");
+
+		jstring name = instance->env->NewStringUTF(resource.c_str());
+
+		jstring javaContent = (jstring)instance->env->CallStaticObjectMethod(cSimpleTriangleSample, mSimpleTriangleSampleLoadResource, name);
+
+		instance->env->DeleteLocalRef(name);
+
+		const char* cContent = instance->env->GetStringUTFChars(javaContent, NULL);
+		std::string content(cContent);
+		instance->env->ReleaseStringUTFChars(javaContent, cContent);
+
+		return content;
+	}
 
 	void beforeLoop(RendererInstance* instance) {
 
@@ -50,9 +88,107 @@ namespace SimpleColorSample {
 		std::cout << "my context = " << minctx::IsContextCurrent(instance->glContext) << std::endl;
 
 		glGenFramebuffers(1, &instance->fb);
+
+		GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+		GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+
+		std::string VertexShaderCode = loadResource(instance, "Triangle.vertexshader");
+		std::string FragmentShaderCode = loadResource(instance, "Triangle.fragmentshader");
+		GLint Result = GL_FALSE;
+		int InfoLogLength;
+
+		// Compile Vertex Shader
+		char const* VertexSourcePointer = VertexShaderCode.c_str();
+		glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
+		glCompileShader(VertexShaderID);
+
+		// Check Vertex Shader
+		glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
+		glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+		if (InfoLogLength > 0) {
+			std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
+			glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
+			std::cout << (&VertexShaderErrorMessage[0]) << std::endl;
+		}
+
+		// Compile Fragment Shader
+		char const* FragmentSourcePointer = FragmentShaderCode.c_str();
+		glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
+		glCompileShader(FragmentShaderID);
+
+		// Check Fragment Shader
+		glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
+		glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+		if (InfoLogLength > 0) {
+			std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
+			glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
+			std::cout << &FragmentShaderErrorMessage[0] << std::endl;
+		}
+
+		// Link the program
+		std::cout << "Linking program" <<std::endl;
+		instance->program = glCreateProgram();
+		glAttachShader(instance->program, VertexShaderID);
+		glAttachShader(instance->program, FragmentShaderID);
+		glLinkProgram(instance->program);
+
+		// Check the program
+		glGetProgramiv(instance->program, GL_LINK_STATUS, &Result);
+		glGetProgramiv(instance->program, GL_INFO_LOG_LENGTH, &InfoLogLength);
+		if (InfoLogLength > 0) {
+			std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
+			glGetProgramInfoLog(instance->program, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+			std::cout << (&ProgramErrorMessage[0]) << std::endl;
+		}
+
+		glDetachShader(instance->program, VertexShaderID);
+		glDetachShader(instance->program, FragmentShaderID);
+
+		glDeleteShader(VertexShaderID);
+		glDeleteShader(FragmentShaderID);
+
+
+		instance->rotID = glGetUniformLocation(instance->program, "rot");
+
+
+		// vertex array
+		glGenVertexArrays(1, &instance->vaID);
+
+		static const Vertex data2[] = {
+			{  0.0f,   0.5f, 0.0f, {0.0f, 0.0f, 1.0f} },
+			{  0.45f, -0.5f, 0.0f, {0.0f, 1.0f, 0.0f} },
+			{ -0.45f, -0.5f, 0.0f, {1.0f, 0.0f, 0.0f} }
+		};
+
+		GLuint vboID;
+		glGenBuffers(1, &vboID);
+		glBindBuffer(GL_ARRAY_BUFFER, vboID);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(data2), data2, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		// build va
+		glBindVertexArray(instance->vaID);
+
+		glBindBuffer(GL_ARRAY_BUFFER, vboID);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(GLfloat)));
+
+		glBindVertexArray(0);
+
+		instance->angle = 0;
 	}
 
 	void afterLoop(RendererInstance* instance) {
+
+		glUseProgram(0);
+
+		glDeleteVertexArrays(1, &instance->vaID);
+
+		glDeleteProgram(instance->program);
 
 		glDeleteFramebuffers(1, &instance->fb);
 
@@ -145,9 +281,12 @@ namespace SimpleColorSample {
 
 		driftfx::RenderTarget* target = instance->swapchain->acquire();
 
+		auto cfg = instance->swapchain->getConfig();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, instance->fb);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, driftfx::GLRenderer::getGLTextureId(target), 0);
+
+		instance->angle += 0.1f;
 
 		checkFb();
 
@@ -173,6 +312,16 @@ namespace SimpleColorSample {
 		glDisable(GL_SCISSOR_TEST);
 
 
+		glViewport(0, 0, cfg.size.x, cfg.size.y);
+
+		glUseProgram(instance->program);
+		glUniform1f(instance->rotID, instance->angle);
+
+		glBindVertexArray(instance->vaID);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(0);
+
+
 		glFlush();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -183,10 +332,8 @@ namespace SimpleColorSample {
 	void mainLoop(RendererInstance* instance) {
 		std::cout << "Starting mainLoop for " << instance << std::endl;
 
-		JNIEnv* env;
-
 		// first we need to attach the thread to the jvm
-		jint stat = instance->vm->GetEnv((void**)&env, JNI_VERSION_1_6);
+		jint stat = instance->vm->GetEnv((void**)&instance->env, JNI_VERSION_1_6);
 		if (stat == JNI_EDETACHED) {
 			// attach
 			std::ostringstream os;
@@ -199,14 +346,14 @@ namespace SimpleColorSample {
 			memcpy(buf, os.str().c_str(), strSize);
 			args.name = buf;
 			args.group = NULL;
-			jint attachResult = instance->vm->AttachCurrentThreadAsDaemon((void**)&env, &args);
+			jint attachResult = instance->vm->AttachCurrentThreadAsDaemon((void**)&instance->env, &args);
 			if (attachResult != JNI_OK) {
 				std::cerr << "Could not attach thread to jvm!!" << std::endl;
 			}
 		}
 
 
-		instance->renderer = driftfx::initializeRenderer(env, instance->javaRenderer);
+		instance->renderer = driftfx::initializeRenderer(instance->env, instance->javaRenderer);
 
 		beforeLoop(instance);
 
@@ -246,39 +393,41 @@ namespace SimpleColorSample {
 		instance->mutex.unlock();
 		instance->thread.join();
 	}
+
+
+
 }
 
-
-extern "C" JNIEXPORT jlong JNICALL Java_org_eclipse_fx_drift_samples_cpp_SimpleColorSample_nInitialize(JNIEnv * env, jclass cls, jobject _renderer) {
+extern "C" JNIEXPORT jlong JNICALL Java_org_eclipse_fx_drift_samples_cpp_SimpleTriangleSample_nInitialize(JNIEnv * env, jclass cls, jobject _renderer) {
 	JavaVM* vm;
 	env->GetJavaVM(&vm);
 
-	auto instance = new SimpleColorSample::RendererInstance();
+	auto instance = new SimpleTriangleSample::RendererInstance();
 	instance->vm = vm;
 	instance->javaRenderer = env->NewGlobalRef(_renderer);
 
 	return (jlong) instance;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_samples_cpp_SimpleColorSample_nDispose(JNIEnv * env, jclass cls, jlong _instance) {
-	auto instance = (SimpleColorSample::RendererInstance*) _instance;
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_samples_cpp_SimpleTriangleSample_nDispose(JNIEnv * env, jclass cls, jlong _instance) {
+	auto instance = (SimpleTriangleSample::RendererInstance*) _instance;
 
 	std::cout << "nDispose" << std::endl;
 
 	delete instance;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_samples_cpp_SimpleColorSample_nStart(JNIEnv * env, jclass cls, jlong _instance) {
-	auto instance = (SimpleColorSample::RendererInstance*)_instance;
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_samples_cpp_SimpleTriangleSample_nStart(JNIEnv * env, jclass cls, jlong _instance) {
+	auto instance = (SimpleTriangleSample::RendererInstance*)_instance;
 
 	std::cout << "nStart" << std::endl;
 
-	SimpleColorSample::start(instance);
+	SimpleTriangleSample::start(instance);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_samples_cpp_SimpleColorSample_nStop(JNIEnv * env, jclass cls, jlong _instance) {
-	auto instance = (SimpleColorSample::RendererInstance*)_instance;
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_samples_cpp_SimpleTriangleSample_nStop(JNIEnv * env, jclass cls, jlong _instance) {
+	auto instance = (SimpleTriangleSample::RendererInstance*)_instance;
 
-	SimpleColorSample::stop(instance);
+	SimpleTriangleSample::stop(instance);
 	std::cout << "nStop" << std::endl;
 }

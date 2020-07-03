@@ -7,7 +7,9 @@ import java.util.Optional;
 import com.sun.prism.Texture;
 
 import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.NativeLoader;
 import org.eclipse.fx.drift.internal.QuantumRendererHelper;
+import org.eclipse.fx.drift.internal.jni.MemoryStack;
 import org.eclipse.fx.drift.internal.jni.win32.Win32;
 import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DDevice9Ex;
 
@@ -15,8 +17,8 @@ import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DDevice9Ex;
 public class Prism {
 
 	static {
-			System.loadLibrary("DriftGL");
-			System.loadLibrary("driftfx");
+		NativeLoader.loadLibrary(Prism.class, "DriftGL");
+		NativeLoader.loadLibrary(Prism.class, "driftfx");
 	}
 	
 	private static Class<?> cGraphicsPipeline;
