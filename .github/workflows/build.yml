@@ -9,6 +9,11 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Install Libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
+      if: runner.os == 'Linux'
     - uses: actions/setup-java@v1
       with:
         java-version: 11
