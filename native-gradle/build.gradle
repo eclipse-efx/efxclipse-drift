@@ -30,25 +30,11 @@ def getJNIPlatformDir() {
   }
 }
 
-
-
 def addJNIIncludes(compileTask) {
   def includeDir = Jvm.current().javaHome.toPath().resolve('include')
   def platformIncludeDir = includeDir.resolve(getJNIPlatformDir())
-  println("addJNIIncludes: ${includeDir}, ${platformIncludeDir}")
-
-  compileTask.compilerArgs.add("-I${includeDir}")
-  compileTask.compilerArgs.add("-I${platformIncludeDir}")
-}
-
-def getClassifier() {
-  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    "windows"
-  } else if (Os.isFamily(Os.FAMILY_MAC)) {
-     "macos"
-  } else if (Os.isFamily(Os.FAMILY_UNIX)) {
-     "linux"
-  }
+  compileTask.includes(includeDir)
+  compileTask.includes(platformIncludeDir)
 }
 
 def configureSourceTree(cppTree) {
@@ -78,10 +64,8 @@ def configureLinker(targetMachine, linkTask) {
     linkTask.linkerArgs.add("user32.lib")
     linkTask.linkerArgs.add("gdi32.lib")
   } else if (targetMachine.operatingSystemFamily.linux) {
-    println("TODO: linux")
     linkTask.linkerArgs.add('-lX11')
   } else if (targetMachine.operatingSystemFamily.macOs) {
-    println("TODO: mac")
     linkTask.linkerArgs.add('-framework OpenGL')
     linkTask.linkerArgs.add('-framework Cocoa')
     linkTask.linkerArgs.add('-framework IOSurface')
@@ -89,3 +73,6 @@ def configureLinker(targetMachine, linkTask) {
     
   }
 }
+
+
+  

@@ -25,29 +25,21 @@ library {
       from cppTree
     }
     
-    binaries.configureEach {
+    binaries.configureEach { binary ->
       def compileTask = compileTask.get()
       def linkTask = linkTask.get()
       
       configureToolchain(toolChain)
-      
-      println("targetMachine.operatingSystemFamily.linux: ${targetMachine.operatingSystemFamily.linux}")
-      println("targetMachine.operatingSystemFamily.macOs: ${targetMachine.operatingSystemFamily.macOs}")
-      println("targetMachine.operatingSystemFamily.windows: ${targetMachine.operatingSystemFamily.windows}")
-     
-     
       configureLinker(targetMachine, linkTask)
-      
       addJNIIncludes(compileTask)
       
-      if (toolChain instanceof VisualCpp) {
-        //compileTask.compilerArgs.add('/DBUILDING_DLL')
-        
-        compileTask.compilerArgs.add('/DDRIFTGL_WGL')
-        
-        addJNIIncludes(compileTask)
-
-      }
+      if (targetMachine.operatingSystemFamily.windows) { 
+        compileTask.macros.put("DRIFTGL_WGL", null)
+      } else if (targetMachine.operatingSystemFamily.macOs) {
+        compileTask.macros.put("DRIFTGL_CGL", null)
+      } else if (targetMachine.operatingSystemFamily.linux) {
+        compileTask.macros.put("DRIFTGL_GLX", null)
+      }  
     }
     
 }

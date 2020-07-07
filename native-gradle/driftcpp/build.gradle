@@ -18,14 +18,13 @@ library {
       //def linkTask = linkTask.get()
       
       addJNIIncludes(compileTask)
-      
-      if (toolChain instanceof VisualCpp) {
-        compileTask.compilerArgs.add('/DBUILDING_DLL')
-        
-        
-      }
     }
+}  
+
+tasks.withType(CppCompile).configureEach {
+  macros.put("BUILDING_DLL", null)
 }
+
 
 publishing {
     repositories {
