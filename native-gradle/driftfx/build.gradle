@@ -38,6 +38,8 @@ library {
      
       configureLinker(targetMachine, linkTask)
       
+      addJNIIncludes(compileTask)
+      
       if (toolChain instanceof VisualCpp) {
         //compileTask.compilerArgs.add('/DBUILDING_DLL')
         

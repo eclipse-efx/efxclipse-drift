@@ -16,10 +16,13 @@ library {
     binaries.configureEach {
       def compileTask = compileTask.get()
       //def linkTask = linkTask.get()
+      
+      addJNIIncludes(compileTask)
+      
       if (toolChain instanceof VisualCpp) {
         compileTask.compilerArgs.add('/DBUILDING_DLL')
         
-        addJNIIncludes(compileTask)
+        
       }
     }
 }
