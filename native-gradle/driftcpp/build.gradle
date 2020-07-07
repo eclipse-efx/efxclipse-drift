@@ -23,6 +23,7 @@ library {
 
 tasks.withType(CppCompile).configureEach {
   macros.put("BUILDING_DLL", null)
+  compilerArgs.add '-std=c++11'
 }
 
 

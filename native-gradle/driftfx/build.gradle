@@ -35,3 +35,7 @@ library {
     }
     
 }
+
+tasks.withType(CppCompile).configureEach {
+  compilerArgs.add '-std=c++11'
+}

@@ -93,6 +93,8 @@ tasks.withType(CppCompile).configureEach {
     // Define a compiler options
     //compilerArgs.add '-W3'
 
+    compilerArgs.add '-std=c++11'
+
     // Define toolchain-specific compiler options
     compilerArgs.addAll toolChain.map { toolChain ->
         if (toolChain in [ Gcc, Clang ]) {
