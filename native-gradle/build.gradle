@@ -11,7 +11,7 @@ allprojects {
 
 def getGitHash() {
   if (System.getenv("CI")) {
-    System.getenv("GITHUB_SHA_SHORT")
+    System.getenv("GITHUB_SHA")
   } else {
     getLocalGitHash()
   }
