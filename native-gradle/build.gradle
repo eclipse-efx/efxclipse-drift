@@ -22,7 +22,13 @@ import org.gradle.internal.jvm.Jvm
 
 def addJNIIncludes(compileTask) {
     compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include")
-    compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include/win32")
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+      compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include/win32")
+    } else if (Os.isFamily(Os.FAMILY_MAC)) {
+      compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include/darwin")
+    } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+      compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include/linux")
+    }
 }
 
 def getClassifier() {
