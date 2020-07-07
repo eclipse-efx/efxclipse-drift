@@ -48,6 +48,21 @@ def configureSourceTree(cppTree) {
   }
 }
 
+def createCppTree(proj) {
+  def tree = proj.fileTree('src')
+  if (Os.isFamily(Os.FAMILY_WINDOWS)) { 
+    tree.exclude '**/macos/*'
+    tree.exclude '**/linux/*'
+  } else if (Os.isFamily(Os.FAMILY_MAC)) {
+    tree.exclude '**/win32/*'
+    tree.exclude '**/linux/*'
+  } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+    tree.exclude '**/win32/*'
+    tree.exclude '**/macos/*'
+  }  
+  return tree
+}
+
 def configureToolchain(toolChain) {
   if (toolChain in [VisualCpp]) {
     println("configuring visual studio")

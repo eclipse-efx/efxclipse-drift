@@ -14,16 +14,7 @@ library {
       machines.macOS.x86_64
     ]
     
-    source {
-      def cppTree = project.fileTree('src')
-      cppTree.exclude '**/macos/*'
-      cppTree.exclude '**/linux/*'
-
-      configureSourceTree(cppTree)
-      //configureSourceTree(cppTree)
-      
-      from cppTree
-    }
+    source { from createCppTree(project) }
     
     binaries.configureEach { binary ->
       def compileTask = compileTask.get()
