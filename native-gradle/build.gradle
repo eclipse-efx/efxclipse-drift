@@ -20,15 +20,25 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.nativeplatform.platform.OperatingSystem
 import org.gradle.internal.jvm.Jvm
 
+def getJNIPlatformDir() {
+  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    'win32'
+  } else if (Os.isFamily(Os.FAMILY_MAC)) {
+    'darwin'
+  } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+    'linux'
+  }
+}
+
+
+
 def addJNIIncludes(compileTask) {
-    compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include")
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-      compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include/win32")
-    } else if (Os.isFamily(Os.FAMILY_MAC)) {
-      compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include/darwin")
-    } else if (Os.isFamily(Os.FAMILY_UNIX)) {
-      compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include/linux")
-    }
+  def includeDir = Jvm.current().javaHome.toPath().resolve('include')
+  def platformIncludeDir = includeDir.resolve(getJNIPlatformDir())
+  println("addJNIIncludes: ${includeDir}, ${platformIncludeDir}")
+
+  compileTask.compilerArgs.add("-I${includeDir}")
+  compileTask.compilerArgs.add("-I${platformIncludeDir}")
 }
 
 def getClassifier() {
