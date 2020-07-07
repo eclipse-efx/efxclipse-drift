@@ -82,10 +82,10 @@ def configureLinker(targetMachine, linkTask) {
   } else if (targetMachine.operatingSystemFamily.linux) {
     linkTask.linkerArgs.add('-lX11')
   } else if (targetMachine.operatingSystemFamily.macOs) {
-    linkTask.linkerArgs.add('-framework OpenGL')
-    linkTask.linkerArgs.add('-framework Cocoa')
-    linkTask.linkerArgs.add('-framework IOSurface')
-    linkTask.linkerArgs.add('-framework CoreFoundation')
+    linkTask.linkerArgs.addAll('-framework', 'OpenGL')
+    linkTask.linkerArgs.addAll('-framework', 'Cocoa')
+    linkTask.linkerArgs.addAll('-framework', 'IOSurface')
+    linkTask.linkerArgs.addAll('-framework', 'CoreFoundation')
     
   }
 }

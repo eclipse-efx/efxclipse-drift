@@ -14,8 +14,7 @@
 #include <IOSurface/IOSurface.h>
 #include <OpenGL/CGLCurrent.h>
 #include <OpenGL/OpenGL.h>
-
-#include "cgl_context.h"
+#include <objc/runtime.h>
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_eclipse_fx_drift_internal_jni_macos_MacOS_callCreateIOSurface(JNIEnv *env, jclass cls,
     jint _width, jint _height) {
@@ -90,5 +89,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_jni_macos_M
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_org_eclipse_fx_drift_internal_jni_macos_MacOS_callGetCGLContextObjFromNSJContext(JNIEnv *env, jclass cls, jlong nsJContext) {
-    return (jlong) getCGLContextObj((void*) nsJContext);
+    jlong value;
+    object_getInstanceVariable((objc_object*) nsJContext, "CGLContextObj", (void**) &value);
+    return value;
+
+//    return (jlong) getCGLContextObj((void*) nsJContext);
 }
