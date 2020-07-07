@@ -17,6 +17,6 @@ jobs:
       with:
         build-root-directory: native-gradle
         wrapper-directory: native-gradle
-        arguments: publish
+        arguments: -i publish
 
         

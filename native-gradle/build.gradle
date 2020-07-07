@@ -79,7 +79,13 @@ def configureLinker(targetMachine, linkTask) {
     linkTask.linkerArgs.add("gdi32.lib")
   } else if (targetMachine.operatingSystemFamily.linux) {
     println("TODO: linux")
+    linkTask.linkerArgs.add('-lX11')
   } else if (targetMachine.operatingSystemFamily.macOs) {
     println("TODO: mac")
+    linkTask.linkerArgs.add('-framework OpenGL')
+    linkTask.linkerArgs.add('-framework Cocoa')
+    linkTask.linkerArgs.add('-framework IOSurface')
+    linkTask.linkerArgs.add('-framework CoreFoundation')
+    
   }
 }
