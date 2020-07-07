@@ -7,11 +7,7 @@
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<parent>
-		<groupId>at.bestsolution.efxclipse.rt</groupId>
-		<artifactId>at.bestsolution.efxclipse.rt.release</artifactId>
-		<version>3.4.1</version>
-	</parent>
+
 
 	<properties>
 		<osgi.qualifier>${maven.build.timestamp}</osgi.qualifier>
@@ -34,7 +30,7 @@
 	</modules>
 
 	<repositories>
-		<repository>
+		<!-- repository>
 			<name>BestSolution e(fx)clipse releases</name>
 			<id>efxclipse-releases</id>
 			<url>http://maven.bestsolution.at/efxclipse-releases/</url>
@@ -46,10 +42,10 @@
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
-		</repository>
+		</repository -->
 	</repositories>
 	<pluginRepositories>
-		<pluginRepository>
+		<!-- pluginRepository>
 			<id>efxclipse-releases</id>
 			<url>http://maven.bestsolution.at/efxclipse-releases/</url>
 		</pluginRepository>
@@ -59,13 +55,13 @@
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
-		</pluginRepository>
+		</pluginRepository -->
 	</pluginRepositories>
 
 	<build>
 		<pluginManagement>
 			<plugins>
-				<plugin>
+				<!-- plugin>
 					<groupId>at.bestsolution</groupId>
 					<artifactId>maven-osgi-exec-plugin</artifactId>
 					<version>0.0.2-SNAPSHOT</version>
@@ -74,7 +70,7 @@
 					<groupId>at.bestsolution</groupId>
 					<artifactId>maven-osgi-package-plugin</artifactId>
 					<version>0.0.2-SNAPSHOT</version>
-				</plugin>
+				</plugin-->
 			</plugins>
 		</pluginManagement>
 
