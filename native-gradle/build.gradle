@@ -6,7 +6,24 @@ plugins {
 
 allprojects {
   group = 'org.eclipse.fx.drift'
-  version = '1.0.0.' + getIntegrationTimestamp()
+  version = '1.0.0.' + getGitHash()
+}
+
+def getGitHash() {
+  if (System.getenv("CI")) {
+    System.getenv("GITHUB_SHA_SHORT")
+  } else {
+    getLocalGitHash()
+  }
+}
+
+def getLocalGitHash() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
 }
 
 def getIntegrationTimestamp() {
