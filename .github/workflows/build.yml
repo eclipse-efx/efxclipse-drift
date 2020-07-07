@@ -55,7 +55,7 @@ jobs:
         cp native-repo/org/eclipse/fx/drift/driftfx_release_macos/1.0.0.$GITHUB_SHA/driftfx_release_macos-1.0.0.$GITHUB_SHA.dylib org.eclipse.fx.drift/native/libdriftfx.dylib
         cp native-repo/org/eclipse/fx/drift/driftcpp_release_macos/1.0.0.$GITHUB_SHA/driftcpp_release_macos-1.0.0.$GITHUB_SHA.dylib org.eclipse.fx.drift/native/libdriftcpp.dylib
         cp native-repo/org/eclipse/fx/drift/driftfx_release_linux/1.0.0.$GITHUB_SHA/driftfx_release_linux-1.0.0.$GITHUB_SHA.so org.eclipse.fx.drift/native/libdriftfx.so
-        cp native-repo/org/eclipse/fx/drift/driftcpp_release_linux/1.0.0.$GITHUB_SHA/driftfx_release_linux-1.0.0.$GITHUB_SHA.so org.eclipse.fx.drift/native/libdriftcpp.so
+        cp native-repo/org/eclipse/fx/drift/driftcpp_release_linux/1.0.0.$GITHUB_SHA/driftcpp_release_linux-1.0.0.$GITHUB_SHA.so org.eclipse.fx.drift/native/libdriftcpp.so
     - name: Setup Java 11
       uses: actions/setup-java@v1
       with:
