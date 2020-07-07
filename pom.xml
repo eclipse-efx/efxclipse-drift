@@ -28,20 +28,9 @@
 		<module>org.eclipse.fx.drift.java8</module>
 		<module>org.eclipse.fx.drift.java11</module>
 		<module>org.eclipse.fx.drift.mr</module>
-		<module>org.eclipse.fx.drift.feature</module>
-		
-		
-		<module>org.eclipse.fx.drift.samples</module>
-		<module>org.eclipse.fx.drift.samples.cpp</module>
 		
 
-		<module>org.eclipse.fx.drift.samples.feature</module>
-		
-		<module>org.eclipse.fx.drift.updatesite</module>
 
-		
-
-		<module>org.eclipse.fx.drift.samples.lwjgl</module>
 	</modules>
 
 	<repositories>

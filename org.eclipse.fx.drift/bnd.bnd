@@ -8,14 +8,18 @@ Import-Package: \
  !com.sun.javafx.* \
  *
  
-# Include-Resource: \
-# native/driftfx.dll=native/driftfx.dll, \
-# native/libdriftfx.so=native/libdriftfx.so, \
-# native/libdriftfx.dylib=native/libdriftfx.dylib
+Include-Resource: \
+ native/driftfx.dll=native/driftfx.dll, \
+ native/libdriftfx.so=native/libdriftfx.so, \
+ native/libdriftfx.dylib=native/libdriftfx.dylib, \
+ native/driftcpp.dll=native/driftcpp.dll, \
+ native/libdriftcpp.so=native/libdriftfx.so, \
+ native/libdriftcpp.dylib=native/libdriftcpp.dylib
  
 Bundle-NativeCode: \
  native/driftfx.dll;osname=Win32;processor=x86-64, \
- native/DriftGL.dll;osname=Win32;processor=x86-64
-#, \
-# native/libdriftfx.so;osname=Linux;processor=x86-64, \
-# native/libdriftfx.dylib;osname=MacOSX;processor=x86-64
+ native/driftcpp.dll;osname=Win32;processor=x86-64, \
+ native/libdriftfx.so;osname=Linux;processor=x86-64, \
+ native/libdriftcpp.so;osname=Linux;processor=x86-64, \
+ native/libdriftfx.dylib;osname=MacOSX;processor=x86-64, \
+ native/libdriftcpp.dylib;osname=MacOSX;processor=x86-64
