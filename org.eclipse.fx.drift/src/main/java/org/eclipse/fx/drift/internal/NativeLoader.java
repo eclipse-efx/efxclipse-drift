@@ -9,25 +9,26 @@ import java.nio.file.Paths;
 
 public class NativeLoader {
 
-	 private static String OS = null;
-	   public static String getOsName()
-	   {
-	      if(OS == null) { OS = System.getProperty("os.name"); }
-	      return OS;
-	   }
-	   public static boolean isWindows()
-	   {
-	      return getOsName().startsWith("Windows");
-	   }
+	private static String OS = null;
 
-	   public static boolean isLinux() {
-		   return getOsName().contains("linux");
-	   }
-	   
-	   public static boolean isMacOs() {
-		   return getOsName().contains("MACOS");
-	   }
-	
+	public static String getOsName() {
+		if (OS == null) {
+			OS = System.getProperty("os.name");
+		}
+		return OS;
+	}
+
+	public static boolean isWindows() {
+		return getOsName().toLowerCase().contains("windows");
+	}
+
+	public static boolean isLinux() {
+		return getOsName().toLowerCase().contains("linux");
+	}
+
+	public static boolean isMacOs() {
+		return getOsName().toLowerCase().contains("macos");
+	}
 	
 	/*package*/ static boolean osgi = false;
 	
