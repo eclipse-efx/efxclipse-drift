@@ -1,0 +1,69 @@
+plugins {
+  id 'cpp-library'
+  id 'xcode'
+  id 'visual-studio'
+}
+
+allprojects {
+  group = 'org.eclipse.fx.drift'
+  version = '1.0.0.' + getIntegrationTimestamp()
+}
+
+def getIntegrationTimestamp() {
+// TODO use some CI variable as build timesamp
+    def date = new Date()
+    def formattedDate = date.format('yyyyMMddHHmmss')
+    return 'I' + formattedDate
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.nativeplatform.platform.OperatingSystem
+import org.gradle.internal.jvm.Jvm
+
+def addJNIIncludes(compileTask) {
+    compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include")
+    compileTask.compilerArgs.add("-I${Jvm.current().javaHome}/include/win32")
+}
+
+def getClassifier() {
+  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    "windows"
+  } else if (Os.isFamily(Os.FAMILY_MAC)) {
+     "macos"
+  } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+     "linux"
+  }
+}
+
+def configureSourceTree(cppTree) {
+
+  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    println("windows")
+  } else if (Os.isFamily(Os.FAMILY_MAC)) {
+     println("mac")
+  } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+     println("linux")
+  }
+}
+
+def configureToolchain(toolChain) {
+  if (toolChain in [VisualCpp]) {
+    println("configuring visual studio")
+  }
+  if (toolChain in [Gcc]) {
+    println("configuring gcc")
+  }
+}
+
+def configureLinker(targetMachine, linkTask) {
+  if (targetMachine.operatingSystemFamily.windows) {
+    linkTask.linkerArgs.add("opengl32.lib")
+    linkTask.linkerArgs.add("d3d9.lib")
+    linkTask.linkerArgs.add("user32.lib")
+    linkTask.linkerArgs.add("gdi32.lib")
+  } else if (targetMachine.operatingSystemFamily.linux) {
+    println("TODO: linux")
+  } else if (targetMachine.operatingSystemFamily.macOs) {
+    println("TODO: mac")
+  }
+}

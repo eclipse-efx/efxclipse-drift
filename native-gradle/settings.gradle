@@ -1,0 +1,3 @@
+rootProject.name = 'DriftFX'
+include 'driftfx'
+include 'driftcpp'

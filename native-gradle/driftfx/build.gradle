@@ -1,0 +1,51 @@
+plugins {
+  id 'cpp-library'
+}
+
+
+
+library {
+
+    linkage = [ Linkage.SHARED ]
+    
+    targetMachines = [
+      machines.linux.x86_64,
+      machines.windows.x86_64,
+      machines.macOS.x86_64
+    ]
+    
+    source {
+      def cppTree = project.fileTree('src')
+      cppTree.exclude '**/macos/*'
+      cppTree.exclude '**/linux/*'
+
+      configureSourceTree(cppTree)
+      //configureSourceTree(cppTree)
+      
+      from cppTree
+    }
+    
+    binaries.configureEach {
+      def compileTask = compileTask.get()
+      def linkTask = linkTask.get()
+      
+      configureToolchain(toolChain)
+      
+      println("targetMachine.operatingSystemFamily.linux: ${targetMachine.operatingSystemFamily.linux}")
+      println("targetMachine.operatingSystemFamily.macOs: ${targetMachine.operatingSystemFamily.macOs}")
+      println("targetMachine.operatingSystemFamily.windows: ${targetMachine.operatingSystemFamily.windows}")
+     
+     
+      configureLinker(targetMachine, linkTask)
+      
+      if (toolChain instanceof VisualCpp) {
+        //compileTask.compilerArgs.add('/DBUILDING_DLL')
+        
+        compileTask.compilerArgs.add('/DDRIFTGL_WGL')
+        
+        addJNIIncludes(compileTask)
+
+      }
+    }
+    
+}

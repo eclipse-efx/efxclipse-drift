@@ -1,0 +1,35 @@
+plugins {
+  id 'cpp-library'
+  id 'maven-publish'
+}
+
+
+library {
+    linkage =  [ Linkage.SHARED ]
+    
+    targetMachines = [
+      machines.linux.x86_64,
+      machines.windows.x86_64,
+      machines.macOS.x86_64
+    ]
+    
+    binaries.configureEach {
+      def compileTask = compileTask.get()
+      //def linkTask = linkTask.get()
+      if (toolChain instanceof VisualCpp) {
+        compileTask.compilerArgs.add('/DBUILDING_DLL')
+        
+        addJNIIncludes(compileTask)
+      }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            url = '../repo'
+        }
+    }
+
+      
+}
