@@ -18,7 +18,7 @@
 
 #include "D3DContext.h"
 
-#include "JNIHelper.h"
+#include "../JNIHelper.h"
 
 using namespace driftgl;
 
