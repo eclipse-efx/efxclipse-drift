@@ -89,5 +89,19 @@ def configureLinker(targetMachine, linkTask) {
   }
 }
 
+tasks.withType(CppCompile).configureEach {
+    // Define a compiler options
+    //compilerArgs.add '-W3'
+
+    // Define toolchain-specific compiler options
+    compilerArgs.addAll toolChain.map { toolChain ->
+        if (toolChain in [ Gcc, Clang ]) {
+            return ['-std=c++11']
+        } else if (toolChain in VisualCpp) {
+            return []
+        }
+        return []
+    }
+}
 
   

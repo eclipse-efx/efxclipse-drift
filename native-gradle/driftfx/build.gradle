@@ -14,7 +14,7 @@ library {
       machines.macOS.x86_64
     ]
     
-    source { from createCppTree(project) }
+    source.from createCppTree(project)
     
     binaries.configureEach { binary ->
       def compileTask = compileTask.get()
@@ -28,6 +28,7 @@ library {
         compileTask.macros.put("DRIFTGL_WGL", null)
       } else if (targetMachine.operatingSystemFamily.macOs) {
         compileTask.macros.put("DRIFTGL_CGL", null)
+        compileTask.macros.put("GL_SILENCE_DEPRECATION", null)
       } else if (targetMachine.operatingSystemFamily.linux) {
         compileTask.macros.put("DRIFTGL_GLX", null)
       }  
