@@ -49,9 +49,14 @@ jobs:
         java-package: jdk+fx
     - name: Store Java 1.8 Home
       run: echo ::set-env name=JAVA_HOME_8::$JAVA_HOME
+    - name: Download natives
+      uses: actions/download-artifact@v1
+      with:
+        name: native-repo
+        path: native-repo
     - name: Copy natives to source tree
       run: |
-        mkdir org.eclipse.fx.drift/src/main/resources/native
+        mkdir -p org.eclipse.fx.drift/src/main/resources/native
         cp native-repo/org/eclipse/fx/drift/driftfx_release_windows/1.0.0.$GITHUB_SHA/driftfx_release_windows-1.0.0.$GITHUB_SHA.dll org.eclipse.fx.drift/src/main/resources/native/driftfx.dll
         cp native-repo/org/eclipse/fx/drift/driftcpp_release_windows/1.0.0.$GITHUB_SHA/driftcpp_release_windows-1.0.0.$GITHUB_SHA.dll org.eclipse.fx.drift/src/main/resources/native/driftcpp.dll
         cp native-repo/org/eclipse/fx/drift/driftfx_release_macos/1.0.0.$GITHUB_SHA/driftfx_release_macos-1.0.0.$GITHUB_SHA.dylib org.eclipse.fx.drift/src/main/resources/native/libdriftfx.dylib
