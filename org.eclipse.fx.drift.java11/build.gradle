@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id 'org.openjfx.javafxplugin' version '0.0.8'
+}
+
+javafx {
+    version = "11.0.2"
+    modules = [ 'javafx.graphics' ]
+}
+
+
+dependencies {
+    implementation project(':org.eclipse.fx.drift')
+//    implementation 'org.openjfx:javafx-graphics:11.0.2'	
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['--release', '11'])
+//    options.compilerArgs.addAll(['--add-exports', 'javafx.base/com.sun.javafx.geom=ALL-UNNAMED'])
+    options.fork = true
+    options.forkOptions.executable = getJava11()  
+}

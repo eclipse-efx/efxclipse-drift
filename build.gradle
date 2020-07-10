@@ -1,0 +1,54 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+}
+
+def revision = System.getProperty("revision")
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+
+}
+
+
+def getJava8() {
+	"${System.getenv('JAVA_HOME_8')}/bin/javac"
+}
+
+def getJava11() {
+	"${System.getenv('JAVA_HOME_11')}/bin/javac"
+}
+
+subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
+
+task buildMrJar(type: Jar, dependsOn: subprojects.tasks['classes']) {
+    archiveBaseName = 'org.eclipse.fx.drift'
+
+    from project(':org.eclipse.fx.drift').sourceSets.main.output
+    from project(':org.eclipse.fx.drift.java8').sourceSets.main.output
+
+    into('META-INF/versions/11') {
+        from project(':org.eclipse.fx.drift.java11').sourceSets.main.output
+    }
+
+    // manual header
+    manifest {
+        attributes(
+                "Manifest-Version": "1.0",
+                'Bundle-ManifestVersion': '2',
+                'Bundle-SymbolicName': 'org.eclipse.fx.drift',
+                'Bundle-Version': "${revision}",
+                "Multi-Release": true,
+                'Export-Package': "org.eclipse.fx.drift;version=${revision},org.eclipse.fx.drift.impl;version=${revision}",
+                'Import-Package': '',
+                'Bundle-Activator': 'org.eclipse.fx.drift.internal.OSGiActivator',
+                'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/driftcpp.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftcpp.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64,native/libdriftcpp.dylib;osname=MacOSX;processor=x86-64'
+
+        )
+    }
+}

@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+
+dependencies {
+    compileOnly 'org.osgi:org.osgi.core:6.0.0'
+}
+
+compileJava {
+    sourceCompatibility = 8
+    targetCompatibility = 8
+	options.encoding = 'UTF-8'
+	options.fork = true
+	options.forkOptions.executable = getJava8()    
+}

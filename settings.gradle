@@ -1,0 +1,5 @@
+rootProject.name = 'driftfx'
+
+include 'org.eclipse.fx.drift'
+include 'org.eclipse.fx.drift.java8'
+include 'org.eclipse.fx.drift.java11'
