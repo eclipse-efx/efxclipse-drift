@@ -208,6 +208,26 @@ def signFile(infile, outfile) {
 
 }
 
+task signJarFiles() {
+    dependsOn unzipGithubArtifact
+    doLast {
+        def sourceFile = "$buildDir/unsigned/org.eclipse.fx.drift.jar"
+        def targetFile = "$buildDir/signed/org.eclipse.fx.drift.jar"
+
+        mkdir "$buildDir/signed"
+
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'curl', '-sS', '-o', targetFile, '-F', "file=@$sourceFile", 'http://build.eclipse.org:31338/sign'
+            standardOutput = stdout
+        }
+
+        println "${new File(targetFile)}"
+     
+    }
+
+}
+
 import org.apache.http.*
 import org.apache.http.client.*
 import org.apache.http.client.methods.*
@@ -215,7 +235,7 @@ import org.apache.http.impl.client.*
 import org.apache.http.entity.mime.*
 import org.apache.http.entity.mime.content.*
 
-task signJarFiles() {
+task signJarFilesFoo() {
     dependsOn unzipGithubArtifact
     doLast {
 
@@ -309,7 +329,9 @@ def githubDownloadArtifact(url, filename, githubToken) {
     .url(url)
     .build()
     def response = client.newCall(request).execute()
-    new File( filename ).withOutputStream { out -> 
+    def target = File( filename )
+    if (target.getParent().exists)
+    new target.withOutputStream { out -> 
         response.body.byteStream().with { inStream ->
             out << inStream
             inStream.close()
@@ -324,10 +346,10 @@ task notifyJenkins() {
         def githubToken = System.getenv('GITHUB_ACCESS_TOKEN')
 
         def request = new Request.Builder()
-        .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId")
+        .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId&GIT_SHA=${getGitHash()}")
         .build()
         def response = client.newCall(request).execute()
-        println response
+        println "notify jenkins: ${response.code}"
     }
 }
 

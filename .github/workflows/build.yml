@@ -73,3 +73,6 @@ jobs:
     - uses: eskatos/gradle-command-action@v1
       with:
         arguments: notifyJenkins
+      env:
+        GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+        JENKINS_ACCESS_TOKEN: ${{secrets.JENKINS_ACCESS_TOKEN }}
