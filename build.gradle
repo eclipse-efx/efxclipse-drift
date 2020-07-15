@@ -129,6 +129,7 @@ def getJava11() {
 	"${System.getenv('JAVA_HOME_11')}/bin/javac"
 }
 
+def releaseTag = getReleaseTag()
 def version = getVersion()
 def qualifier = getQualifier()
 def fullVersion = "${version}-${qualifier}"
@@ -365,6 +366,59 @@ task notifyJenkins() {
         def response = client.newCall(request).execute()
         println "notify jenkins: ${response.code}"
     }
+}
+
+task deployUpdateSite() {
+    dependsOn updateSite
+    doLast {
+        def remoteHost = "genie.efxclipse@projects-storage.eclipse.org"
+        def remoteDirectory = "/home/data/httpd/download.eclipse.org/efxclipse/"
+
+        def target = ""
+        if (releaseTag != null) {
+            target = "$remoteDirectory/driftfx/$releaseTag"
+        } else {
+            target = "$remoteDirectory/driftfx/nightly/$qualifier"
+        }
+
+        // create update site directory
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'ssh', remoteHost, 'mkdir', target
+            standardOutput = stdout
+        }
+        println stdout.toString().trim()
+
+        // copy update site
+        stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'scp', '-r', 'build/updatesite/*', "$remoteHost:$target"
+            standardOutput = stdout
+        }
+        println stdout.toString().trim()
+    }
+}
+
+task createDistribution(type: Zip) {
+    dependsOn updateSiteZip
+
+    from file("$buildDir/updatesite.zip")
+
+    into('include') {
+        from "native-gradle/driftcpp/src/main/public"
+    }
+
+    into('libs/debug') {
+        from fileTree("native-repo/org/eclipse/fx/drift/driftcpp_debug_windows") {
+            include "**/*.dll"
+            include "*/*.lib"
+            eachFile { path = "libs/$name" } // flatten into libs
+            includeEmptyDirs = false
+        }
+    }
+
+    archiveBaseName = "dist"
+    archiveAppendix = "$fullVersion"
 }
 
 task testghrel2 {
