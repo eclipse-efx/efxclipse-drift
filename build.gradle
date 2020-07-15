@@ -142,7 +142,9 @@ task buildMrJar(type: Jar, dependsOn: [
 ]) {
     archiveBaseName = 'org.eclipse.fx.drift'
 
-    from project(':org.eclipse.fx.drift').sourceSets.main.output
+    from( project(':org.eclipse.fx.drift').sourceSets.main.output ) {
+        exclude '**/DriftFXSurface.class'
+    }
     from project(':org.eclipse.fx.drift.java8').sourceSets.main.output
 
     into('META-INF/versions/11') {
