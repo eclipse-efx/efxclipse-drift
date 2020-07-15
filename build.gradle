@@ -392,7 +392,7 @@ task deployUpdateSite() {
         // copy update site
         stdout = new ByteArrayOutputStream()
         exec {
-            commandLine 'scp', '-r', 'build/updatesite/*', "$remoteHost:$target"
+            commandLine 'scp', '-r', 'build/updatesite/features', 'build/updatesite/plugins', 'build/updatesite/content.jar', 'build/updatesite/artifacts.jar', "$remoteHost:$target"
             standardOutput = stdout
         }
         println stdout.toString().trim()
