@@ -291,11 +291,11 @@ ext.client = new OkHttpClient()
 
 def githubGetArtifacts(owner, repo, runId, githubToken) {
     def JSON = MediaType.get("application/json; charset=utf-8")
-        def request = new Request.Builder()
-        .header("Authorization", "token $githubToken")
-        .header("Content-Type", "application/json")
-        .url("https://api.github.com/repos/$owner/$repo/actions/runs/$runId/artifacts")
-        .build()
+    def request = new Request.Builder()
+    .header("Authorization", "token $githubToken")
+    .header("Content-Type", "application/json")
+    .url("https://api.github.com/repos/$owner/$repo/actions/runs/$runId/artifacts")
+    .build()
 
     def response = client.newCall(request).execute()
 
@@ -316,6 +316,19 @@ def githubDownloadArtifact(url, filename, githubToken) {
     }
 }
 
+task notifyJenkins() {
+    doLast {
+        def jenkinsToken = System.getenv("JENKINS_ACCESS_TOKEN")
+        def runId = System.getenv('GITHUB_RUN_ID')
+        def githubToken = System.getenv('GITHUB_ACCESS_TOKEN')
+        
+        def request = new Request.Builder()
+        .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId")
+        .build()
+        def response = client.newCall(request).execute()
+        println response
+    }
+}
 
 task testghrel2 {
     doLast {

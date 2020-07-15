@@ -70,3 +70,6 @@ jobs:
       with:
         name: artifact-unsigned
         path: build/libs/org.eclipse.fx.drift.jar
+    - uses: eskatos/gradle-command-action@v1
+      with:
+        arguments: notifyJenkins
