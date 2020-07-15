@@ -384,7 +384,7 @@ task deployUpdateSite() {
         // create update site directory
         def stdout = new ByteArrayOutputStream()
         exec {
-            commandLine 'ssh', remoteHost, 'mkdir', target
+            commandLine 'ssh', remoteHost, 'mkdir', '-p', target
             standardOutput = stdout
         }
         println stdout.toString().trim()
