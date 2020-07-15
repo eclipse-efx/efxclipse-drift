@@ -143,7 +143,8 @@ task buildMrJar(type: Jar, dependsOn: [
     archiveBaseName = 'org.eclipse.fx.drift'
 
     from( project(':org.eclipse.fx.drift').sourceSets.main.output ) {
-        exclude '**/DriftFXSurface.class'
+        exclude 'org/eclipse/fx/drift/DriftFXSurface.class'
+        exclude 'org/eclipse/fx/drift/internal/DriftUtil.class'
     }
     from project(':org.eclipse.fx.drift.java8').sourceSets.main.output
 
@@ -209,6 +210,18 @@ def signFile(infile, outfile) {
     }
 
 }
+/*
+task signJarFilesXX() {
+
+    doLast {
+        def unsigned = new RequestBody.Builder()
+        def body = new MultipartBody.Builder()
+        .type(MultipartBody.FORM)
+        .addFormDataPart("file", filename, )
+
+    }
+}
+*/
 
 task signJarFiles() {
     dependsOn unzipGithubArtifact
