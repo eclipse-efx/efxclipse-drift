@@ -330,7 +330,7 @@ def githubDownloadArtifact(url, filename, githubToken) {
     .build()
     def response = client.newCall(request).execute()
     def target = new File( filename )
-    new target.withOutputStream { out -> 
+    target.withOutputStream { out -> 
         response.body.byteStream().with { inStream ->
             out << inStream
             inStream.close()
