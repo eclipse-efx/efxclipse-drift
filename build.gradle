@@ -65,6 +65,7 @@ def getReleaseTag() {
     def stdout = new ByteArrayOutputStream()
     exec {
         commandLine 'git', 'describe', '--tags'
+        ignoreExitValue true
         standardOutput = stdout
     }
     def tag = stdout.toString().trim()
@@ -321,7 +322,7 @@ task notifyJenkins() {
         def jenkinsToken = System.getenv("JENKINS_ACCESS_TOKEN")
         def runId = System.getenv('GITHUB_RUN_ID')
         def githubToken = System.getenv('GITHUB_ACCESS_TOKEN')
-        
+
         def request = new Request.Builder()
         .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId")
         .build()
