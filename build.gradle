@@ -246,7 +246,7 @@ platform {
     featureProvider = "BestSolution"
 
     categoryId = 'org.eclipse.fx.drift'
-    categoryName = 'DriftFX'
+    categoryName = 'e(fx)clipse Drift'
 
     fetchSources = false
     useBndHashQualifiers = false
