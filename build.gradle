@@ -17,11 +17,13 @@ buildscript {
 plugins {
     id 'java'
     id 'eclipse'
+
+    id 'maven-publish'
 }
 
 apply plugin: 'org.standardout.bnd-platform'
 
-
+version = "${getVersion()}-SNAPSHOT"
 
 def revision = System.getProperty("revision")
 
@@ -86,7 +88,10 @@ def getVersion() {
 }
 
 def getQualifier() {
-    "${toTimestamp(getGitTimestamp())}-${getLocalShortGitHash()}"
+    if (getReleaseTag() == null)
+        "${toTimestamp(getGitTimestamp())}-${getLocalShortGitHash()}"
+    else
+        null
 }
 
 def toTimestamp(instant) {
@@ -132,8 +137,10 @@ def getJava11() {
 def releaseTag = getReleaseTag()
 def version = getVersion()
 def qualifier = getQualifier()
-def fullVersion = "${version}-${qualifier}"
-def bundleVersion = "${version}.${qualifier}"
+def fullVersion = releaseTag == null ? "${version}-${qualifier}" : "$version"
+def bundleVersion = releaseTag == null ? "${version}.${qualifier}" : "$version"
+
+
 
 subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
 
@@ -165,7 +172,6 @@ task buildMrJar(type: Jar, dependsOn: [
                 'Private-Package': 'org.eclipse.fx.drift.internal',
                 'Bundle-Activator': 'org.eclipse.fx.drift.internal.OSGiActivator',
                 'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/driftcpp.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftcpp.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64,native/libdriftcpp.dylib;osname=MacOSX;processor=x86-64'
-
         )
     }
     doLast {
@@ -173,122 +179,70 @@ task buildMrJar(type: Jar, dependsOn: [
     }
 }
 
-
-// TODO declare a task output=?
 task downloadGithubArtifact {
+    outputs.files(
+        "$buildDir/downloaded/github-artifacts.zip",
+        "$buildDir/downloaded/native-repo.zip")
     doLast {
-        def owner = 'BestSolution-at'
-        def repo = 'efxclipse-drift'
         def runId = System.getenv('GITHUB_RUN_ID')
-        def githubToken = System.getenv('GITHUB_ACCESS_TOKEN')
+        def runArtifacts = github.getArtifacts(runId)
 
-        def result = githubGetArtifacts(owner, repo, runId, githubToken)
+        def artifactUnsigned = runArtifacts.artifacts.find { it.name == 'artifact-unsigned' }
+        github.downloadArtifact(artifactUnsigned.archive_download_url, "$buildDir/downloaded/github-artifacts.zip")
+        
+        def artifactNativeRepo = runArtifacts.artifacts.find { it.name == 'native-repo'}
+        github.downloadArtifact(artifactNativeRepo.archive_download_url, "$buildDir/downloaded/native-repo.zip")
+    }
+}
 
-        def artifactUnsigned = result.artifacts.find { it.name == 'artifact-unsigned' }
-        def url = artifactUnsigned.archive_download_url
-
-        println "Downloading: $url"
-        githubDownloadArtifact(url, "$buildDir/github-artifacts.zip", githubToken)
+task askGithub {
+    doLast {
+        def runId = System.getenv('GITHUB_RUN_ID')
+        def runArtifacts = github.getArtifacts(runId)
+        println runArtifacts
+        println '---'
+        println groovy.json.JsonOutput.toJson(runArtifacts)
     }
 }
 
 task unzipGithubArtifact(type: Copy) {
     dependsOn downloadGithubArtifact
     from {
-        zipTree("$buildDir/github-artifacts.zip")
+        zipTree("$buildDir/downloaded/github-artifacts.zip")
     }
     into "$buildDir/unsigned"
+
+
 }
-
-def signFile(infile, outfile) {
-    def uri = "http://build.eclipse.org:31338/sign"
-    def conn = new URL(uri).openConnection()
-    try {
-        conn.setRequestMethod("POST")
-
-    } finally {
-        conn.disconnect()
+task unzipNativeRepo(type: Copy) {
+    dependsOn downloadGithubArtifact
+    inputs.files("$buildDir/downloaded/native-repo.zip")
+    from {
+        zipTree("$buildDir/downloaded/native-repo.zip")
     }
-
+    into "$buildDir/native-repo"
 }
-/*
-task signJarFilesXX() {
-
-    doLast {
-        def unsigned = new RequestBody.Builder()
-        def body = new MultipartBody.Builder()
-        .type(MultipartBody.FORM)
-        .addFormDataPart("file", filename, )
-
-    }
-}
-*/
 
 task signJarFiles() {
     dependsOn unzipGithubArtifact
     doLast {
         def sourceFile = "$buildDir/unsigned/org.eclipse.fx.drift.jar"
         def targetFile = "$buildDir/signed/org.eclipse.fx.drift.jar"
-
         mkdir "$buildDir/signed"
-
         def stdout = new ByteArrayOutputStream()
         exec {
             commandLine 'curl', '-sS', '-o', targetFile, '-F', "file=@$sourceFile", 'http://build.eclipse.org:31338/sign'
             standardOutput = stdout
         }
-
         println "${new File(targetFile)}"
-     
-    }
-
-}
-
-import org.apache.http.*
-import org.apache.http.client.*
-import org.apache.http.client.methods.*
-import org.apache.http.impl.client.*
-import org.apache.http.entity.mime.*
-import org.apache.http.entity.mime.content.*
-
-task signJarFilesFoo() {
-    dependsOn unzipGithubArtifact
-    doLast {
-
-        def signUri = System.getenv("SIGN_SERVICE")
-
-        def inputFile = file("$buildDir/unsigned/org.eclipse.fx.drift.jar")
-        def outputFile = file("$buildDir/signed/org.eclipse.fx.drift.jar")
-
-        MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE)
-        reqEntity.addPart('file', new FileBody(inputFile))
-
-        HttpClient client = new DefaultHttpClient()
-        HttpPost post = new HttpPost("http://build.eclipse.org:31338/sign")
-        post.setEntity(reqEntity)
-
-        HttpResponse response = client.execute(post)
-        println(response)
-
-        new File(outputFile).withOutputStream { outStream ->
-            HttpEntity resEntity = response.getEntity()
-            resEntity.getContent.with { inStream -> 
-                outStream << inStream
-                inStream.close()
-            }
-        }
-
     }
 }
-
-
-
 
 platform {
 
     featureId = 'org.eclipse.fx.drift.feature'
     featureName = 'DriftFX'
-    featureVersion = "${getVersion()}.${getQualifier()}"
+    featureVersion = "$bundleVersion"
     featureProvider = "BestSolution"
 
     categoryId = 'org.eclipse.fx.drift'
@@ -322,35 +276,39 @@ task ghCreateRelease() {
     }
 }
 
+ext.githubToken = System.getenv('GH_ACCESS_TOKEN')
+
+
+ext.github = new GithubAPI(githubOrga, githubRepo, System.getenv('GH_ACCESS_TOKEN'))
 
 import okhttp3.*
 ext.client = new OkHttpClient()
 
-def githubGetArtifacts(owner, repo, runId, githubToken) {
-    def JSON = MediaType.get("application/json; charset=utf-8")
-    def request = new Request.Builder()
-    .header("Authorization", "token $githubToken")
-    .header("Content-Type", "application/json")
-    .url("https://api.github.com/repos/$owner/$repo/actions/runs/$runId/artifacts")
-    .build()
 
-    def response = client.newCall(request).execute()
 
-    assert response.code == 200
-    new groovy.json.JsonSlurperClassic().parseText(response.body.string())
+task listGithubReleases() {
+    doLast {
+
+        println "${getReleaseTag()}"
+
+        println github.getReleases()
+        println '---'
+
+        println "by tag asdf: ${github.getReleaseByTagName('asdf')}"
+        println "by tag test123: ${github.getReleaseByTagName('test123')}"
+    }
 }
-def githubDownloadArtifact(url, filename, githubToken) {
-    def request = new Request.Builder()
-    .header("Authorization", "token $githubToken")
-    .url(url)
-    .build()
-    def response = client.newCall(request).execute()
-    def target = new File( filename )
-    target.withOutputStream { out -> 
-        response.body.byteStream().with { inStream ->
-            out << inStream
-            inStream.close()
-        }
+
+task testGithubRelease() {
+    doLast {
+        github.createRelease("v1.2.4", getGitHash(), "DriftFX 1.2.4", """
+        # The release name
+        Finally released.
+        https://download.eclipse.org/efxclipse/drift/nightly/or-so
+        ## markdown =?
+        * maybe
+        * maybe not
+        """.stripIndent().trim())
     }
 }
 
@@ -358,7 +316,7 @@ task notifyJenkins() {
     doLast {
         def jenkinsToken = System.getenv("JENKINS_ACCESS_TOKEN")
         def runId = System.getenv('GITHUB_RUN_ID')
-        def githubToken = System.getenv('GH_ACCESS_TOKEN')
+        //def githubToken = System.getenv('GH_ACCESS_TOKEN')
 
         def request = new Request.Builder()
         .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId&GIT_SHA=${getGitHash()}")
@@ -401,6 +359,7 @@ task deployUpdateSite() {
 
 task createDistribution(type: Zip) {
     dependsOn updateSiteZip
+    dependsOn unzipNativeRepo
 
     from file("$buildDir/updatesite.zip")
 
@@ -409,45 +368,67 @@ task createDistribution(type: Zip) {
     }
 
     into('libs/debug') {
-        from fileTree("native-repo/org/eclipse/fx/drift/driftcpp_debug_windows") {
+        from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_debug_windows") {
             include "**/*.dll"
             include "*/*.lib"
-            eachFile { path = "libs/$name" } // flatten into libs
+            eachFile { path = "libs/debug/$name" } // flatten into libs
+            includeEmptyDirs = false
+        }
+        from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_debug_linux") {
+            include "**/*.so"
+            eachFile { path = "libs/debug/$name" } // flatten into libs
+            includeEmptyDirs = false
+        }
+        from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_debug_macos") {
+            include "**/*.dylib"
+            eachFile { path = "libs/debug/$name" } // flatten into libs
+            includeEmptyDirs = false
+        }
+    }
+
+    into('libs/release') {
+        from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_release_windows") {
+            include "**/*.dll"
+            include "*/*.lib"
+            eachFile { path = "libs/release/$name" } // flatten into libs
+            includeEmptyDirs = false
+        }
+        from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_release_linux") {
+            include "**/*.so"
+            eachFile { path = "libs/release/$name" } // flatten into libs
+            includeEmptyDirs = false
+        }
+        from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_release_macos") {
+            include "**/*.dylib"
+            eachFile { path = "libs/release/$name" } // flatten into libs
             includeEmptyDirs = false
         }
     }
 
     archiveBaseName = "dist"
-    archiveAppendix = "$fullVersion"
+    archiveVersion = "$fullVersion"
+
 }
 
-task testghrel2 {
-    doLast {
-        def JSON = MediaType.get("application/json; charset=utf-8")
+task uploadDistribution
 
-        def msg = """{
-            "tag_name": "test123",
-            "target_commitish": "${getGitHash()}",
-            "name": "foo bar",
-            "body": "some text",
-            "draft": true,
-            "prerelease": true
-        }"""
-        def requestBody = RequestBody.create(msg, JSON)
-        def request = new Request.Builder()
-        .header("Authorization", "token ${System.getenv('GITHUB_ACCESS_TOKEN')}")
-        .header("Content-Type", "application/json")
-        .url("https://api.github.com/repos/bestsolution-at/efxclipse-drift/releases")
-        .post(requestBody)
-        .build()
-
-        def response = client.newCall(request).execute()
-
-        println response
-        println response.code
-        println response.body.string()
-
-
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'org.eclipse.fx.drift'
+            artifactId = 'org.eclipse.fx.drift'
+            version = "1.3"
+            artifact("$buildDir/signed/org.eclipse.fx.drift.jar") {
+                extension 'jar'
+            }
+        }
+    }
+    repositories {
+        maven {
+            url = "$buildDir/maven-repo"
+        }
     }
 }
+
+
 
