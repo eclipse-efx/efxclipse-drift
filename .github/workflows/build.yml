@@ -64,7 +64,7 @@ jobs:
         cp native-repo/org/eclipse/fx/drift/driftcpp_release_linux/1.0.0.$GITHUB_SHA/driftcpp_release_linux-1.0.0.$GITHUB_SHA.so org.eclipse.fx.drift/src/main/resources/native/libdriftcpp.so
     - uses: eskatos/gradle-command-action@v1
       with:
-        arguments: -Drevision=0.0.1 buildMrJar
+        arguments: buildMultireleaseJar
     - uses: actions/upload-artifact@v1
       with:
         name: artifact-unsigned
