@@ -277,10 +277,10 @@ task ghCreateRelease() {
     }
 }
 
-ext.githubToken = System.getenv('GH_ACCESS_TOKEN')
 
 
-ext.github = new GithubAPI(githubOrga, githubRepo, System.getenv('GH_ACCESS_TOKEN'))
+
+ext.github = new GithubAPI(githubOrga, githubRepo, System.getenv('GITHUB_ACCESS_TOKEN'))
 
 import okhttp3.*
 ext.client = new OkHttpClient()
@@ -317,7 +317,7 @@ task notifyJenkins() {
     doLast {
         def jenkinsToken = System.getenv("JENKINS_ACCESS_TOKEN")
         def runId = System.getenv('GITHUB_RUN_ID')
-        //def githubToken = System.getenv('GH_ACCESS_TOKEN')
+        def githubToken = System.getenv('GH_ACCESS_TOKEN')
 
         def request = new Request.Builder()
         .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId&GIT_SHA=${getGitHash()}")
