@@ -144,11 +144,12 @@ def bundleVersion = releaseTag == null ? "${version}.${qualifier}" : "$version"
 
 subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
 
-task buildMrJar(type: Jar, dependsOn: [ 
+task buildMultireleaseJar(type: Jar, dependsOn: [ 
     subprojects.tasks['classes'],
     showInfo
 ]) {
     archiveBaseName = 'org.eclipse.fx.drift'
+    archiveVersion = '' //"$fullVersion"
 
     from( project(':org.eclipse.fx.drift').sourceSets.main.output ) {
         exclude 'org/eclipse/fx/drift/DriftFXSurface.class'
