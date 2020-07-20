@@ -20,8 +20,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: eskatos/gradle-command-action@v1
       with:
-        build-root-directory: native
-        arguments: publish
+        arguments: -i :native:driftfx:publish :native:driftcpp:publish
 #      env:
 #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/upload-artifact@v1
@@ -55,7 +54,7 @@ jobs:
         path: native-repo
     - uses: eskatos/gradle-command-action@v1
       with:
-        arguments: buildMultireleaseJar
+        arguments: -i buildMultireleaseJar
     - uses: actions/upload-artifact@v1
       with:
         name: artifact-unsigned
