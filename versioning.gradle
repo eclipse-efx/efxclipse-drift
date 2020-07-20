@@ -83,13 +83,15 @@ ext {
         version: tmpVersion,
         qualifier: tmpQualifier,
         fullVersion: tmpFullVersion,
-        bundleVersion: tmpBundleVersion
+        bundleVersion: tmpBundleVersion,
+        gitSHA: getGitHash()
     ]
 }
 
 
 task showVersioning {
     println "Versioning: " //${new groovy.json.JsonBuilder(Versioning).toPrettyString()}"
+    println "\tgitSJA: $Versioning.gitSHA"
     println "\treleaseMode: $Versioning.releaseMode"
     println "\treleaseTag: $Versioning.releaseTag"
     println "\tversion: $Versioning.version"

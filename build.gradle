@@ -280,7 +280,7 @@ task notifyJenkins() {
         def githubToken = System.getenv('GH_ACCESS_TOKEN')
 
         def request = new Request.Builder()
-        .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId&GIT_SHA=${getGitHash()}")
+        .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId&GIT_SHA=${Versioning.gitSHA}")
         .build()
         def response = client.newCall(request).execute()
         println "notify jenkins: ${response.code}"
