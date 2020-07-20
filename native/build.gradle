@@ -6,32 +6,10 @@ plugins {
 
 allprojects {
   group = 'org.eclipse.fx.drift'
-  version = '1.0.0.' + getGitHash()
+//  version = '1.0.0.' + getGitHash()
+  version = Versioning.version
 }
 
-def getGitHash() {
-  if (System.getenv("CI")) {
-    System.getenv("GITHUB_SHA")
-  } else {
-    getLocalGitHash()
-  }
-}
-
-def getLocalGitHash() {
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'rev-parse', '--short', 'HEAD'
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
-}
-
-def getIntegrationTimestamp() {
-// TODO use some CI variable as build timesamp
-    def date = new Date()
-    def formattedDate = date.format('yyyyMMddHHmmss')
-    return 'I' + formattedDate
-}
 
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.nativeplatform.platform.OperatingSystem

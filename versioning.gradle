@@ -1,0 +1,101 @@
+
+def getGitHash() {
+  if (System.getenv("CI")) {
+    System.getenv("GITHUB_SHA")
+  } else {
+    getLocalGitHash()
+  }
+}
+
+def getGitTimestamp() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'log', '-1', '--date=iso-strict', '--format=%cd', 'HEAD'
+        standardOutput = stdout
+    }
+    return java.time.OffsetDateTime.parse(stdout.toString().trim()).toInstant()    
+}
+
+def getLocalShortGitHash() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
+def getLocalGitHash() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
+def getReleaseTag() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags'
+        ignoreExitValue true
+        standardOutput = stdout
+    }
+    def tag = stdout.toString().trim()
+    if (tag.matches('R[0-9]+\\.[0-9]+\\.[0-9]+')) {
+        return tag
+    }
+    return null
+}
+
+def getVersion() {
+    def tag = getReleaseTag()
+    if (tag != null) {
+        return tag.substring(1)
+    } else {
+        return '999.0.0'
+    }
+    
+}
+
+def getQualifier() {
+    if (getReleaseTag() == null)
+        "${toTimestamp(getGitTimestamp())}-${getLocalShortGitHash()}"
+    else
+        null
+}
+
+def toTimestamp(instant) {
+    return java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").withZone( ZoneId.of("UTC") ).format(instant)
+}
+
+def tmpReleaseTag = getReleaseTag()
+def tmpReleaseMode = tmpReleaseTag != null
+def tmpVersion = getVersion()
+def tmpQualifier = getQualifier();
+def tmpFullVersion = tmpReleaseMode ? tmpVersion : "$tmpVersion-$tmpQualifier"
+def tmpBundleVersion = tmpReleaseMode ? tmpVersion : "${tmpVersion}.$tmpQualifier"
+
+ext {
+    Versioning = [
+        releaseTag: tmpReleaseTag,
+        releaseMode: tmpReleaseMode,
+        version: tmpVersion,
+        qualifier: tmpQualifier,
+        fullVersion: tmpFullVersion,
+        bundleVersion: tmpBundleVersion
+    ]
+}
+
+
+task showVersioning {
+    println "Versioning: " //${new groovy.json.JsonBuilder(Versioning).toPrettyString()}"
+    println "\treleaseMode: $Versioning.releaseMode"
+    println "\treleaseTag: $Versioning.releaseTag"
+    println "\tversion: $Versioning.version"
+    println "\tqualifier: $Versioning.qualifier"
+    println "\tfullVersion: $Versioning.fullVersion"
+    println "\tbundleVersion: $Versioning.bundleVersion"
+    doLast {
+    }
+}

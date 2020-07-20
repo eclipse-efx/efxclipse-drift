@@ -17,89 +17,18 @@ buildscript {
 plugins {
     id 'java'
     id 'eclipse'
-
     id 'maven-publish'
 }
 
 apply plugin: 'org.standardout.bnd-platform'
+apply from: 'versioning.gradle'
 
-version = "${getVersion()}-SNAPSHOT"
-
-def revision = System.getProperty("revision")
-
-
-def getGitHash() {
-  if (System.getenv("CI")) {
-    System.getenv("GITHUB_SHA")
-  } else {
-    getLocalGitHash()
-  }
-}
-
-def getGitTimestamp() {
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'log', '-1', '--date=iso-strict', '--format=%cd', 'HEAD'
-        standardOutput = stdout
-    }
-    return java.time.OffsetDateTime.parse(stdout.toString().trim()).toInstant()    
-}
-
-def getLocalShortGitHash() {
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'rev-parse', '--short', 'HEAD'
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
-}
-
-def getLocalGitHash() {
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'rev-parse', 'HEAD'
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
-}
-
-def getReleaseTag() {
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'describe', '--tags'
-        ignoreExitValue true
-        standardOutput = stdout
-    }
-    def tag = stdout.toString().trim()
-    if (tag.matches('R[0-9]+\\.[0-9]+\\.[0-9]+')) {
-        return tag
-    }
-    return null
-}
-
-def getVersion() {
-    def tag = getReleaseTag()
-    if (tag != null) {
-        return tag.substring(1)
-    } else {
-        return '999.0.0'
-    }
-    
-}
-
-def getQualifier() {
-    if (getReleaseTag() == null)
-        "${toTimestamp(getGitTimestamp())}-${getLocalShortGitHash()}"
-    else
-        null
-}
-
-def toTimestamp(instant) {
-    return java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").withZone( ZoneId.of("UTC") ).format(instant)
-}
+version = "${Versioning.version}-SNAPSHOT"
 
 task showInfo {
     doLast {
+        println "$version"
+        //println "Versioning: ${Versioning}"
         println "Release Tag: ${getReleaseTag()}"
         println "Version: ${getVersion()}"
         println "Qualifier: ${getQualifier()}"
@@ -107,8 +36,6 @@ task showInfo {
         println " -> ${toTimestamp(getGitTimestamp())}"
     }
 }
-
-
 
 allprojects {
     repositories {
@@ -134,19 +61,21 @@ def getJava11() {
 	"${System.getenv('JAVA_HOME_11')}/bin/javac"
 }
 
-def releaseTag = getReleaseTag()
-def version = getVersion()
-def qualifier = getQualifier()
-def fullVersion = releaseTag == null ? "${version}-${qualifier}" : "$version"
-def bundleVersion = releaseTag == null ? "${version}.${qualifier}" : "$version"
-
-
 
 subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
 
+task showIt() {
+    println "Showing It"
+    println Versioning.releaseTag
+    doLast {
+        println Versioning
+    }
+}
+
 task buildMultireleaseJar(type: Jar, dependsOn: [ 
-    subprojects.tasks['classes'],
-    showInfo
+    project(':org.eclipse.fx.drift').tasks['classes'],
+    project(':org.eclipse.fx.drift.java8').tasks['classes'],
+    project(':org.eclipse.fx.drift.java11').tasks['classes']
 ]) {
     archiveBaseName = 'org.eclipse.fx.drift'
     archiveVersion = '' //"$fullVersion"
@@ -167,9 +96,9 @@ task buildMultireleaseJar(type: Jar, dependsOn: [
                 "Manifest-Version": "1.0",
                 'Bundle-ManifestVersion': '2',
                 'Bundle-SymbolicName': 'org.eclipse.fx.drift',
-                'Bundle-Version': "${bundleVersion}",
+                'Bundle-Version': "${Versioning.bundleVersion}",
                 "Multi-Release": true,
-                'Export-Package': "org.eclipse.fx.drift;version=\"${version}\",org.eclipse.fx.drift.impl;version=\"${version}\"",
+                'Export-Package': "org.eclipse.fx.drift;version=\"${Versioning.version}\",org.eclipse.fx.drift.impl;version=\"${Versioning.version}\"",
                 'Private-Package': 'org.eclipse.fx.drift.internal',
                 'Bundle-Activator': 'org.eclipse.fx.drift.internal.OSGiActivator',
                 'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/driftcpp.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftcpp.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64,native/libdriftcpp.dylib;osname=MacOSX;processor=x86-64'
@@ -243,7 +172,7 @@ platform {
 
     featureId = 'org.eclipse.fx.drift.feature'
     featureName = 'DriftFX'
-    featureVersion = "$bundleVersion"
+    featureVersion = Versioning.bundleVersion
     featureProvider = "BestSolution"
 
     categoryId = 'org.eclipse.fx.drift'
@@ -290,7 +219,7 @@ ext.client = new OkHttpClient()
 task listGithubReleases() {
     doLast {
 
-        println "${getReleaseTag()}"
+        println "${Versioning.releaseTag}"
 
         println github.getReleases()
         println '---'
@@ -407,7 +336,7 @@ task createDistribution(type: Zip) {
     }
 
     archiveBaseName = "dist"
-    archiveVersion = "$fullVersion"
+    archiveVersion = Versioning.fullVersion
 
 }
 
