@@ -72,7 +72,38 @@ task showIt() {
     }
 }
 
-task buildMultireleaseJar(type: Jar, dependsOn: [ 
+task copyNatives(type: Copy) {
+
+    // driftfx
+    from "native-repo/org/eclipse/fx/drift/driftfx_release_windows/$Versioning.fullVersion/driftfx_release_windows-${Versioning.fullVersion}.dll"
+    from "native-repo/org/eclipse/fx/drift/driftfx_release_linux/$Versioning.fullVersion/driftfx_release_linux-${Versioning.fullVersion}.so"
+    from "native-repo/org/eclipse/fx/drift/driftfx_release_macos/$Versioning.fullVersion/driftfx_release_macos-${Versioning.fullVersion}.dylib"
+    
+    // driftcpp
+    from "native-repo/org/eclipse/fx/drift/driftcpp_release_windows/$Versioning.fullVersion/driftcpp_release_windows-${Versioning.fullVersion}.dll"
+    from "native-repo/org/eclipse/fx/drift/driftcpp_release_linux/$Versioning.fullVersion/driftcpp_release_linux-${Versioning.fullVersion}.so"
+    from "native-repo/org/eclipse/fx/drift/driftcpp_release_macos/$Versioning.fullVersion/driftcpp_release_macos-${Versioning.fullVersion}.dylib"
+    
+
+    into 'org.eclipse.fx.drift/src/main/resources/native'
+
+    rename { fileName ->
+        fileName
+            .replaceAll("driftfx_release_windows-.*[.]dll", "driftfx.dll")
+            .replaceAll("driftfx_release_linux-.*[.]so", "libdriftfx.so")
+            .replaceAll("driftfx_release_macos-.*[.]dylib", "libdriftfx.dylib")
+
+            .replaceAll("driftcpp_release_windows-.*[.]dll", "driftcpp.dll")
+            .replaceAll("driftcpp_release_linux-.*[.]so", "libdriftcpp.so")
+            .replaceAll("driftcpp_release_macos-.*[.]dylib", "libdriftcpp.dylib")
+    }
+    
+}
+
+
+
+task buildMultireleaseJar(type: Jar, dependsOn: [
+    copyNatives,
     project(':org.eclipse.fx.drift').tasks['classes'],
     project(':org.eclipse.fx.drift.java8').tasks['classes'],
     project(':org.eclipse.fx.drift.java11').tasks['classes']

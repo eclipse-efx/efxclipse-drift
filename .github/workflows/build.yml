@@ -53,15 +53,6 @@ jobs:
       with:
         name: native-repo
         path: native-repo
-    - name: Copy natives to source tree
-      run: |
-        mkdir -p org.eclipse.fx.drift/src/main/resources/native
-        cp native-repo/org/eclipse/fx/drift/driftfx_release_windows/1.0.0.$GITHUB_SHA/driftfx_release_windows-1.0.0.$GITHUB_SHA.dll org.eclipse.fx.drift/src/main/resources/native/driftfx.dll
-        cp native-repo/org/eclipse/fx/drift/driftcpp_release_windows/1.0.0.$GITHUB_SHA/driftcpp_release_windows-1.0.0.$GITHUB_SHA.dll org.eclipse.fx.drift/src/main/resources/native/driftcpp.dll
-        cp native-repo/org/eclipse/fx/drift/driftfx_release_macos/1.0.0.$GITHUB_SHA/driftfx_release_macos-1.0.0.$GITHUB_SHA.dylib org.eclipse.fx.drift/src/main/resources/native/libdriftfx.dylib
-        cp native-repo/org/eclipse/fx/drift/driftcpp_release_macos/1.0.0.$GITHUB_SHA/driftcpp_release_macos-1.0.0.$GITHUB_SHA.dylib org.eclipse.fx.drift/src/main/resources/native/libdriftcpp.dylib
-        cp native-repo/org/eclipse/fx/drift/driftfx_release_linux/1.0.0.$GITHUB_SHA/driftfx_release_linux-1.0.0.$GITHUB_SHA.so org.eclipse.fx.drift/src/main/resources/native/libdriftfx.so
-        cp native-repo/org/eclipse/fx/drift/driftcpp_release_linux/1.0.0.$GITHUB_SHA/driftcpp_release_linux-1.0.0.$GITHUB_SHA.so org.eclipse.fx.drift/src/main/resources/native/libdriftcpp.so
     - uses: eskatos/gradle-command-action@v1
       with:
         arguments: buildMultireleaseJar

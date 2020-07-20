@@ -7,7 +7,7 @@ plugins {
 allprojects {
   group = 'org.eclipse.fx.drift'
 //  version = '1.0.0.' + getGitHash()
-  version = Versioning.version
+  version = Versioning.fullVersion
 }
 
 
