@@ -39,8 +39,8 @@ class GithubAPI {
             prerelease: prerelease
         ]
         def msgj = groovy.json.JsonOutput.toJson(msg);
-        println new groovy.json.JsonBuilder(msgj).toPrettyString()
-        def requestBody = RequestBody.create(groovy.json.JsonOutput.toJson(msg), JSON)
+        println "Sending Request: ${new groovy.json.JsonBuilder(msg).toPrettyString()}"
+        def requestBody = RequestBody.create(msgj, JSON)
         def req = new Request.Builder()
         .header("Authorization", "token $token")
         .header("Content-Type", "application/json")
@@ -49,8 +49,12 @@ class GithubAPI {
         .build()
 
         def res = client.newCall(req).execute()
+
+        def json = res.body.string()
+        println "Got Response: $json"
+
         assert res.code == 201
-        slurper.parseText(res.body.string())
+        slurper.parseText(json)
     }
 
     def uploadAsset(uploadUrl, mime, file, name, label) {

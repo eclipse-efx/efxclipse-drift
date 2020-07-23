@@ -260,7 +260,7 @@ task notifyJenkins() {
 }
 
 ext {
-    UpdateSitePath = Versioning.releaseMode ? "driftfx/$Versioning.version" : "driftfx/nightly/$Versioning.qualifier"
+    UpdateSitePath = Versioning.releaseMode ? "efxclipse/driftfx/$Versioning.version" : "efxclipse/driftfx/nightly/$Versioning.qualifier"
 }
 
 task deployUpdateSite() {
