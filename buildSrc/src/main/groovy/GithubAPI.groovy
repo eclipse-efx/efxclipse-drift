@@ -28,7 +28,7 @@ class GithubAPI {
         slurper.parseText(res.body.string())
     }
 
-    def createRelease(tag, commitish, name, body) {
+    def createRelease(tag, commitish, name, body, prerelease) {
         def JSON = MediaType.get("application/json; charset=utf-8")
         def msg = [
             tag_name: tag,
@@ -36,8 +36,10 @@ class GithubAPI {
             name: name,
             body: body,
             draft: true,
-            prerelease: true
+            prerelease: prerelease
         ]
+        def msgj = groovy.json.JsonOutput.toJson(msg);
+        println new groovy.json.JsonBuilder(msgj).toPrettyString()
         def requestBody = RequestBody.create(groovy.json.JsonOutput.toJson(msg), JSON)
         def req = new Request.Builder()
         .header("Authorization", "token $token")
@@ -50,7 +52,60 @@ class GithubAPI {
         assert res.code == 201
         slurper.parseText(res.body.string())
     }
-    
+
+    def uploadAsset(uploadUrl, mime, file, name, label) {
+        // need to remove the {?name, label} stuff
+        uploadUrl = uploadUrl.replaceAll('[{].*[}]', '')
+        def mediaType = MediaType.get(mime)
+
+        def reqBody = RequestBody.create(mediaType, file)
+
+        def httpBuilder = HttpUrl.parse(uploadUrl).newBuilder()
+        if (name != null) {
+            httpBuilder.addQueryParameter('name', name)
+        }
+        if (label != null) {
+            httpBuilder.addQueryParameter('label', label)
+        }
+        def url = httpBuilder.build()
+
+        def req = new Request.Builder()
+        .header("Authorization", "token $token")
+        .url(url)
+        .post(reqBody)
+        .build()
+
+        def res = client.newCall(req).execute()
+
+        assert res.code == 201
+
+        slurper.parseText(res.body.string())
+    }
+
+    def modifyRelease(releaseId, draft) {
+        def JSON = MediaType.get("application/json; charset=utf-8")
+        def msg = [
+            draft: draft
+        ]
+        def msgj = groovy.json.JsonOutput.toJson(msg);
+        println new groovy.json.JsonBuilder(msgj).toPrettyString()
+        
+        def reqBody = RequestBody.create(msgj, JSON)
+
+        def req = new Request.Builder()
+        .header("Authorization", "token $token")
+        .header("Content-Type", "application/json")
+        .url("https://api.github.com/repos/$orga/$repo/releases/$releaseId")
+        .patch(reqBody)
+        .build()
+
+        def res = client.newCall(req).execute()
+
+        assert res.code == 200
+
+        slurper.parseText(res.body.string())
+    }
+
     def getReleaseByTagName(tagName) {
         def req = new Request.Builder()
         .header("Authorization", "token $token")

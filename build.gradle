@@ -237,41 +237,11 @@ task ghCreateRelease() {
     }
 }
 
-
-
-
 ext.github = new GithubAPI(githubOrga, githubRepo, System.getenv('GITHUB_ACCESS_TOKEN'))
 
 import okhttp3.*
 ext.client = new OkHttpClient()
 
-
-
-task listGithubReleases() {
-    doLast {
-
-        println "${Versioning.releaseTag}"
-
-        println github.getReleases()
-        println '---'
-
-        println "by tag asdf: ${github.getReleaseByTagName('asdf')}"
-        println "by tag test123: ${github.getReleaseByTagName('test123')}"
-    }
-}
-
-task testGithubRelease() {
-    doLast {
-        github.createRelease("v1.2.4", getGitHash(), "DriftFX 1.2.4", """
-        # The release name
-        Finally released.
-        https://download.eclipse.org/efxclipse/drift/nightly/or-so
-        ## markdown =?
-        * maybe
-        * maybe not
-        """.stripIndent().trim())
-    }
-}
 
 task notifyJenkins() {
     doLast {
@@ -295,9 +265,9 @@ task deployUpdateSite() {
 
         def target = ""
         if (releaseTag != null) {
-            target = "$remoteDirectory/driftfx/$releaseTag"
+            target = "$remoteDirectory/driftfx/$Versioning.releaseTag"
         } else {
-            target = "$remoteDirectory/driftfx/nightly/$qualifier"
+            target = "$remoteDirectory/driftfx/nightly/$Versioning.qualifier"
         }
 
         // create update site directory
@@ -325,23 +295,23 @@ task createDistribution(type: Zip) {
     from file("$buildDir/updatesite.zip")
 
     into('include') {
-        from "native-gradle/driftcpp/src/main/public"
+        from "native/driftcpp/src/main/public"
     }
 
     into('libs/debug') {
         from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_debug_windows") {
-            include "**/*.dll"
-            include "*/*.lib"
+            include "**/*${Versioning.fullVersion}.dll"
+            include "*/*${Versioning.fullVersion}.lib"
             eachFile { path = "libs/debug/$name" } // flatten into libs
             includeEmptyDirs = false
         }
         from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_debug_linux") {
-            include "**/*.so"
+            include "**/*${Versioning.fullVersion}.so"
             eachFile { path = "libs/debug/$name" } // flatten into libs
             includeEmptyDirs = false
         }
         from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_debug_macos") {
-            include "**/*.dylib"
+            include "**/*${Versioning.fullVersion}.dylib"
             eachFile { path = "libs/debug/$name" } // flatten into libs
             includeEmptyDirs = false
         }
@@ -349,18 +319,18 @@ task createDistribution(type: Zip) {
 
     into('libs/release') {
         from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_release_windows") {
-            include "**/*.dll"
-            include "*/*.lib"
+            include "**/*${Versioning.fullVersion}.dll"
+            include "*/*${Versioning.fullVersion}.lib"
             eachFile { path = "libs/release/$name" } // flatten into libs
             includeEmptyDirs = false
         }
         from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_release_linux") {
-            include "**/*.so"
+            include "**/*${Versioning.fullVersion}.so"
             eachFile { path = "libs/release/$name" } // flatten into libs
             includeEmptyDirs = false
         }
         from fileTree("$buildDir/native-repo/org/eclipse/fx/drift/driftcpp_release_macos") {
-            include "**/*.dylib"
+            include "**/*${Versioning.fullVersion}.dylib"
             eachFile { path = "libs/release/$name" } // flatten into libs
             includeEmptyDirs = false
         }
@@ -371,14 +341,76 @@ task createDistribution(type: Zip) {
 
 }
 
-task uploadDistribution
+task publishGithubRelease() {
+    doLast {
+        if (Versioning.releaseMode) {
+
+            def release = github.createRelease(Versioning.releaseTag, Versioning.gitSHA, "DriftFX $Versioning.version", """
+            
+            ### Update Site
+            https://download.eclipse.org/efxclipse/drift/$Versioning.version
+
+            """.stripIndent().trim(), false)
+
+            def releaseId = release.id
+            println "Created Release $releaseId"
+
+            def uploadUrl = release.upload_url
+
+            def distZip = file("build/distributions/dist-${Versioning.version}.zip")
+            def r = github.uploadAsset(release.upload_url, 
+                "application/zip", distZip,
+                "driftfx-dist-${Versioning.version}.zip",
+                null)
+
+            def modify = github.modifyRelease(releaseId, true)
+            println new groovy.json.JsonBuilder(modify).toPrettyString()
+
+        } else {
+
+          def release = github.createRelease(Versioning.timestamp, Versioning.gitSHA, "DriftFX Nightly $Versioning.qualifier", """
+            This is a nightly build. (The Version number 999.0.0 indicates nightly builds)
+
+            ### Update Site
+            https://download.eclipse.org/efxclipse/drift/nightly/$Versioning.timestamp
+
+            """.stripIndent().trim(), true)
+            println new groovy.json.JsonBuilder(release).toPrettyString()
+            def releaseId = release.id
+            println "Created Nightly Release $releaseId"
+
+            def uploadUrl = release.upload_url
+
+            def distZip = file("build/distributions/dist-${Versioning.fullVersion}.zip")
+            def r = github.uploadAsset(release.upload_url, 
+                "application/zip", distZip,
+                "driftfx-dist-${Versioning.fullVersion}.zip",
+                null)
+
+            println "going to modify release..."
+            
+            def modify = github.modifyRelease(releaseId, true)
+            println new groovy.json.JsonBuilder(modify).toPrettyString()
+
+
+        }
+
+    }
+}
+
+task undoRelease() {
+    doLast {
+         def modify = github.modifyRelease("${System.getenv("RELID")}", true)
+         println new groovy.json.JsonBuilder(modify).toPrettyString()
+    }
+}
 
 publishing {
     publications {
         maven(MavenPublication) {
             groupId = 'org.eclipse.fx.drift'
             artifactId = 'org.eclipse.fx.drift'
-            version = "1.3"
+            version = "$Versioning.version-SNAPSHOT"
             artifact("$buildDir/signed/org.eclipse.fx.drift.jar") {
                 extension 'jar'
             }
