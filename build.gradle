@@ -268,7 +268,7 @@ task deployUpdateSite() {
     dependsOn updateSite
     doLast {
         def remoteHost = "genie.efxclipse@projects-storage.eclipse.org"
-        def remoteDirectory = "/home/data/httpd/download.eclipse.org/efxclipse"
+        def remoteDirectory = "/home/data/httpd/download.eclipse.org"
 
         def target = "$remoteDirectory/$UpdateSitePath"
         println "Deploying update site to '$target'"
