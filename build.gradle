@@ -248,9 +248,10 @@ task notifyJenkins() {
         def jenkinsToken = System.getenv("JENKINS_ACCESS_TOKEN")
         def runId = System.getenv('GITHUB_RUN_ID')
         def githubToken = System.getenv('GH_ACCESS_TOKEN')
+        def githubRef = System.getenv('GITHUB_REF')
 
         def req = new Request.Builder()
-        .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId&GIT_SHA=${Versioning.gitSHA}")
+        .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId&GIT_SHA=${Versioning.gitSHA}&GITHUB_REF=$githubRef")
         .build()
         def res = client.newCall(req).execute()
 
