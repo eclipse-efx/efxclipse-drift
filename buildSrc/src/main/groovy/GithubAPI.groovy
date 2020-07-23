@@ -1,4 +1,5 @@
-
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import groovy.json.JsonSlurper
 import okhttp3.*
 
@@ -6,6 +7,8 @@ class GithubAPI {
 
     OkHttpClient client = new OkHttpClient()
     JsonSlurper slurper = new JsonSlurper()
+
+    Logger logger = Logging.getLogger(GithubAPI.class)
 
     String orga
     String repo
@@ -39,7 +42,11 @@ class GithubAPI {
             prerelease: prerelease
         ]
         def msgj = groovy.json.JsonOutput.toJson(msg);
-        println "Sending Request: ${new groovy.json.JsonBuilder(msg).toPrettyString()}"
+
+        if (logger.isInfoEnabled()) {
+            logger.info "Sending Request: ${new groovy.json.JsonBuilder(msg).toPrettyString()}"
+        }
+
         def requestBody = RequestBody.create(msgj, JSON)
         def req = new Request.Builder()
         .header("Authorization", "token $token")
@@ -51,7 +58,9 @@ class GithubAPI {
         def res = client.newCall(req).execute()
 
         def json = res.body.string()
-        println "Got Response: $json"
+        if (logger.isInfoEnabled()) {
+            logger.info "Got Response($res.code): $json"
+        }
 
         assert res.code == 201
         slurper.parseText(json)
@@ -86,9 +95,10 @@ class GithubAPI {
         slurper.parseText(res.body.string())
     }
 
-    def modifyRelease(releaseId, draft) {
+    def modifyRelease(releaseId, tag, draft) {
         def JSON = MediaType.get("application/json; charset=utf-8")
         def msg = [
+            tag_name: tag,
             draft: draft
         ]
         def msgj = groovy.json.JsonOutput.toJson(msg);
