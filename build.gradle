@@ -365,7 +365,7 @@ task publishGithubRelease() {
                 "driftfx-dist-${Versioning.version}.zip",
                 null)
 
-            def modify = github.modifyRelease(releaseId, true)
+            def modify = github.modifyRelease(releaseId, Versioning.releaseTag, true)
             println new groovy.json.JsonBuilder(modify).toPrettyString()
 
         } else {
@@ -391,7 +391,7 @@ task publishGithubRelease() {
 
             println "going to modify release..."
             
-            def modify = github.modifyRelease(releaseId, true)
+            def modify = github.modifyRelease(releaseId, Versioning.timestamp, true)
             println new groovy.json.JsonBuilder(modify).toPrettyString()
 
 
