@@ -421,7 +421,13 @@ publishing {
     }
     repositories {
         maven {
-            url = "$buildDir/maven-repo"
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/$githubOrga/$githubRepo"
+            credentials {
+                username = "redrezo"
+                password = "${System.getenv('GITHUB_ACCESS_TOKEN')}"
+            }
+            // url = "$buildDir/maven-repo"
         }
     }
 }
