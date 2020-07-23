@@ -42,7 +42,7 @@ def getReleaseTag() {
         standardOutput = stdout
     }
     def tag = stdout.toString().trim()
-    if (tag.matches('R[0-9]+\\.[0-9]+\\.[0-9]+')) {
+    if (tag.matches('v[0-9]+\\.[0-9]+\\.[0-9]+')) {
         return tag
     }
     return null
@@ -72,7 +72,8 @@ def toTimestamp(instant) {
 def tmpReleaseTag = getReleaseTag()
 def tmpReleaseMode = tmpReleaseTag != null
 def tmpVersion = getVersion()
-def tmpQualifier = getQualifier();
+def tmpTimestamp = toTimestamp(getGitTimestamp())
+def tmpQualifier = getQualifier()
 def tmpFullVersion = tmpReleaseMode ? tmpVersion : "$tmpVersion-$tmpQualifier"
 def tmpBundleVersion = tmpReleaseMode ? tmpVersion : "${tmpVersion}.$tmpQualifier"
 
@@ -81,6 +82,7 @@ ext {
         releaseTag: tmpReleaseTag,
         releaseMode: tmpReleaseMode,
         version: tmpVersion,
+        timestamp: tmpTimestamp,
         qualifier: tmpQualifier,
         fullVersion: tmpFullVersion,
         bundleVersion: tmpBundleVersion,
@@ -91,10 +93,11 @@ ext {
 
 task showVersioning {
     println "Versioning: " //${new groovy.json.JsonBuilder(Versioning).toPrettyString()}"
-    println "\tgitSJA: $Versioning.gitSHA"
+    println "\tgitSHA: $Versioning.gitSHA"
     println "\treleaseMode: $Versioning.releaseMode"
     println "\treleaseTag: $Versioning.releaseTag"
     println "\tversion: $Versioning.version"
+    println "\ttimestamp: $Versioning.timestamp"
     println "\tqualifier: $Versioning.qualifier"
     println "\tfullVersion: $Versioning.fullVersion"
     println "\tbundleVersion: $Versioning.bundleVersion"
