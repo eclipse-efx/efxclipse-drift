@@ -372,7 +372,7 @@ task publishGithubRelease() {
             This is a nightly build. (The Version number 999.0.0 indicates nightly builds)
 
             ### Update Site
-            https://download.eclipse.org/efxclipse/drift/nightly/$Versioning.timestamp
+            https://download.eclipse.org/efxclipse/driftfx/nightly/$Versioning.qualifier
 
             """.stripIndent().trim(), true)
             println new groovy.json.JsonBuilder(release).toPrettyString()
