@@ -264,7 +264,7 @@ task deployUpdateSite() {
         def remoteDirectory = "/home/data/httpd/download.eclipse.org/efxclipse"
 
         def target = ""
-        if (releaseTag != null) {
+        if (Versioning.releaseMode) {
             target = "$remoteDirectory/driftfx/$Versioning.releaseTag"
         } else {
             target = "$remoteDirectory/driftfx/nightly/$Versioning.qualifier"
