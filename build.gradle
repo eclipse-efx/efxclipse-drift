@@ -413,7 +413,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'org.eclipse.fx.drift'
             artifactId = 'org.eclipse.fx.drift'
-            version = "$Versioning.version-SNAPSHOT"
+            version = "${Versioning.releaseMode ? Versioning.version : (Versioning.fullVersion+'-SNAPSHOT')}"
             artifact("$buildDir/signed/org.eclipse.fx.drift.jar") {
                 extension 'jar'
             }
