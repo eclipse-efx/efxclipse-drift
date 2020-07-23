@@ -352,6 +352,11 @@ task publishGithubRelease() {
             
             ### Update Site
             https://download.eclipse.org/$UpdateSitePath
+            ### Maven
+            Repo: https://maven.pkg.github.com/$githubOrga/$githubRepo    
+            Group Id: `org.eclipse.fx.drift`    
+            Artifact Id: `org.eclipse.fx.drift`   
+            Version: `$Versioning.version`   
 
             """.stripIndent().trim(), false)
 
@@ -376,6 +381,11 @@ task publishGithubRelease() {
 
             ### Update Site
             https://download.eclipse.org/$UpdateSitePath
+            ### Maven
+            Repo: https://maven.pkg.github.com/$githubOrga/$githubRepo    
+            Group Id: `org.eclipse.fx.drift`    
+            Artifact Id: `org.eclipse.fx.drift`   
+            Version: `$Versioning.fullVersion-SNAPSHOT`   
 
             """.stripIndent().trim(), true)
             println new groovy.json.JsonBuilder(release).toPrettyString()
