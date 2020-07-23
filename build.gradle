@@ -249,12 +249,18 @@ task notifyJenkins() {
         def runId = System.getenv('GITHUB_RUN_ID')
         def githubToken = System.getenv('GH_ACCESS_TOKEN')
 
-        def request = new Request.Builder()
+        def req = new Request.Builder()
         .url("https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build/buildWithParameters?token=$jenkinsToken&GITHUB_ACCESS_TOKEN=$githubToken&GITHUB_RUN_ID=$runId&GIT_SHA=${Versioning.gitSHA}")
         .build()
-        def response = client.newCall(request).execute()
-        println "notify jenkins: ${response.code}"
+        def res = client.newCall(req).execute()
+
+        assert res.code == 201
+        println "triggered jenkins build"
     }
+}
+
+ext {
+    UpdateSitePath = Versioning.releaseMode ? "driftfx/$Versioning.version" : "driftfx/nightly/$Versioning.qualifier"
 }
 
 task deployUpdateSite() {
@@ -263,12 +269,8 @@ task deployUpdateSite() {
         def remoteHost = "genie.efxclipse@projects-storage.eclipse.org"
         def remoteDirectory = "/home/data/httpd/download.eclipse.org/efxclipse"
 
-        def target = ""
-        if (Versioning.releaseMode) {
-            target = "$remoteDirectory/driftfx/$Versioning.releaseTag"
-        } else {
-            target = "$remoteDirectory/driftfx/nightly/$Versioning.qualifier"
-        }
+        def target = "$remoteDirectory/$UpdateSitePath"
+        println "Deploying update site to '$target'"
 
         // create update site directory
         def stdout = new ByteArrayOutputStream()
@@ -348,7 +350,7 @@ task publishGithubRelease() {
             def release = github.createRelease(Versioning.releaseTag, Versioning.gitSHA, "DriftFX $Versioning.version", """
             
             ### Update Site
-            https://download.eclipse.org/efxclipse/drift/$Versioning.version
+            https://download.eclipse.org/$UpdateSitePath
 
             """.stripIndent().trim(), false)
 
@@ -372,7 +374,7 @@ task publishGithubRelease() {
             This is a nightly build. (The Version number 999.0.0 indicates nightly builds)
 
             ### Update Site
-            https://download.eclipse.org/efxclipse/driftfx/nightly/$Versioning.qualifier
+            https://download.eclipse.org/$UpdateSitePath
 
             """.stripIndent().trim(), true)
             println new groovy.json.JsonBuilder(release).toPrettyString()
