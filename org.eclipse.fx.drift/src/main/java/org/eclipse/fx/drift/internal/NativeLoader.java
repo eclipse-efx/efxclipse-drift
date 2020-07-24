@@ -27,7 +27,7 @@ public class NativeLoader {
 	}
 
 	public static boolean isMacOs() {
-		return getOsName().toLowerCase().contains("macos");
+		return getOsName().toLowerCase().contains("mac");
 	}
 	
 	/*package*/ static boolean osgi = false;
