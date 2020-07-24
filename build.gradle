@@ -134,7 +134,7 @@ task buildMultireleaseJar(type: Jar, dependsOn: [
                 'Bundle-Activator': 'org.eclipse.fx.drift.internal.OSGiActivator',
                 'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/driftcpp.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftcpp.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64,native/libdriftcpp.dylib;osname=MacOSX;processor=x86-64',
                 'Drift-Version': "$Versioning.version",
-                'Drift-Qualifier': "$Versioning.qualifier"
+                'Drift-Qualifier': "$Versioning.qualifier",
                 'Drift-Timestamp': "$Versioning.timestamp",
                 'Drift-SHA': "$Versioning.gitSHA"
         )
@@ -357,8 +357,9 @@ task publishGithubRelease() {
             ### Update Site
             https://download.eclipse.org/$UpdateSitePath
             ### Maven
+            Repo: https://repo.eclipse.org/content/groups/efxclipse
             Repo: https://maven.pkg.github.com/$githubOrga/$githubRepo    
-            Group Id: `org.eclipse.fx.drift`    
+            Group Id: `org.eclipse.fx`    
             Artifact Id: `org.eclipse.fx.drift`   
             Version: `$Versioning.version`   
 
@@ -386,8 +387,9 @@ task publishGithubRelease() {
             ### Update Site
             https://download.eclipse.org/$UpdateSitePath
             ### Maven
+            Repo: https://repo.eclipse.org/content/groups/efxclipse
             Repo: https://maven.pkg.github.com/$githubOrga/$githubRepo    
-            Group Id: `org.eclipse.fx.drift`    
+            Group Id: `org.eclipse.fx`    
             Artifact Id: `org.eclipse.fx.drift`   
             Version: `$Versioning.fullVersion-SNAPSHOT`   
 
@@ -427,7 +429,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'org.eclipse.fx'
             artifactId = 'org.eclipse.fx.drift'
-            version = "${Versioning.releaseMode ? Versioning.version : '999.0.0-SNAPSHOT'}"
+            version = "${Versioning.version}${Versioning.releaseMode ? '' : '-SNAPSHOT'}"
             artifact("$buildDir/signed/org.eclipse.fx.drift.jar") {
                 extension 'jar'
             }
@@ -441,14 +443,15 @@ publishing {
                 username = "redrezo"
                 password = "${System.getenv('GITHUB_ACCESS_TOKEN')}"
             }
-            // url = "$buildDir/maven-repo"
         }
         maven {
-            name = "EclipseNexus"
-            url = "https://repo.eclipse.org/content/groups/efxclipse"
+            name = 'EclipseNexus'
+            def releasesUrl = 'https://repo.eclipse.org/content/repositories/efxclipse-releases'
+            def snapshotsUrl = 'https://repo.eclipse.org/content/repositories/efxclipse-snapshots'
+            url = Versioning.releaseMode ? releasesUrl : snapshotsUrl
             credentials {
                 username eclipseRepoUsername
-                password eclipseRepoPassword
+                username eclipseRepoPassword
             }
             authentication {
                 basic(BasicAuthentication)
