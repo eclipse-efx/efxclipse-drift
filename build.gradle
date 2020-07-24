@@ -132,7 +132,11 @@ task buildMultireleaseJar(type: Jar, dependsOn: [
                 'Export-Package': "org.eclipse.fx.drift;version=\"${Versioning.version}\",org.eclipse.fx.drift.impl;version=\"${Versioning.version}\"",
                 'Private-Package': 'org.eclipse.fx.drift.internal',
                 'Bundle-Activator': 'org.eclipse.fx.drift.internal.OSGiActivator',
-                'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/driftcpp.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftcpp.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64,native/libdriftcpp.dylib;osname=MacOSX;processor=x86-64'
+                'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/driftcpp.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftcpp.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64,native/libdriftcpp.dylib;osname=MacOSX;processor=x86-64',
+                'Drift-Version': "$Versioning.version",
+                'Drift-Qualifier': "$Versioning.qualifier"
+                'Drift-Timestamp': "$Versioning.timestamp",
+                'Drift-SHA': "$Versioning.gitSHA"
         )
     }
     doLast {
@@ -421,9 +425,9 @@ task undoRelease() {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = 'org.eclipse.fx.drift'
+            groupId = 'org.eclipse.fx'
             artifactId = 'org.eclipse.fx.drift'
-            version = "${Versioning.releaseMode ? Versioning.version : (Versioning.fullVersion+'-SNAPSHOT')}"
+            version = "${Versioning.releaseMode ? Versioning.version : '999.0.0-SNAPSHOT'}"
             artifact("$buildDir/signed/org.eclipse.fx.drift.jar") {
                 extension 'jar'
             }
@@ -438,6 +442,17 @@ publishing {
                 password = "${System.getenv('GITHUB_ACCESS_TOKEN')}"
             }
             // url = "$buildDir/maven-repo"
+        }
+        maven {
+            name = "EclipseNexus"
+            url = "https://repo.eclipse.org/content/groups/efxclipse"
+            credentials {
+                username eclipseRepoUsername
+                password eclipseRepoPassword
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
         }
     }
 }
