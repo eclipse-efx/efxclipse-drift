@@ -444,17 +444,20 @@ publishing {
                 password = "${System.getenv('GITHUB_ACCESS_TOKEN')}"
             }
         }
-        maven {
-            name = 'EclipseNexus'
-            def releasesUrl = 'https://repo.eclipse.org/content/repositories/efxclipse-releases'
-            def snapshotsUrl = 'https://repo.eclipse.org/content/repositories/efxclipse-snapshots'
-            url = Versioning.releaseMode ? releasesUrl : snapshotsUrl
-            credentials {
-                username eclipseRepoUsername
-                username eclipseRepoPassword
-            }
-            authentication {
-                basic(BasicAuthentication)
+
+        if (project.hasProperty('eclipseRepoUsername')) {
+            maven {
+                name = 'EclipseNexus'
+                def releasesUrl = 'https://repo.eclipse.org/content/repositories/efxclipse-releases'
+                def snapshotsUrl = 'https://repo.eclipse.org/content/repositories/efxclipse-snapshots'
+                url = Versioning.releaseMode ? releasesUrl : snapshotsUrl
+                credentials {
+                    username eclipseRepoUsername
+                    username eclipseRepoPassword
+                }
+                authentication {
+                    basic(BasicAuthentication)
+                }
             }
         }
     }
