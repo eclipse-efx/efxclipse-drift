@@ -3,6 +3,15 @@
 DriftFX allows you to render any OpenGL content directly into JavaFX nodes.  
 Direct means that there is no transfer between GPU and main memory. The textures never leave the GPU.
 
+#### Changes
+
+ * Added the concept of a Swapchain which holds all native resources and allows better resource management.
+ * Moved most of the business logic from C++ to Java
+ * Added a C++ Binding to allow drift usage from C++ code
+
+
+
+Note: below stuff is not up to date!
 
 #### Usage
 
