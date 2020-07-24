@@ -391,7 +391,7 @@ task publishGithubRelease() {
             Repo: https://maven.pkg.github.com/$githubOrga/$githubRepo    
             Group Id: `org.eclipse.fx`    
             Artifact Id: `org.eclipse.fx.drift`   
-            Version: `$Versioning.fullVersion-SNAPSHOT`   
+            Version: `$Versioning.version-SNAPSHOT`   
 
             """.stripIndent().trim(), true)
             println new groovy.json.JsonBuilder(release).toPrettyString()
