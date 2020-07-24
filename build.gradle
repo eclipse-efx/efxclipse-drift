@@ -453,7 +453,7 @@ publishing {
                 url = Versioning.releaseMode ? releasesUrl : snapshotsUrl
                 credentials {
                     username eclipseRepoUsername
-                    username eclipseRepoPassword
+                    password eclipseRepoPassword
                 }
                 authentication {
                     basic(BasicAuthentication)
