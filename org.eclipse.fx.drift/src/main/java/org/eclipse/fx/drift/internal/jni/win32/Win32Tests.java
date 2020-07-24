@@ -10,7 +10,7 @@ import org.eclipse.fx.drift.internal.jni.MemoryStack;
 public class Win32Tests {
 
 	public static void main(String[] args) throws WindowsError {
-		NativeLoader.loadLibrary(Win32Tests.class, "DriftGL");
+		//NativeLoader.loadLibrary(Win32Tests.class, "DriftGL");
 		NativeLoader.loadLibrary(Win32Tests.class, "driftfx");
 		
 		IDirect3DDevice9Ex device = D3D9.CreateOffscreenDevice();

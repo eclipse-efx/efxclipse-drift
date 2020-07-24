@@ -133,7 +133,7 @@ public class MemoryStack implements IMemoryStack {
 		nOutputLong(t.getAddress());
 	}
 	public static void main(String[] args) {
-		NativeLoader.loadLibrary(MemoryStack.class, "DriftGL");
+		//NativeLoader.loadLibrary(MemoryStack.class, "DriftGL");
 		NativeLoader.loadLibrary(MemoryStack.class, "driftfx");
 		MemoryStack stack = new MemoryStack();
 		

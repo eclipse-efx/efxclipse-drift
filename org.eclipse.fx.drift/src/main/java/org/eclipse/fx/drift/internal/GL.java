@@ -3,7 +3,7 @@ package org.eclipse.fx.drift.internal;
 public class GL {
 	
 	static {
-		NativeLoader.loadLibrary(GL.class, "DriftGL");
+		//NativeLoader.loadLibrary(GL.class, "DriftGL");
 		NativeLoader.loadLibrary(GL.class, "driftfx");
 		if (!initialize()) {
 			// TODO throw exception in native code ?

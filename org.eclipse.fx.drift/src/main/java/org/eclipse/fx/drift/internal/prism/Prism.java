@@ -17,7 +17,7 @@ import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DDevice9Ex;
 public class Prism {
 
 	static {
-		NativeLoader.loadLibrary(Prism.class, "DriftGL");
+		//NativeLoader.loadLibrary(Prism.class, "DriftGL");
 		NativeLoader.loadLibrary(Prism.class, "driftfx");
 	}
 	
