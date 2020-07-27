@@ -9,6 +9,7 @@ import com.sun.prism.Texture;
 import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.NativeLoader;
 import org.eclipse.fx.drift.internal.QuantumRendererHelper;
+import org.eclipse.fx.drift.internal.Versioning;
 import org.eclipse.fx.drift.internal.jni.MemoryStack;
 import org.eclipse.fx.drift.internal.jni.win32.Win32;
 import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DDevice9Ex;
@@ -52,6 +53,8 @@ public class Prism {
 	public static void initialize() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
 			IllegalAccessException, IllegalArgumentException, NoSuchFieldException {
 
+		Log.info("DriftFX " + Versioning.getVersion() + "(git sha: " + Versioning.getSha()+") initializing");
+		
 		cGraphicsPipeline = Class.forName("com.sun.prism.GraphicsPipeline");
 		mGraphicsPipelineGetDefaultResourceFactory = cGraphicsPipeline.getMethod("getDefaultResourceFactory");
 		cResourceFactory = Class.forName("com.sun.prism.ResourceFactory");

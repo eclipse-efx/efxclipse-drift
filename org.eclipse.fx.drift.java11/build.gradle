@@ -1,6 +1,14 @@
 plugins {
     id 'java'
     id 'org.openjfx.javafxplugin' version '0.0.8'
+    id 'eclipse'
+}
+
+
+eclipse {
+	project {
+	
+	}
 }
 
 javafx {
@@ -11,7 +19,6 @@ javafx {
 
 dependencies {
     implementation project(':org.eclipse.fx.drift')
-//    implementation 'org.openjfx:javafx-graphics:11.0.2'	
 }
 
 compileJava {

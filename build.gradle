@@ -47,12 +47,6 @@ subprojects {
 
 }
 
-def test() {
-
-    println "executing test()"
-    "foo bar"
-}
-
 def getJava8() {
 	"${System.getenv('JAVA_HOME_8')}/bin/javac"
 }

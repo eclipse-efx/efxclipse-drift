@@ -1,16 +1,48 @@
 plugins {
     id 'java'
+    id 'eclipse'
+}
+
+eclipse {
+	project {
+	
+	}
+	classpath {
+		containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
+		
+		file {
+			beforeMerged { classpath -> 
+				
+			}
+		
+			whenMerged { classpath -> 
+				// this is a dirty workaround for now to get rid of the Java 11 Container
+				classpath.entries.removeAll { it.kind == 'con' && it.path.contains('JavaSE-11') }
+				//println new groovy.json.JsonBuilder([]).toPrettyString()
+			}
+		}
+	}
 }
 
 
 dependencies {
     compileOnly 'org.osgi:org.osgi.core:6.0.0'
+    
+    testImplementation 'junit:junit:4.12'
 }
 
 compileJava {
-    sourceCompatibility = 8
-    targetCompatibility = 8
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
 	options.encoding = 'UTF-8'
 	options.fork = true
 	options.forkOptions.executable = getJava8()    
 }
+compileTestJava {
+	sourceCompatibility = '1.8'
+	targetCompatibility = '1.8'
+	options.encoding = 'UTF-8'
+	options.fork = true
+	options.forkOptions.executable = getJava8()    
+}
+
