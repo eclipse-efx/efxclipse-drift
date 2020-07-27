@@ -53,7 +53,7 @@ public class RendererImpl implements Renderer {
 
 	@Override
 	public Swapchain createSwapchain(SwapchainConfig config) {
-		System.out.println("java createSwapchain(" + config +")");
+		Log.info("java createSwapchain(" + config +")");
 		return backend.createSwapchain(config);
 	}
 }

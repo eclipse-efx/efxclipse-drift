@@ -1,9 +1,30 @@
 package org.eclipse.fx.drift.internal.backend;
 
-import static org.eclipse.fx.drift.internal.GL.*;
-import static org.eclipse.fx.drift.internal.SYS.*;
+import static org.eclipse.fx.drift.internal.GL.GL_BGRA;
+import static org.eclipse.fx.drift.internal.GL.GL_PIXEL_PACK_BUFFER;
+import static org.eclipse.fx.drift.internal.GL.GL_READ_ONLY;
+import static org.eclipse.fx.drift.internal.GL.GL_RGBA;
+import static org.eclipse.fx.drift.internal.GL.GL_STATIC_READ;
+import static org.eclipse.fx.drift.internal.GL.GL_TEXTURE_2D;
+import static org.eclipse.fx.drift.internal.GL.GL_UNSIGNED_BYTE;
+import static org.eclipse.fx.drift.internal.GL.GL_UNSIGNED_INT_8_8_8_8_REV;
+import static org.eclipse.fx.drift.internal.GL.glBindBuffer;
+import static org.eclipse.fx.drift.internal.GL.glBindTexture;
+import static org.eclipse.fx.drift.internal.GL.glBufferData;
+import static org.eclipse.fx.drift.internal.GL.glDeleteBuffer;
+import static org.eclipse.fx.drift.internal.GL.glDeleteTexture;
+import static org.eclipse.fx.drift.internal.GL.glGenBuffer;
+import static org.eclipse.fx.drift.internal.GL.glGenTexture;
+import static org.eclipse.fx.drift.internal.GL.glGetTexImage;
+import static org.eclipse.fx.drift.internal.GL.glMapBuffer;
+import static org.eclipse.fx.drift.internal.GL.glTexImage2D;
+import static org.eclipse.fx.drift.internal.GL.glUnmapBuffer;
+import static org.eclipse.fx.drift.internal.SYS.free;
+import static org.eclipse.fx.drift.internal.SYS.malloc;
+import static org.eclipse.fx.drift.internal.SYS.memcpy;
 
 import org.eclipse.fx.drift.Vec2i;
+import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
 import org.eclipse.fx.drift.internal.prism.Prism;
@@ -42,16 +63,14 @@ public class MainMemoryImage implements Image {
 		memSize = size.x * size.y * 4;
 		memPointer = malloc(memSize);
 		
-		System.out.println("*allocated " + number + " 0x" + Long.toHexString(memPointer) + "("+size.x+"x"+size.y+": " + memSize + "B)");
-		System.out.flush();
+		Log.debug("*allocated " + number + " 0x" + Long.toHexString(memPointer) + "("+size.x+"x"+size.y+": " + memSize + "B)");
 		this.data =  new MainMemoryImageData(number, size, memPointer, memSize);
 	}
 
 	@Override
 	public void release() {
 		glDeleteTexture(glTexture);
-		System.out.println("*release " + glTexture + " 0x" + Long.toHexString(memPointer));
-		System.out.flush();
+		Log.debug("*release " + glTexture + " 0x" + Long.toHexString(memPointer));
 		free(memPointer);
 	}
 
@@ -78,8 +97,7 @@ public class MainMemoryImage implements Image {
 		glBindTexture(GL_TEXTURE_2D, glTexture);
 		glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_INT_8_8_8_8_REV, memPointer);
 		glBindTexture(GL_TEXTURE_2D, 0);
-		System.out.println("*downloaded " + tex + " => 0x" + Long.toHexString(memPointer));
-		System.out.flush();
+		Log.debug("*downloaded " + tex + " => 0x" + Long.toHexString(memPointer));
 	}
 	
 	private void downloadToMemoryBuf(int tex, int size, long pPixels) {

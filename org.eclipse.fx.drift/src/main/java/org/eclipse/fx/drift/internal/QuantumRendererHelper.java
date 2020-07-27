@@ -34,11 +34,11 @@ public class QuantumRendererHelper {
 		if (!initialized) {
 			context = syncExecute(() -> {
 				// TODO context version should be same as fx!!
-				System.out.println("QuantumRendererHelper: creating shared context for " + es2ContextHandle);
+				Log.info("QuantumRendererHelper: creating shared context for " + es2ContextHandle);
 				long es2Context = GL.wrapContext(es2ContextHandle);
 				long context = GL.createSharedCompatContext(es2Context);
 				boolean result = GL.makeContextCurrent(context);
-				System.out.println("=> " + result);
+				Log.info("=> " + result);
 				return context;
 			});
 			initialized = true;
@@ -97,9 +97,7 @@ public class QuantumRendererHelper {
 		lock.lock();
 		executor.execute(() -> {
 			lock.lock();
-			System.out.println(" ==>");
 			r.run();
-			System.out.println(" ***");
 			done.signal();
 			lock.unlock();
 		});

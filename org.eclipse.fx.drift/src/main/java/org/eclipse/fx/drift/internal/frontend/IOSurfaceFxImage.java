@@ -31,7 +31,6 @@ import static org.eclipse.fx.drift.internal.GL.glGenTexture;
 import static org.eclipse.fx.drift.internal.GL.glGetTexImage;
 import static org.eclipse.fx.drift.internal.GL.glMapBuffer;
 import static org.eclipse.fx.drift.internal.GL.glUnmapBuffer;
-import static org.eclipse.fx.drift.internal.SYS.malloc;
 import static org.eclipse.fx.drift.internal.SYS.memcpy;
 import static org.eclipse.fx.drift.internal.jni.macos.MacOS.CFRelease;
 import static org.eclipse.fx.drift.internal.jni.macos.MacOS.CGLGetCurrentContext;
@@ -42,8 +41,8 @@ import java.nio.ByteBuffer;
 
 import org.eclipse.fx.drift.Vec2i;
 import org.eclipse.fx.drift.internal.GL;
+import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.QuantumHelper;
-import org.eclipse.fx.drift.internal.SYS;
 import org.eclipse.fx.drift.internal.common.IOSurfaceImageData;
 import org.eclipse.fx.drift.internal.jni.MemoryStack;
 import org.eclipse.fx.drift.internal.jni.macos.MacOS;
@@ -251,8 +250,7 @@ private static void downloadToMemorySimple(int target, int tex, long pPixels) {
 		glBindTexture(target, tex);
 		glGetTexImage(target, 0, format, GL_UNSIGNED_INT_8_8_8_8_REV, pPixels);
 		glBindTexture(target, 0);
-		System.out.println("*downloaded " + tex + " => 0x" + Long.toHexString(pPixels));
-		System.out.flush();
+		Log.info("*downloaded " + tex + " => 0x" + Long.toHexString(pPixels));
 	}
 	
 	private static void downloadToMemoryBuf(int tex, int size, long pPixels) {
