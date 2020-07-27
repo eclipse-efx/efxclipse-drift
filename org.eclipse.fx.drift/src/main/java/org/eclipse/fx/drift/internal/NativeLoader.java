@@ -9,6 +9,9 @@ import java.nio.file.Paths;
 
 public class NativeLoader {
 
+	private static final boolean USE_JAVA_LIBRARY_PATH = Boolean.getBoolean("driftfx.use.java.library.path");
+
+	
 	private static String OS = null;
 
 	public static String getOsName() {
@@ -32,10 +35,9 @@ public class NativeLoader {
 	
 	/*package*/ static boolean osgi = false;
 	
-	private static boolean useJavaLibraryPath = Boolean.getBoolean("driftfx.use.java.library.path");
-	
+		
 	public static void loadLibrary(Class<?> context, String libname) {
-		if (useJavaLibraryPath || osgi) {
+		if (USE_JAVA_LIBRARY_PATH || osgi) {
 			// osgi will take care of it
 			System.loadLibrary(libname);
 		}
@@ -44,11 +46,11 @@ public class NativeLoader {
 			
 			String filename = getFilename(libname);
 			Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
-			Path extractPath = tmpDir.resolve("driftfx").resolve(filename);
+			Path extractPath = tmpDir.resolve("driftfx").resolve(Versioning.getVersion()).resolve(filename);
 			
 			String resourceName = "/native/" + filename;
 			URL url = context.getResource(resourceName);
-			System.err.println("Resource Lookup: name: " + resourceName + ", context: " + context + " => " + url);
+			Log.debug("Resource Lookup: name: " + resourceName + ", context: " + context + " => " + url);
 			
 			try (InputStream in = context.getResourceAsStream("/native/" + filename)) {
 				extract(in, extractPath);

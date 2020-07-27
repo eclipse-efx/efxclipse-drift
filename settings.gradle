@@ -1,4 +1,4 @@
-rootProject.name = 'driftfx'
+rootProject.name = 'driftfx-root'
 
 include 'native'
 include 'native:driftfx'
@@ -7,3 +7,4 @@ include 'native:driftcpp'
 include 'org.eclipse.fx.drift'
 include 'org.eclipse.fx.drift.java8'
 include 'org.eclipse.fx.drift.java11'
+
