@@ -46,7 +46,7 @@ public class NativeLoader {
 			
 			String filename = getFilename(libname);
 			Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
-			Path extractPath = tmpDir.resolve("driftfx").resolve(Versioning.getVersion()).resolve(filename);
+			Path extractPath = tmpDir.resolve("driftfx").resolve(Versioning.getVersion() + "-" + Versioning.getQualifier()).resolve(filename);
 			
 			String resourceName = "/native/" + filename;
 			URL url = context.getResource(resourceName);
