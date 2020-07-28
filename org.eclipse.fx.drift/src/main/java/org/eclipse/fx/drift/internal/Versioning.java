@@ -1,11 +1,6 @@
 package org.eclipse.fx.drift.internal;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
+import org.eclipse.fx.drift.util.ManifestUtil;
 
 public final class Versioning {
 
@@ -20,28 +15,11 @@ public final class Versioning {
 	
 	private Versioning() {}
 	
-	private static URL getManifestURL() {
-		try {
-			URL clsUrl = Versioning.class.getResource("Versioning.class");
-			return new URL(clsUrl.toString().replace("org/eclipse/fx/drift/internal/Versioning.class", "META-INF/MANIFEST.MF"));
-		}
-		catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
 	private static void readManifest() {
-		URL manifestUrl = getManifestURL();
-		try (InputStream in = manifestUrl.openStream()) {
-			Manifest manifest = new Manifest(in);
-			Attributes attrs = manifest.getMainAttributes();
-			version = attrs.getValue("Drift-Version");
-			qualifier = attrs.getValue("Drift-Qualifier");
-			timestamp = attrs.getValue("Drift-Timestamp");
-			sha = attrs.getValue("Drift-SHA");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		version = ManifestUtil.getManifestEntry(Versioning.class, "Drift-Version");
+		qualifier = ManifestUtil.getManifestEntry(Versioning.class, "Drift-Qualifier");
+		timestamp = ManifestUtil.getManifestEntry(Versioning.class, "Drift-Timestamp");
+		sha = ManifestUtil.getManifestEntry(Versioning.class, "Drift-SHA");
 	}
 	
 	public static String getVersion() {

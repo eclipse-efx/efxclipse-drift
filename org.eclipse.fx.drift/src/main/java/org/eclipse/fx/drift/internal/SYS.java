@@ -1,9 +1,11 @@
 package org.eclipse.fx.drift.internal;
 
+import org.eclipse.fx.drift.util.NativeUtil;
+
 public class SYS {
 
 	static {
-		NativeLoader.loadLibrary(SYS.class, "driftfx");
+		NativeUtil.loadLibrary(SYS.class, "driftfx");
 	}
 	
 	public static native long malloc(int size);

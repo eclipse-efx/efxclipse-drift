@@ -123,7 +123,7 @@ task buildMultireleaseJar(type: Jar, dependsOn: [
                 'Bundle-SymbolicName': 'org.eclipse.fx.drift',
                 'Bundle-Version': "${Versioning.bundleVersion}",
                 "Multi-Release": true,
-                'Export-Package': "org.eclipse.fx.drift;version=\"${Versioning.version}\",org.eclipse.fx.drift.impl;version=\"${Versioning.version}\"",
+                'Export-Package': "org.eclipse.fx.drift;version=\"${Versioning.version}\",org.eclipse.fx.drift.impl;version=\"${Versioning.version}\",org.eclipse.fx.drift.util;version=\"${Versioning.version}\"",
                 'Import-Package': "org.osgi.framework",
                 'Private-Package': 'org.eclipse.fx.drift.internal',
                 'Bundle-Activator': 'org.eclipse.fx.drift.internal.OSGiActivator',

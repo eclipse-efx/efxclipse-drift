@@ -4,22 +4,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
-import com.sun.prism.Texture;
-
 import org.eclipse.fx.drift.internal.Log;
-import org.eclipse.fx.drift.internal.NativeLoader;
-import org.eclipse.fx.drift.internal.QuantumRendererHelper;
 import org.eclipse.fx.drift.internal.Versioning;
-import org.eclipse.fx.drift.internal.jni.MemoryStack;
 import org.eclipse.fx.drift.internal.jni.win32.Win32;
 import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DDevice9Ex;
+import org.eclipse.fx.drift.util.NativeUtil;
+
+import com.sun.prism.Texture;
 
 @SuppressWarnings("restriction")
 public class Prism {
 
 	static {
 		//NativeLoader.loadLibrary(Prism.class, "DriftGL");
-		NativeLoader.loadLibrary(Prism.class, "driftfx");
+		NativeUtil.loadLibrary(Prism.class, "driftfx");
 	}
 	
 	private static Class<?> cGraphicsPipeline;

@@ -1,7 +1,7 @@
 package org.eclipse.fx.drift.internal.jni.win32;
 
 import org.eclipse.fx.drift.internal.GL;
-import org.eclipse.fx.drift.internal.NativeLoader;
+import org.eclipse.fx.drift.util.NativeUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,8 +18,7 @@ public class TestNV_DX_Interop {
 	
 	@BeforeClass
 	public static void setupGlobal() {
-		NativeLoader.loadLibrary(TestNV_DX_Interop.class, "DriftGL");
-		NativeLoader.loadLibrary(TestNV_DX_Interop.class, "driftfx");
+		NativeUtil.loadLibrary(TestNV_DX_Interop.class, "driftfx");
 	}
 	
 	@Before

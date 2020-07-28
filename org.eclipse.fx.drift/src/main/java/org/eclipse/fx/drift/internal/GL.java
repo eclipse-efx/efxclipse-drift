@@ -1,10 +1,11 @@
 package org.eclipse.fx.drift.internal;
 
+import org.eclipse.fx.drift.util.NativeUtil;
+
 public class GL {
 	
 	static {
-		//NativeLoader.loadLibrary(GL.class, "DriftGL");
-		NativeLoader.loadLibrary(GL.class, "driftfx");
+		NativeUtil.loadLibrary(GL.class, "driftfx");
 		if (!initialize()) {
 			// TODO throw exception in native code ?
 			throw new RuntimeException("Error during DriftGL initialization");

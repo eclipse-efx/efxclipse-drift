@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Stack;
 
 import org.eclipse.fx.drift.internal.Log;
-import org.eclipse.fx.drift.internal.NativeLoader;
+import org.eclipse.fx.drift.util.NativeUtil;
 
 
 public class MemoryStack implements IMemoryStack {
@@ -135,7 +135,7 @@ public class MemoryStack implements IMemoryStack {
 	}
 	public static void main(String[] args) {
 		//NativeLoader.loadLibrary(MemoryStack.class, "DriftGL");
-		NativeLoader.loadLibrary(MemoryStack.class, "driftfx");
+		NativeUtil.loadLibrary(MemoryStack.class, "driftfx");
 		MemoryStack stack = new MemoryStack();
 		
 		
