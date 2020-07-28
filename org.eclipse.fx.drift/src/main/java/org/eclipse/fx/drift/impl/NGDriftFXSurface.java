@@ -254,7 +254,7 @@ public class NGDriftFXSurface extends NGNode {
 				nextSwapChain = null;
 			}
 			catch (Exception e) {
-				System.err.println("ERROR during swapchain recreation");
+				Log.error("ERROR during swapchain recreation");
 			}
 		}
 		

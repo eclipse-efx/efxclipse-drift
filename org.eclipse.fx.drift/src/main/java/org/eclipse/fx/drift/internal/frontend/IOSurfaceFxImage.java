@@ -149,17 +149,17 @@ public class IOSurfaceFxImage extends AFxImage<IOSurfaceImageData> {
 	}
 	
 	public static void dumpIOSurface(long ioSurfaceID, Vec2i size) {
-		System.err.println("dumpIOSurface " + ioSurfaceID);
+		Log.debug("dumpIOSurface " + ioSurfaceID);
 		int tempTexture = glGenTexture();
 		CGLContextObj cglContext = CGLGetCurrentContext();
-		System.err.println("GOT CONTEXT " + cglContext);
+		Log.debug("GOT CONTEXT " + cglContext);
 		IOSurfaceRef ioSurface = IOSurfaceLookup(ioSurfaceID);
-		System.err.println("GOT IOSURFACE " + ioSurface);
+		Log.debug("GOT IOSURFACE " + ioSurface);
 		//System.err.println("Got cglContext=" + cglContext + " and ioSurface=" + ioSurface);
 		GL.glBindTexture(GL_TEXTURE_RECTANGLE, tempTexture);
 		CGLError success = CGLTexImageIOSurface2D(cglContext, GL_TEXTURE_RECTANGLE, GL_RGBA, size.x, size.y, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0);
 		GL.glBindTexture(GL_TEXTURE_RECTANGLE, 0);
-		System.err.println("mount success_: " + success);
+		Log.debug("mount success_: " + success);
 		
 		MacOS.IOSurfaceLock(ioSurface);
 		
@@ -180,7 +180,7 @@ public class IOSurfaceFxImage extends AFxImage<IOSurfaceImageData> {
 		byte g = buf.get();
 		byte b = buf.get();
 		byte a = buf.get();
-		System.err.println("First Pixel: " + r + " / " + g + " / " + b + " / " + a);
+		Log.debug("First Pixel: " + r + " / " + g + " / " + b + " / " + a);
 
 		
 //		SYS.free(memPointer);
@@ -196,7 +196,7 @@ public class IOSurfaceFxImage extends AFxImage<IOSurfaceImageData> {
 	}
 	
 	public static void dumpGLTexture(int name, Vec2i size) {
-		System.err.println("dumpGLTexture " + name);
+		Log.debug("dumpGLTexture " + name);
 		
 		int memSize = size.x * size.y * 4;
 		
@@ -214,7 +214,7 @@ public class IOSurfaceFxImage extends AFxImage<IOSurfaceImageData> {
 		byte g = buf.get();
 		byte b = buf.get();
 		byte a = buf.get();
-		System.err.println("First Pixel: " + r + " / " + g + " / " + b + " / " + a);
+		Log.debug("First Pixel: " + r + " / " + g + " / " + b + " / " + a);
 		
 		
 	}

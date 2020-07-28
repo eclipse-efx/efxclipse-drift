@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.fx.drift.impl.DriftDebug;
 import org.eclipse.fx.drift.impl.NGDriftFXSurface;
+import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.ScreenObserver;
 import org.eclipse.fx.drift.internal.SurfaceData;
 import org.eclipse.fx.drift.internal.frontend.FrontSwapChain;
@@ -241,7 +242,7 @@ public abstract class BaseDriftFXSurface extends Node {
 	public void setSwapChain(FrontSwapChain swapChain) {
 		DriftDebug.outputThread();
 		FrontSwapChain leftover = swapChainBuf.getAndSet(swapChain);
-		if (leftover != null) System.err.println("Leftover swapchain!!! This is not good! " + leftover);
+		if (leftover != null) Log.info("Leftover swapchain!!! This is not good! " + leftover);
 		Platform.runLater(() ->  getHelper().markDirty(DirtyBits.NODE_CONTENTS));
 	}
 	

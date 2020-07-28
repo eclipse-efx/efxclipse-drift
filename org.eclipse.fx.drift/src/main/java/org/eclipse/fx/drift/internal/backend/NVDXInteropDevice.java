@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.fx.drift.internal.GL;
+import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.jni.win32.NVDXInterop;
 import org.eclipse.fx.drift.internal.jni.win32.Win32;
 import org.eclipse.fx.drift.internal.jni.win32.WindowsError;
@@ -44,7 +45,7 @@ public class NVDXInteropDevice {
 			}
 		
 			device.usageCount++;
-			System.err.println(device);
+			Log.debug("" + device);
 			return device;
 		}
 	}

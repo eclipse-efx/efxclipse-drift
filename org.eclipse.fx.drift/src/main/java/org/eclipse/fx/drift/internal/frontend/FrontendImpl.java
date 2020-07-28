@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import org.eclipse.fx.drift.DriftFXSurface;
 import org.eclipse.fx.drift.PresentationMode;
 import org.eclipse.fx.drift.Vec2i;
+import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.transport.Command;
 import org.eclipse.fx.drift.internal.transport.command.CreateSwapchainCommand;
@@ -68,7 +69,7 @@ public class FrontendImpl implements Frontend {
 //		System.err.println("Frontend received " + command);
 		
 		if (command instanceof CreateSwapchainCommand) {
-			System.err.println("Frontend received " + command);
+			Log.debug("Frontend received " + command);
 			CreateSwapchainCommand cmd = (CreateSwapchainCommand) command;
 			doCreateSwapchain(cmd.getId(), cmd.getImages(), cmd.getPresentatioMode());
 		}
@@ -78,12 +79,12 @@ public class FrontendImpl implements Frontend {
 				doPresent(cmd.getImageData());
 			}
 			else {
-				System.err.println("!!! Instant release");
+				Log.debug("!!! Instant release");
 				sendRelease(cmd.getSwapChainId(), cmd.getImageData());
 			}
 		}
 		else if (command instanceof DisposeSwapchainCommand) {
-			System.err.println("Frontend received " + command);
+			Log.debug("Frontend received " + command);
 			DisposeSwapchainCommand cmd = (DisposeSwapchainCommand) command;
 			swapChains.get(cmd.getId()).scheduleDispose();
 		}

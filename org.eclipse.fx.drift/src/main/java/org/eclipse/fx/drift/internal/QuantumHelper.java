@@ -30,14 +30,14 @@ public class QuantumHelper {
 //			glContext = GL.createSharedCompatContext(wrapContext);
 			glContext = GL.createContext(wrapContext, 2, 0);
 			boolean su = GL.makeContextCurrent(glContext);
-			System.err.println("QuantumHelper#initializeContext");
-			System.err.println("prismContext = " + prismContext);
-			System.err.println("glContext = " + glContext);
-			System.err.println("makeCurrent: " + su);
+			Log.debug("QuantumHelper#initializeContext");
+			Log.debug("prismContext = " + prismContext);
+			Log.debug("glContext = " + glContext);
+			Log.debug("makeCurrent: " + su);
 			
 			long nativeHandle = GL.getNativeContextHandle(glContext);
-			System.err.println("nativeHandle = " + nativeHandle);
-			System.err.println("CGLGetCurrent = " + MacOS.CGLGetCurrentContext() ) ;
+			Log.debug("nativeHandle = " + nativeHandle);
+			Log.debug("CGLGetCurrent = " + MacOS.CGLGetCurrentContext() ) ;
 		}
 	}
 	

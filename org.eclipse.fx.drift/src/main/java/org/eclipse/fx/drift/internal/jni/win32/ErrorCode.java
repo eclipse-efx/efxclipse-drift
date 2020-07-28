@@ -3,6 +3,8 @@ package org.eclipse.fx.drift.internal.jni.win32;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.eclipse.fx.drift.internal.Log;
+
 public enum ErrorCode {
 	ERROR_INVALID_HANDLE(0x6),
 	ERROR_INVALID_DATA(0xD),
@@ -24,7 +26,7 @@ public enum ErrorCode {
 			return code.get();
 		}
 		else {
-			System.err.println("Error code not yet supported: " + Integer.toHexString(value));
+			Log.error("Error code not yet supported: " + Integer.toHexString(value));
 			Thread.dumpStack();
 			return null;
 		}

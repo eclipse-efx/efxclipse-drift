@@ -3,6 +3,8 @@ package org.eclipse.fx.drift.internal.jni.win32;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.eclipse.fx.drift.internal.Log;
+
 public enum HRESULT {
 	E_OUTOFMEMORY(0x8007000EL),
 	E_INVALIDARG(0x80070057L),
@@ -21,7 +23,7 @@ public enum HRESULT {
 			return code.get();
 		}
 		else {
-			System.err.println("Error code not yet supported: " + Long.toHexString(value));
+			Log.error("Error code not yet supported: " + Long.toHexString(value));
 			Thread.dumpStack();
 			return null;
 		}

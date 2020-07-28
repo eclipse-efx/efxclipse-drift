@@ -1,5 +1,6 @@
 package org.eclipse.fx.drift.internal.frontend;
 
+import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.prism.Prism;
 
@@ -27,7 +28,7 @@ public abstract class AFxImage<D extends ImageData> implements FxImage<D> {
 	public void allocate(ResourceFactory rf) throws Exception {
 		texture = rf.createTexture(PixelFormat.BYTE_BGRA_PRE, Texture.Usage.DYNAMIC, Texture.WrapMode.CLAMP_NOT_NEEDED, data.size.x, data.size.y);
 		texture.makePermanent();
-		System.err.println("Texture Created! " + this + " / " + texture + " / " + Prism.getTextureHandle(texture));
+		Log.debug("Texture Created! " + this + " / " + texture + " / " + Prism.getTextureHandle(texture));
 	}
 
 	@Override

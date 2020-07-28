@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.fx.drift.RenderTarget;
 import org.eclipse.fx.drift.SwapchainConfig;
+import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.transport.command.DisposeSwapchainCommand;
 import org.eclipse.fx.drift.internal.transport.command.PresentCommand;
@@ -65,7 +66,7 @@ public class SimpleSwapchain implements BackendSwapchain {
 			}
 		}
 		disposeTime += System.nanoTime();
-		System.err.println("Dispose waiting time was " + disposeTime + "ns");
+		Log.debug("Dispose waiting time was " + disposeTime + "ns");
 		synchronized (freeImages) {
 			for (Image image : freeImages) {
 				image.release();
@@ -73,7 +74,7 @@ public class SimpleSwapchain implements BackendSwapchain {
 			// TODO release ohter images
 			images.removeAll(freeImages);
 			if (!images.isEmpty()) {
-				System.err.println("Unreleased Swapchain images remaining: " + images);
+				Log.error("Unreleased Swapchain images remaining: " + images);
 			}
 			disposed = true;
 		}
@@ -97,7 +98,7 @@ public class SimpleSwapchain implements BackendSwapchain {
 			Image image = imageMap.get(imageData);
 			if (image == null) {
 				// panic
-				System.err.println("Wrong image released !!!!!");
+				Log.error("Wrong image released !!!!!");
 			}
 			else {
 				freeImages.add(image);

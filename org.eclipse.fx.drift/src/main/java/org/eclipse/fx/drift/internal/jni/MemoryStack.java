@@ -3,6 +3,7 @@ package org.eclipse.fx.drift.internal.jni;
 import java.nio.ByteBuffer;
 import java.util.Stack;
 
+import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.NativeLoader;
 
 
@@ -129,7 +130,7 @@ public class MemoryStack implements IMemoryStack {
 	private static native void nOutputLong(long target);
 	
 	public static void output(IMemoryStack stack, Long t) {
-		System.err.println("J 0x" + java.lang.Long.toHexString(t.get()) + " (" + t.get() + ")");
+		Log.debug("J 0x" + java.lang.Long.toHexString(t.get()) + " (" + t.get() + ")");
 		nOutputLong(t.getAddress());
 	}
 	public static void main(String[] args) {

@@ -69,7 +69,7 @@ public class GPUSyncUtil {
 			case GL.GL_CONDITION_SATISFIED: return WaitSyncResult.CONDITION_SATISFIED;
 			case GL.GL_WAIT_FAILED: return WaitSyncResult.WAIT_FAILED;
 			}
-			System.err.println("glClientWaitSync: Unexpected result!!! " + r);
+			Log.error("glClientWaitSync: Unexpected result!!! " + r);
 			return WaitSyncResult.WAIT_FAILED;
 		}
 		
