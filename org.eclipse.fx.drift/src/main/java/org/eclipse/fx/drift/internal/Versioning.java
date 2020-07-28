@@ -2,6 +2,7 @@ package org.eclipse.fx.drift.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -19,8 +20,18 @@ public final class Versioning {
 	
 	private Versioning() {}
 	
+	private static URL getManifestURL() {
+		try {
+			URL clsUrl = Versioning.class.getResource("Versioning.class");
+			return new URL(clsUrl.toString().replace("org/eclipse/fx/drift/internal/Versioning.class", "META-INF/MANIFEST.MF"));
+		}
+		catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	private static void readManifest() {
-		URL manifestUrl = Log.class.getResource("/META-INF/MANIFEST.MF");
+		URL manifestUrl = getManifestURL();
 		try (InputStream in = manifestUrl.openStream()) {
 			Manifest manifest = new Manifest(in);
 			Attributes attrs = manifest.getMainAttributes();
