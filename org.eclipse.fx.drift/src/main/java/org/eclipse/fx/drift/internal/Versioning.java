@@ -20,7 +20,7 @@ public final class Versioning {
 	private Versioning() {}
 	
 	private static void readManifest() {
-		URL manifestUrl = Versioning.class.getResource("/META-INF/MANIFEST.MF");
+		URL manifestUrl = Log.class.getResource("/META-INF/MANIFEST.MF");
 		try (InputStream in = manifestUrl.openStream()) {
 			Manifest manifest = new Manifest(in);
 			Attributes attrs = manifest.getMainAttributes();
