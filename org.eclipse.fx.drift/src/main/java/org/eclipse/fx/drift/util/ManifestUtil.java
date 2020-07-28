@@ -7,15 +7,13 @@ import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.eclipse.fx.drift.internal.Versioning;
-
 public class ManifestUtil {
 	
 	private static URL getManifestUrl(Class<?> cls) {
 		try {
 			String shortName = cls.getSimpleName() + ".class";
-			String fullPath = cls.getName().replace('/', '.') + ".class";
-			URL clsUrl = Versioning.class.getResource(shortName);
+			String fullPath = cls.getName().replace('.', '/') + ".class";
+			URL clsUrl = cls.getResource(shortName);
 			return new URL(clsUrl.toString().replace(fullPath, "META-INF/MANIFEST.MF"));
 		}
 		catch (MalformedURLException e) {
