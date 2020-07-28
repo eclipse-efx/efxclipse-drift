@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eclipse.fx.drift.internal.Log;
-import org.eclipse.fx.drift.internal.Versioning;
 
 public class NativeUtil {
 	
