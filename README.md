@@ -9,135 +9,99 @@ Direct means that there is no transfer between GPU and main memory. The textures
  * Moved most of the business logic from C++ to Java
  * Added a C++ Binding to allow drift usage from C++ code
 
-
-
-Note: below stuff is not up to date!
-
-#### Usage
-
-Create a `DriftFXSurface` Node in JavaFX. Instantiate a native renderer via JNI and tell it the surface id. In the native renderloop acquire a `RenderTarget` from DriftFX and setup a FBO with the supplied texture id. After rendering the content give the `RenderTarget` back to DriftFX.
-
-Here is an example:  
-
-##### JavaFX part
+### Java Usage
 
 ```java
-public class DriftFXDemo extends Application {
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		DriftFXSurface.initialize();
-		
-		BorderPane root = new BorderPane();
-		Scene scene = new Scene(root);
-		primaryStage.setScene(scene);
-		
-		DriftFXSurface surface = new DriftFXSurface();
-		root.setCenter(surface);
-		
-		primaryStage.show();
-		
-		Thread renderer = new Thread(()->nRun(surface.getSurfaceId());
-		renderer.start();
+	// you acquire the Renderer api by calling getRenderer on your surface
+	Renderer renderer = GLRenderer.getRenderer(surface)
+
+	// on your render thread you do the following:
+	
+	// first you create your own opengl context & make it current
+	
+	// in your render loop you manage your swapchain instance
+	
+	// you can fetch the current size of the surface by asking the renderer
+	Vec2i size = renderer.getSize();
+	
+	if (swapchain == null || size.x != swapchain.getConfig().size.x || size.y != swapchain.getConfig().size.y) {
+		// re-create the swapchain
+		if (swapchain != null) {
+			swapchain.dispose();
+		}
+		swapchain = renderer.createSwapchain(new SwapchainConfig(size, 2, PresentationMode.MAILBOX, StandardTransferTypes.MainMemory);
 	}
 	
-	private static native void nRun(long surfaceId);
-}
+	
+	// to draw you acquire a RenderTarget from the swapchain
+	RenderTarget target = swapchain.acquire(); // this call is blocking, if there is no RenderTarget available it will wait until one gets available
+	
+	int texId = GLRenderer.getGLTextureId(target);
+	
+	// now you setup a framebuffer with this texture and draw onto it
+	
+	// once you are finished with the frame you call present on the swapchain
+	swapchain.present(target);
+
 ```
 
-##### Native part
+### C++ Usage
+The API aims to be similar to the Java API.
 
 ```c++
-#include <DriftFX/DriftFX.h>
-#include <DriftFX/DriftFXSurface.h>
-#include <DriftFX/GL/GLContext.h>
-
-using namespace driftfx;
-using namespace driftfx::gl;
-
-DriftFXSurface* surface;
-GLContext* context;
-GLuint fbo;
-
-void prepare() {
-	surface->Initialize();
-	glGenFramebuffers(1, &fbo);
-}
-void renderFrame() {
-	RenderTarget* target = surface->Acquire();
 	
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target->GetGLTexture(), 0);
+	// first you get your Renderer instance in Java and pass it to C++ via JNI
+	// the entrypoint is to acquire a C++ Renderer by passing in the Java Renderer
 	
-	glViewport(0, 0, target->GetWidth(), target->GetHeight());
-	glClear(GL_COLOR_BUFFER_BIT);
+	// you may need to attach your thread to the jvm to acquire a vaild JNIEnv
 	
-	glFlush();
+	driftfx::Renderer* renderer = driftfx::initializeRenderer(env, javaRenderer);
 	
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
-	surface->Present(target, CENTER);
-}
-void cleanup() {
-	surface->Cleanup();
-	glDeleteFramebuffers(1, &fbo);
-}
-
-extern "C" JNIEXPORT void JNICALL Java_DriftFXDemo_nRun(JNIEnv* env, jclass cls, jlong surfaceId) {
-	surface = DriftFX::Get()->GetSurface(surfaceId);
-	context = surface->GetContext();
 	
-	context->SetCurrent();	
-	prepare();
-	while(alive) {
-		renderFrame();
+	// then you create your own opengl context & make it current
+	
+	// in your renderloop
+	
+	if (swapchain == null || needsResize()) {
+	
+		if (swapchain != null) {
+			delete swapchain;
+		}
+	
+		driftfx::SwapchainConfig cfg;
+		cfg.imageCount = 2;
+		cfg.size = renderer->getSize();
+		cfg.transferType = driftfx::StandardTransferTypes::MainMemory;
+		swapchain = renderer->createSwapchain(cfg);
 	}
-	cleanup();
-}
-
+	
+	
+	driftfx::RenderTarget* target = swapchain->acquire();
+	
+	GLuint texId = driftfx::GLRenderer::getGLTextureId(target);
+	
+	// setup framebuffer and draw
+	
+	swapchain->present(target);
+	
 ```
+
 
 ### TransferModes
 
-The different ways to transfer the texture to JavaFX are now implemented as `TransferMode`s. There is an API on the `DriftFXSurface` to query the available transfer modes (`DriftFXSurface.getAvailableTransferModes()`), the platform default transfer mode (`DriftFXSurface.getPlatformDefaultTransferMode()`) and the fallback transfer mode (`DriftFXSurface.getFallbackTransferMode()`). Each instance of `DriftFXSurface` has a transfer mode property. It is initialized with the default transfer mode, which is either the platform default or, if the configuration is set to fallback the fallback transfer mode.
-
-```
-DriftFXSurface.getAvailableTransferModes(); // returns a list of available transfer modes.
-DriftFXSurface.getPlatformDefaultTransferMode(); // returns the platform default transfer mode.
-DriftFXSurface.getFallbackTransferMode(); // returns the fallback transfer mode.
-
-DriftFXSurface surface = new DriftFXSurface();
-surface.setTransferMode(mode); // sets the transfer mode on the instance
-```
-
-At the moment the following implementations exist:    
-
- * **NoOp**: *(available in Windows, Linux and MacOS)*    
-   As its name says it does nothing, however a valid texture is generated on acquire so your render loop will still work.    
-       
+The different ways to transfer the texture to JavaFX are now implemented as `TransferMode`s.    
        
  * **MainMemory**: *(available in Windows, Linux and MacOS)*    
-   downloads the texture to main memory and uploads it again to the javafx texture.    
-   *Fallback for all platforms*    
-       
+   downloads the texture to main memory and uploads it again to the javafx texture.     
     
  * **IOSurface**: *(available in MacOS)*    
    shares the texture on the graphics card via the IOSurface system.    
-   *MacOS Platform Default*    
     
     
  * **NVDXInterop**: *(available in Windows)*    
-   shares the texture via the NV_DX_Interop extension with DirectX and via a direct x shared resource with javafx.    
-   *Windows Platform Default*   
-    
-    
- * **SharedContext**: *(available in Linux)*    
-   shares the texture via a shared gl context with javafx.    
-   *Linux Platform Default*    
-    
-    
- * **LegacyWinFallback**: *(available in Windows)*    
-   downloads the texture from gl to main memory and uploads it again to direct x, then it is shared via a dx shared resource with javafx.
-   
+   shares the texture via the NV_DX_Interop extension with DirectX and via a direct x shared resource with javafx.
+
 
 ### Requirements
 
