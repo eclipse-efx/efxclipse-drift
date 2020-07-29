@@ -43,9 +43,11 @@ public class NativeUtil {
 	public static void loadLibrary(Class<?> context, String libname) {
 		if (USE_JAVA_LIBRARY_PATH || osgi) {
 			// osgi will take care of it
+			Log.info("loading " + libname + " via system call");
 			System.loadLibrary(libname);
 		}
 		else {
+			
 			// we need to make it happen
 			
 			String filename = getFilename(libname);
@@ -56,12 +58,14 @@ public class NativeUtil {
 			URL url = context.getResource(resourceName);
 			Log.debug("Resource Lookup: name: " + resourceName + ", context: " + context + " => " + url);
 			
+			
 			try (InputStream in = context.getResourceAsStream("/native/" + filename)) {
 				extract(in, extractPath);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			
+			Log.info("loading " + libname + " from extracted location (" + extractPath + ")");
 			System.load(extractPath.toString());
 		}
 	}

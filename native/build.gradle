@@ -25,6 +25,13 @@ def getJNIPlatformDir() {
   }
 }
 
+def getJNIIncludeDir() {
+	Jvm.current().javaHome.toPath().resolve('include')
+}
+def getJNIPlatformIncludeDir() {
+	getJNIIncludeDir().resolve(getJNIPlatformDir())
+}
+
 def addJNIIncludes(compileTask) {
   def includeDir = Jvm.current().javaHome.toPath().resolve('include')
   def platformIncludeDir = includeDir.resolve(getJNIPlatformDir())

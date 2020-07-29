@@ -7,6 +7,12 @@
 
 #include "driftcppint.h"
 
+jobject driftfx::JNI::classLoader;
+
+// Class
+jclass driftfx::JNI::cClass;
+jmethodID driftfx::JNI::mClassForName;
+
 // Vec2i
 jclass driftfx::JNI::cVec2i;
 jmethodID driftfx::JNI::mVec2iConstructor;
@@ -37,15 +43,27 @@ jclass driftfx::JNI::cGLRenderer;
 jmethodID driftfx::JNI::mGLRendererGetGLTextureId;
 
 
-void driftfx::JNI::init(JNIEnv* env) {
+jclass driftfx::JNI::getClass(JNIEnv* env, const char* name) {
+	jstring className = env->NewStringUTF(name);
+	jclass result = (jclass) env->CallStaticObjectMethod(cClass, mClassForName, className, JNI_FALSE, classLoader);
+	env->DeleteLocalRef(className);
+	return result;
+}
+
+void driftfx::JNI::init(JNIEnv* env, jobject _classLoader) {
+	classLoader = env->NewGlobalRef(_classLoader);
+	// Class
+	cClass = env->FindClass("java/lang/Class");
+	cClass = (jclass)env->NewGlobalRef(cClass);
+	mClassForName = env->GetStaticMethodID(cClass, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
 	// Vec2i
-	cVec2i = env->FindClass("org/eclipse/fx/drift/Vec2i");
+	cVec2i = getClass(env, "org.eclipse.fx.drift.Vec2i"); //env->FindClass("org/eclipse/fx/drift/Vec2i");
 	cVec2i = (jclass)env->NewGlobalRef(cVec2i);
 	mVec2iConstructor = env->GetMethodID(cVec2i, "<init>", "(II)V");
 	fVec2iX = env->GetFieldID(cVec2i, "x", "I");
 	fVec2iY = env->GetFieldID(cVec2i, "y", "I");
 	// SwapchainConfig
-	cSwapchainConfig = env->FindClass("org/eclipse/fx/drift/SwapchainConfig");
+	cSwapchainConfig = getClass(env, "org.eclipse.fx.drift.SwapchainConfig"); //env->FindClass("org/eclipse/fx/drift/SwapchainConfig");
 	cSwapchainConfig = (jclass)env->NewGlobalRef(cSwapchainConfig);
 	mSwapchainConfigConstructor = env->GetMethodID(cSwapchainConfig, "<init>", "(Lorg/eclipse/fx/drift/Vec2i;ILorg/eclipse/fx/drift/PresentationMode;Lorg/eclipse/fx/drift/TransferType;)V");
 	fSwapchainConfigSize = env->GetFieldID(cSwapchainConfig, "size", "Lorg/eclipse/fx/drift/Vec2i;");
@@ -53,22 +71,40 @@ void driftfx::JNI::init(JNIEnv* env) {
 	fSwapchainConfigPresentationMode = env->GetFieldID(cSwapchainConfig, "presentationMode", "Lorg/eclipse/fx/drift/PresentationMode;");
 	fSwapchainConfigTransferType = env->GetFieldID(cSwapchainConfig, "transferType", "Lorg/eclipse/fx/drift/TransferType;");
 	// Swapchain
-	jclass cSwapchain = env->FindClass("org/eclipse/fx/drift/Swapchain");
+	jclass cSwapchain = getClass(env, "org.eclipse.fx.drift.Swapchain"); //env->FindClass("org/eclipse/fx/drift/Swapchain");
 	mSwapchainAcquire = env->GetMethodID(cSwapchain, "acquire", "()Lorg/eclipse/fx/drift/RenderTarget;");
 	// mSwapchainTryAcquire // TODO generics!?
 	mSwapchainPresent = env->GetMethodID(cSwapchain, "present", "(Lorg/eclipse/fx/drift/RenderTarget;)V");
 	mSwapchainDispose = env->GetMethodID(cSwapchain, "dispose", "()V");
 	mSwapchainGetConfig = env->GetMethodID(cSwapchain, "getConfig", "()Lorg/eclipse/fx/drift/SwapchainConfig;");
 	// Renderer
-	jclass cRenderer = env->FindClass("org/eclipse/fx/drift/Renderer");
+	jclass cRenderer = getClass(env, "org.eclipse.fx.drift.Renderer"); //env->FindClass("org/eclipse/fx/drift/Renderer");
 	mRendererGetSize = env->GetMethodID(cRenderer, "getSize", "()Lorg/eclipse/fx/drift/Vec2i;");
 	mRendererCreateSwapchain = env->GetMethodID(cRenderer, "createSwapchain", "(Lorg/eclipse/fx/drift/SwapchainConfig;)Lorg/eclipse/fx/drift/Swapchain;");
 	// GLRenderer
-	cGLRenderer = env->FindClass("org/eclipse/fx/drift/GLRenderer");
+	cGLRenderer = getClass(env, "org.eclipse.fx.drift.GLRenderer"); //env->FindClass("org/eclipse/fx/drift/GLRenderer");
 	cGLRenderer = (jclass)env->NewGlobalRef(cGLRenderer);
 	mGLRendererGetGLTextureId = env->GetStaticMethodID(cGLRenderer, "getGLTextureId", "(Lorg/eclipse/fx/drift/RenderTarget;)I");
+
+	jclass cStandardTransferTypes = getClass(env, "org.eclipse.fx.drift.StandardTransferTypes"); //env->FindClass("org/eclipse/fx/drift/StandardTransferTypes");
+	jfieldID fStandardTransferTypesMainMemory = env->GetStaticFieldID(cStandardTransferTypes, "MainMemory", "Lorg/eclipse/fx/drift/TransferType;");
+	jfieldID fStandardTransferTypesIOSurface = env->GetStaticFieldID(cStandardTransferTypes, "IOSurface", "Lorg/eclipse/fx/drift/TransferType;");
+	jfieldID fStandardTransferTypesNVDXInterop = env->GetStaticFieldID(cStandardTransferTypes, "NVDXInterop", "Lorg/eclipse/fx/drift/TransferType;");
+
+	jobject mainMemory = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesMainMemory);
+	jobject ioSurface = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesIOSurface);
+	jobject nvdxInterop = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesNVDXInterop);
+
+	driftfx::StandardTransferTypes::MainMemory = new TransferTypeImpl(env, mainMemory);
+	driftfx::StandardTransferTypes::IOSurface = new TransferTypeImpl(env, ioSurface);
+	driftfx::StandardTransferTypes::NVDXInterop = new TransferTypeImpl(env, nvdxInterop);
 }
 void driftfx::JNI::dispose(JNIEnv* env) {
+	env->DeleteGlobalRef(classLoader);
+
+	// Class
+	env->DeleteGlobalRef(cClass);
+
 	// Vec2i
 	env->DeleteGlobalRef(cVec2i);
 	// SwapchainConfig
@@ -244,27 +280,6 @@ GLuint driftfx::GLRenderer::getGLTextureId(driftfx::RenderTarget* renderTarget) 
 
 
 driftfx::Renderer* driftfx::initializeRenderer(JNIEnv* env, jobject javaRenderer) {
-
-	// TODO - we want this only once!
-	driftfx::JNI::init(env);
-
-	// -- init transfer types -> TODO once!
-
-	jclass cStandardTransferTypes = env->FindClass("org/eclipse/fx/drift/StandardTransferTypes");
-	jfieldID fStandardTransferTypesMainMemory = env->GetStaticFieldID(cStandardTransferTypes, "MainMemory", "Lorg/eclipse/fx/drift/TransferType;");
-	jfieldID fStandardTransferTypesIOSurface = env->GetStaticFieldID(cStandardTransferTypes, "IOSurface", "Lorg/eclipse/fx/drift/TransferType;");
-	jfieldID fStandardTransferTypesNVDXInterop = env->GetStaticFieldID(cStandardTransferTypes, "NVDXInterop", "Lorg/eclipse/fx/drift/TransferType;");
-
-	jobject mainMemory = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesMainMemory);
-	jobject ioSurface = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesIOSurface);
-	jobject nvdxInterop = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesNVDXInterop);
-
-	driftfx::StandardTransferTypes::MainMemory = new TransferTypeImpl(env, mainMemory);
-	driftfx::StandardTransferTypes::IOSurface = new TransferTypeImpl(env, ioSurface);
-	driftfx::StandardTransferTypes::NVDXInterop = new TransferTypeImpl(env, nvdxInterop);
-
-	// --
-
 	return new driftfx::RendererImpl(env, javaRenderer);
 }
 
@@ -274,3 +289,14 @@ driftfx::Renderer* driftfx::initializeRenderer(JNIEnv* env, jobject javaRenderer
 driftfx::TransferType* driftfx::StandardTransferTypes::MainMemory = nullptr;
 driftfx::TransferType* driftfx::StandardTransferTypes::IOSurface = nullptr;
 driftfx::TransferType* driftfx::StandardTransferTypes::NVDXInterop = nullptr;
+
+
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_DriftCPP_init(JNIEnv *env, jclass cls, jobject classLoader) {
+	driftfx::JNI::init(env, classLoader);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_DriftCPP_dispose(JNIEnv *env, jclass cls) {
+	driftfx::JNI::dispose(env);
+}
+
+

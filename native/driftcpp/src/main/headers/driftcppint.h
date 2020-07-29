@@ -8,9 +8,18 @@ namespace driftfx {
 
 	class JNI {
 	public:
-		static void init(JNIEnv* env);
+		static void init(JNIEnv* env, jobject classLoader);
 		static void dispose(JNIEnv* env);
 
+	private:
+		static jobject classLoader;
+
+	// Class
+	private:
+		static jclass cClass;
+		static jmethodID mClassForName;
+	public:
+		static jclass getClass(JNIEnv* env, const char* name);
 
 	// Vec2i
 	private:

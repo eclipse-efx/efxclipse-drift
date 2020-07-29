@@ -1,6 +1,7 @@
 plugins {
   id 'cpp-library'
   id 'maven-publish'
+  id 'visual-studio'
 }
 
 
@@ -12,6 +13,12 @@ library {
       machines.windows.x86_64,
       machines.macOS.x86_64
     ]
+    
+    privateHeaders {
+    	from file('src/main/headers')
+    	from file(getJNIPlatformIncludeDir())
+    	from file(getJNIIncludeDir())
+    }
     
     binaries.configureEach {
       def compileTask = compileTask.get()
