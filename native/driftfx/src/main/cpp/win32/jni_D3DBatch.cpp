@@ -53,7 +53,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_D3DBatch_up
 
 		
 		auto endJVM = std::chrono::steady_clock::now();
-		std::cout << "[Drift] uploadTexture JVM: " << std::chrono::duration_cast<std::chrono::nanoseconds>(endJVM - startJVM).count() << "ns"<< std::endl;
+		//std::cout << "[Drift] uploadTexture JVM: " << std::chrono::duration_cast<std::chrono::nanoseconds>(endJVM - startJVM).count() << "ns"<< std::endl;
 
 		java8::D3DResource* d3dResource = (java8::D3DResource*) resourceHandle;
 
@@ -82,7 +82,7 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_D3DBatch_up
 
 		texture->UnlockRect(0);
 		auto endDX = std::chrono::steady_clock::now();
-		std::cout << "[Drift] uploadTexture DX: " << std::chrono::duration_cast<std::chrono::nanoseconds>(endDX - startDX).count() << "ns"<< std::endl;
+		//std::cout << "[Drift] uploadTexture DX: " << std::chrono::duration_cast<std::chrono::nanoseconds>(endDX - startDX).count() << "ns"<< std::endl;
 
 
 		//texture->LockRect(0, &tmp, NULL, D3DLOCK_READONLY);

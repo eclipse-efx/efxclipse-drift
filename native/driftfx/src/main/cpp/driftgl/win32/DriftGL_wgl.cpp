@@ -109,7 +109,7 @@ void SetupPixelFormat(HDC hDC) {
 	PIXELFORMATDESCRIPTOR pfd;
 	DescribePixelFormat(hDC, pixel_format, sizeof(pfd), &pfd);
 	BOOL result = SetPixelFormat(hDC, pixel_format, &pfd);
-	std::cout << "SetPixelFormat: " << result << std::endl;
+	//std::cout << "SetPixelFormat: " << result << std::endl;
 }
 
 typedef HANDLE (* PFNWGLDXOPENDEVICENV) (void* dxDevice);
@@ -212,7 +212,7 @@ void doInitializeGLPointers(HINSTANCE hInstance) {
 	HWND window = CreateDriftGLWindow(hInstance);
 	HDC hDC = GetDC(window);
 
-	std::cout << "SetupPixelForm from Initialize" << std::endl;
+	//std::cout << "SetupPixelForm from Initialize" << std::endl;
 	SetupPixelFormat(hDC);
 	int attribList[] = {
 			WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
@@ -235,7 +235,7 @@ void doInitializeGLPointers(HINSTANCE hInstance) {
 			proc = GetProcAddress(hModuleGL, name);
 			if (proc == 0) {
 				DWORD errWin = GetLastError();
-				std::cout << " ! Could not acquire " << name << " (Error: " << errWgl << " / " << errWin << ")" << std::endl;
+				//std::cout << " ! Could not acquire " << name << " (Error: " << errWgl << " / " << errWin << ")" << std::endl;
 			}
 		}
 		return (void*)proc;
@@ -306,7 +306,7 @@ Context* CreateContext(Context* sharedContext, int majorHint, int minorHint) {
 	}
 	//std::cout << " - hDC = " << ctx->hDC << std::endl;
 
-	std::cout << "SetupPixelForm from CreateContext" << std::endl;
+	//std::cout << "SetupPixelForm from CreateContext" << std::endl;
 	SetupPixelFormat(ctx->hDC);
 
 // glfw context creation hints
@@ -384,7 +384,7 @@ Context* CreateSharedCompatContext(Context* sharedContext) {
 	}
 	//std::cout << " - hDC = " << ctx->hDC << std::endl;
 
-	std::cout << "SetupPixelForm from CreateSharedCompatContext" << std::endl;
+	//std::cout << "SetupPixelForm from CreateSharedCompatContext" << std::endl;
 	SetupPixelFormat(ctx->hDC);
 
 	

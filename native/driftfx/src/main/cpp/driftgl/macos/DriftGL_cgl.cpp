@@ -42,7 +42,7 @@ namespace driftgl {
 	 	procs::Initialize([](const char* name) {
 			void* proc = cglGetProcAddress(name);
 			if (proc == 0) {
-				std::cout << " ! Could not acquire " << name << std::endl;
+				//std::cout << " ! Could not acquire " << name << std::endl;
 			}
 			return (void*) proc;
 		});
@@ -112,12 +112,12 @@ namespace driftgl {
 
         CGLPixelFormatObj pix;
         CGLChoosePixelFormat( attributes, &pix, &num );
-        std::cout << "calling CGLCreateContext(" << pix << ", " << sharedCtxObj << ")" << std::endl << std::flush;
+        //std::cout << "calling CGLCreateContext(" << pix << ", " << sharedCtxObj << ")" << std::endl << std::flush;
         CGLError error = CGLCreateContext( pix, sharedCtxObj, &ctx->contextObj );
         if (error) {
             std::cout << "CreateSharedContext Error: " << error << std::endl;
         }
-        std::cout << " => " << ctx->contextObj << std::endl << std::flush;
+        //std::cout << " => " << ctx->contextObj << std::endl << std::flush;
         CGLError r = CGLDestroyPixelFormat( pix );
 
         return ctx;
@@ -138,10 +138,10 @@ namespace driftgl {
     bool MakeContextCurrent(Context* context) {
         auto ctxObj = getNative(context);
         CGLError result = CGLSetCurrentContext(ctxObj);
-        std::cout << "currentContext = " << CGLGetCurrentContext() << std::endl;
-        std::cout << "CGLSetCurrentContext("<< ctxObj <<") returned " << result << std::endl;
+        //std::cout << "currentContext = " << CGLGetCurrentContext() << std::endl;
+        //std::cout << "CGLSetCurrentContext("<< ctxObj <<") returned " << result << std::endl;
 
-        std::cout << "currentContext = " << CGLGetCurrentContext() << std::endl;
+        //std::cout << "currentContext = " << CGLGetCurrentContext() << std::endl;
 
         return true;
     }

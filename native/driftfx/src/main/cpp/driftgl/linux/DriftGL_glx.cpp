@@ -27,12 +27,12 @@ namespace driftgl {
 		if (initialized) {
 			return true;
 		}
-		std::cout << "driftgl::Initialize()" << std::endl;
+		//std::cout << "driftgl::Initialize()" << std::endl;
 		display = XOpenDisplay( NULL );
 
 		if (!display) {
 			// failed to open display
-			std::cout << "Failed to open display" << std::endl;
+			//std::cout << "Failed to open display" << std::endl;
 			return false;
 		}
 
@@ -40,15 +40,15 @@ namespace driftgl {
 
 		if (!glXQueryVersion(display, &glxMajor, &glxMinor)) {
 			// failed to query glx version
-			std::cout << "Failed to query glx version!" << std::endl;
+			//std::cout << "Failed to query glx version!" << std::endl;
 			return false;
 		}
-		std::cout << "GLX Version: " << glxMajor << "." << glxMinor << std::endl;
+		//std::cout << "GLX Version: " << glxMajor << "." << glxMinor << std::endl;
 
 		procs::Initialize([](const char* name) {
 			__GLXextFuncPtr proc = glXGetProcAddressARB((const GLubyte*) name);
 			if (proc == 0) {
-				std::cout << " ! Could not acquire " << name << std::endl;
+				//std::cout << " ! Could not acquire " << name << std::endl;
 			}
 			return (void*) proc;
 		});
@@ -56,7 +56,7 @@ namespace driftgl {
 		glXMakeContextCurrentARB   = (glXMakeContextCurrentARBProc)   glXGetProcAddressARB( (const GLubyte *) "glXMakeContextCurrent"      );
 
 
-		std::cout << "driftgl::Initialize() End" << std::endl;
+		//std::cout << "driftgl::Initialize() End" << std::endl;
 		initialized = true;
 		return true;
 	}
@@ -68,15 +68,15 @@ namespace driftgl {
 	}
 
 	Context* CreateContext(Context* sharedContext, int majorHint, int minorHint) {
-		std::cout << "driftgl::CreateContext( "<<sharedContext << ", " << majorHint << ", " << minorHint <<" )" << std::endl;
+		//std::cout << "driftgl::CreateContext( "<<sharedContext << ", " << majorHint << ", " << minorHint <<" )" << std::endl;
 		DriftGLXContext* ctx = new DriftGLXContext();
 
 		static int visualAttribs[] = { None };
 		int fbConfigsCount = 0;
-		std::cout << "calling glXChooseFbConfig " << glXChooseFBConfig << std::endl;
+		//std::cout << "calling glXChooseFbConfig " << glXChooseFBConfig << std::endl;
 		GLXFBConfig* fbConfigs = glXChooseFBConfig( display, DefaultScreen(display), visualAttribs, &fbConfigsCount );
 
-		std::cout << "Created fbConfigs = " << fbConfigs << std::endl;
+		//std::cout << "Created fbConfigs = " << fbConfigs << std::endl;
 
 		int context_attribs[] = {
 				GLX_CONTEXT_MAJOR_VERSION_ARB, majorHint,
@@ -90,7 +90,7 @@ namespace driftgl {
 		GLXContext s = shared == NULL ? NULL : shared->glxContext;
 
 		ctx->glxContext = glXCreateContextAttribsARB( display, fbConfigs[0], s, True, context_attribs);
-		std::cout << "Created context = " << ctx->glxContext << std::endl;
+		//std::cout << "Created context = " << ctx->glxContext << std::endl;
 
 		int pbufferAttribs[] = {
 			GLX_PBUFFER_WIDTH,  32,
@@ -98,27 +98,27 @@ namespace driftgl {
 			None
 		};
 		ctx->pBuffer = glXCreatePbuffer( display, fbConfigs[0], pbufferAttribs );
-		std::cout << "Created pBuffer = " << ctx->pBuffer << std::endl;
+		//std::cout << "Created pBuffer = " << ctx->pBuffer << std::endl;
 
 		// clean up:
 		XFree( fbConfigs );
 		XSync( display, False );
 
 
-		std::cout << "driftgl::CreateContext() End" << std::endl;
+		//std::cout << "driftgl::CreateContext() End" << std::endl;
 		return ctx;
 	}
 
 	Context* CreateSharedCompatContext(Context* sharedContext) {
-			std::cout << "driftgl::CreateSharedCompatContext( "<<sharedContext << " )" << std::endl;
+			//std::cout << "driftgl::CreateSharedCompatContext( "<<sharedContext << " )" << std::endl;
 			DriftGLXContext* ctx = new DriftGLXContext();
 
 			static int visualAttribs[] = { None };
 			int fbConfigsCount = 0;
-			std::cout << "calling glXChooseFbConfig " << glXChooseFBConfig << std::endl;
+			//std::cout << "calling glXChooseFbConfig " << glXChooseFBConfig << std::endl;
 			GLXFBConfig* fbConfigs = glXChooseFBConfig( display, DefaultScreen(display), visualAttribs, &fbConfigsCount );
 
-			std::cout << "Created fbConfigs = " << fbConfigs << std::endl;
+			//std::cout << "Created fbConfigs = " << fbConfigs << std::endl;
 
 			int context_attribs[] = {
 					GLX_CONTEXT_MAJOR_VERSION_ARB, 2,
@@ -132,7 +132,7 @@ namespace driftgl {
 			GLXContext s = shared == NULL ? NULL : shared->glxContext;
 
 			ctx->glxContext = glXCreateContextAttribsARB( display, fbConfigs[0], s, True, context_attribs);
-			std::cout << "Created context = " << ctx->glxContext << std::endl;
+			//std::cout << "Created context = " << ctx->glxContext << std::endl;
 
 			int pbufferAttribs[] = {
 				GLX_PBUFFER_WIDTH,  32,
@@ -140,14 +140,14 @@ namespace driftgl {
 				None
 			};
 			ctx->pBuffer = glXCreatePbuffer( display, fbConfigs[0], pbufferAttribs );
-			std::cout << "Created pBuffer = " << ctx->pBuffer << std::endl;
+			//std::cout << "Created pBuffer = " << ctx->pBuffer << std::endl;
 
 			// clean up:
 			XFree( fbConfigs );
 			XSync( display, False );
 
 
-			std::cout << "driftgl::CreateContext() End" << std::endl;
+			//std::cout << "driftgl::CreateContext() End" << std::endl;
 			return ctx;
 		}
 

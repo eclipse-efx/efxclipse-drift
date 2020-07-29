@@ -112,9 +112,9 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_GL_glTexIma
 
 	GLint tex;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex);
-	std::cout << "TEXTURE_2D = " << tex << std::endl;
-	std::cout << "glTexImage2D " << width << " x " << height << " @ " << pixels << std::endl;
-	std::cout << std::flush;
+	//std::cout << "TEXTURE_2D = " << tex << std::endl;
+	//std::cout << "glTexImage2D " << width << " x " << height << " @ " << pixels << std::endl;
+	//std::cout << std::flush;
 
 	glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
 }
