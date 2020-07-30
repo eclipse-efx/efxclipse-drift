@@ -12,9 +12,7 @@ public class OSGiActivator implements BundleActivator {
 		Log.info("DriftFX OSGi Mode");
 		NativeUtil.useOsgiEnvironment();
 		
-		
-		ClassLoader classLoader = context.getBundle().adapt(BundleWiring.class).getClassLoader();
-		DriftCPP.init(classLoader);
+		DriftCPP.classLoader = context.getBundle().adapt(BundleWiring.class).getClassLoader();
 	}
 
 	@Override
