@@ -129,7 +129,7 @@ task buildMultireleaseJar(type: Jar, dependsOn: [
                 'Private-Package': 'org.eclipse.fx.drift.internal',
                 'Bundle-ActivationPolicy': 'lazy',
                 'Bundle-Activator': 'org.eclipse.fx.drift.internal.OSGiActivator',
-                'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/driftcpp.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftcpp.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64,native/libdriftcpp.dylib;osname=MacOSX;processor=x86-64',
+                'Bundle-NativeCode': 'native/driftfx.dll;native/driftcpp.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;native/libdriftcpp.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;native/libdriftcpp.dylib;osname=MacOSX;processor=x86-64',
                 'Drift-Version': "$Versioning.version",
                 'Drift-Qualifier': "$Versioning.qualifier",
                 'Drift-Timestamp': "$Versioning.timestamp",
@@ -262,6 +262,9 @@ task notifyJenkins() {
 }
 
 ext {
+    UpdateSiteReleaseBase = "efxclipse/driftfx/releases"
+    UpdateSiteNightlyBase = "efxclipse/driftfx/nightly"
+
     UpdateSitePath = Versioning.releaseMode ? "efxclipse/driftfx/$Versioning.version" : "efxclipse/driftfx/nightly/$Versioning.qualifier"
 }
 
@@ -291,6 +294,25 @@ task deployUpdateSite() {
         println stdout.toString().trim()
     }
 }
+
+
+/*
+task updateCompositeUpdateSite() {
+
+    doLast {
+        def remoteHost = "genie.efxclipse@projects-storage.eclipse.org"
+        def compositeDirectory = "/home/data/httpd/download.eclipse.org"
+        def target = "${compositeDirectory}/${UpdateSiteBaseNightly}"
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'ssh', "$remoteHost", "ls", "$target"
+            standardOutput = stdout
+        }
+
+
+    }
+}
+*/
 
 task createDistribution(type: Zip) {
     dependsOn updateSiteZip
