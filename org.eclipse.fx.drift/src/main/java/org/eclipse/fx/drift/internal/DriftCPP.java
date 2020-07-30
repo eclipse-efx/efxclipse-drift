@@ -2,13 +2,28 @@ package org.eclipse.fx.drift.internal;
 
 import org.eclipse.fx.drift.util.NativeUtil;
 
-public class DriftCPP {
+public final class DriftCPP {
 
-	static {
-		NativeUtil.loadLibrary(DriftCPP.class, "driftcpp");
+	private static boolean once = false;
+	/*package*/ static ClassLoader classLoader;
+	
+	private DriftCPP() {
 	}
 	
-	static native void init(ClassLoader classLoader);
-	static native void dispose();
+	public static void require() {
+		if (!once) {
+			Log.debug("Initialize DriftCPP (using classLoader="+classLoader+")");
+			initOnce();
+			once = true;
+		}
+	}
+	
+	private static void initOnce() {
+		NativeUtil.loadLibrary(DriftCPP.class, "driftcpp");
+		init(classLoader == null ? DriftCPP.class.getClassLoader() : classLoader);
+	}
+	
+	public static native void init(ClassLoader classLoader);
+	public static native void dispose();
 	
 }

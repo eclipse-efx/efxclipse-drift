@@ -4,7 +4,9 @@ import org.eclipse.fx.drift.internal.jni.IMemoryStack.IScopedMemeoryStack;
 import org.eclipse.fx.drift.internal.ResourceLogger;
 import org.eclipse.fx.drift.internal.jni.MemoryStack;
 
-public class Win32 {
+public final class Win32 {
+	
+	private Win32() {}
 
 	public static class HRESULT {
 		public final long value;

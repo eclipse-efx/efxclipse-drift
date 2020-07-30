@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
+import org.eclipse.fx.drift.internal.DriftFX;
 import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.Versioning;
 import org.eclipse.fx.drift.internal.jni.win32.Win32;
@@ -14,10 +15,11 @@ import com.sun.prism.Texture;
 
 @SuppressWarnings("restriction")
 public class Prism {
+	
+	private Prism() {}
 
 	static {
-		//NativeLoader.loadLibrary(Prism.class, "DriftGL");
-		NativeUtil.loadLibrary(Prism.class, "driftfx");
+		DriftFX.require();
 	}
 	
 	private static Class<?> cGraphicsPipeline;

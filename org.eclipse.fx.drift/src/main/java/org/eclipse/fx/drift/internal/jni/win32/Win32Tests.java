@@ -4,14 +4,13 @@ import static org.eclipse.fx.drift.internal.jni.win32.Win32.D3DFMT_A8R8G8B8;
 import static org.eclipse.fx.drift.internal.jni.win32.Win32.D3DPOOL_DEFAULT;
 import static org.eclipse.fx.drift.internal.jni.win32.Win32.D3DUSAGE_DYNAMIC;
 
+import org.eclipse.fx.drift.internal.DriftFX;
 import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DDevice9Ex;
 import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DTexture9;
-import org.eclipse.fx.drift.util.NativeUtil;
 public class Win32Tests {
 
 	public static void main(String[] args) throws WindowsError {
-		//NativeLoader.loadLibrary(Win32Tests.class, "DriftGL");
-		NativeUtil.loadLibrary(Win32Tests.class, "driftfx");
+		DriftFX.require();
 		
 		IDirect3DDevice9Ex device = D3D9.CreateOffscreenDevice();
 		System.err.println("device: " + device.address);

@@ -9,6 +9,8 @@ import java.util.jar.Manifest;
 
 public class ManifestUtil {
 	
+	private ManifestUtil() {}
+	
 	private static URL getManifestUrl(Class<?> cls) {
 		try {
 			String shortName = cls.getSimpleName() + ".class";

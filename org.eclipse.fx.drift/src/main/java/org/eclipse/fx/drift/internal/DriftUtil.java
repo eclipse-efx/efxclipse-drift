@@ -7,7 +7,11 @@ import javafx.scene.text.Font;
 import javafx.stage.Screen;
 
 // should be replaced by multirelease build
-public class DriftUtil {
+@SuppressWarnings("restriction")
+public final class DriftUtil {
+	
+	private DriftUtil() {}
+	
 	public static PGFont getFont(Font font) {
 		throw new UnsupportedOperationException();
 	}

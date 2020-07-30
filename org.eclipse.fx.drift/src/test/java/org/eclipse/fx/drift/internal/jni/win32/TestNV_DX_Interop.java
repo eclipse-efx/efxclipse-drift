@@ -1,5 +1,6 @@
 package org.eclipse.fx.drift.internal.jni.win32;
 
+import org.eclipse.fx.drift.internal.DriftFX;
 import org.eclipse.fx.drift.internal.GL;
 import org.eclipse.fx.drift.util.NativeUtil;
 import org.junit.After;
@@ -18,7 +19,7 @@ public class TestNV_DX_Interop {
 	
 	@BeforeClass
 	public static void setupGlobal() {
-		NativeUtil.loadLibrary(TestNV_DX_Interop.class, "driftfx");
+		DriftFX.require();
 	}
 	
 	@Before

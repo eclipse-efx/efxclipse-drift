@@ -1,9 +1,8 @@
 package org.eclipse.fx.drift.internal.jni.win32;
 
-import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DDevice9Ex;
+public final class D3D9 {
 
-public class D3D9 {
-
+	private D3D9() {}
 	
 	public static Win32.IDirect3DDevice9Ex CreateOffscreenDevice() {
 		long address = doCreateOffscreenDevice();
@@ -12,8 +11,8 @@ public class D3D9 {
 	
 	public static native long doCreateOffscreenDevice();
 	
-	public final static int D3DADAPTER_DEFAULT = 0;
-    public final static int D3DDEVTYPE_HAL = 1;
+	public static final int D3DADAPTER_DEFAULT = 0;
+    public static final int D3DDEVTYPE_HAL = 1;
     
 
 	private static native long CreateDeviceEx(long _d3d9Ex, 

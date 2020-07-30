@@ -11,6 +11,8 @@ import org.eclipse.fx.drift.internal.Log;
 
 public class NativeUtil {
 	
+	private NativeUtil() {}
+	
 	private static final boolean USE_JAVA_LIBRARY_PATH = Boolean.getBoolean("driftfx.use.java.library.path");
 	
 	private static String OS = null;

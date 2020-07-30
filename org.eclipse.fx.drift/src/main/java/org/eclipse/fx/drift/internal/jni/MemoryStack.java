@@ -3,6 +3,7 @@ package org.eclipse.fx.drift.internal.jni;
 import java.nio.ByteBuffer;
 import java.util.Stack;
 
+import org.eclipse.fx.drift.internal.DriftFX;
 import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.util.NativeUtil;
 
@@ -134,8 +135,7 @@ public class MemoryStack implements IMemoryStack {
 		nOutputLong(t.getAddress());
 	}
 	public static void main(String[] args) {
-		//NativeLoader.loadLibrary(MemoryStack.class, "DriftGL");
-		NativeUtil.loadLibrary(MemoryStack.class, "driftfx");
+		DriftFX.require();
 		MemoryStack stack = new MemoryStack();
 		
 		
