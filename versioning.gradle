@@ -58,9 +58,13 @@ def getVersion() {
     
 }
 
+def getTimestamp() {
+    System.getenv('BUILD_TIMESTAMP') != null ? System.getenv('BUILD_TIMESTAMP') : toTimestamp(getGitTimestamp())
+}
+
 def getQualifier() {
     if (getReleaseTag() == null)
-        "${toTimestamp(getGitTimestamp())}-${getLocalShortGitHash()}"
+        "${getTimestamp()}-${getLocalShortGitHash()}"
     else
         null
 }
@@ -72,7 +76,7 @@ def toTimestamp(instant) {
 def tmpReleaseTag = getReleaseTag()
 def tmpReleaseMode = tmpReleaseTag != null
 def tmpVersion = getVersion()
-def tmpTimestamp = toTimestamp(getGitTimestamp())
+def tmpTimestamp = getTimestamp()
 def tmpQualifier = getQualifier()
 def tmpFullVersion = tmpReleaseMode ? tmpVersion : "$tmpVersion-$tmpQualifier"
 def tmpBundleVersion = tmpReleaseMode ? tmpVersion : "${tmpVersion}.$tmpQualifier"

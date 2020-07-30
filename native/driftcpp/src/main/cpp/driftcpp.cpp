@@ -95,10 +95,15 @@ void driftfx::JNI::init(JNIEnv* env, jobject _classLoader) {
 	jobject ioSurface = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesIOSurface);
 	jobject nvdxInterop = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesNVDXInterop);
 
+	mainMemory = env->NewGlobalRef(mainMemory);
+	ioSurface = env->NewGlobalRef(ioSurface);
+	nvdxInterop = env->NewGlobalRef(nvdxInterop);
+
 	driftfx::StandardTransferTypes::MainMemory = new TransferTypeImpl(env, mainMemory);
 	driftfx::StandardTransferTypes::IOSurface = new TransferTypeImpl(env, ioSurface);
 	driftfx::StandardTransferTypes::NVDXInterop = new TransferTypeImpl(env, nvdxInterop);
 }
+
 void driftfx::JNI::dispose(JNIEnv* env) {
 	env->DeleteGlobalRef(classLoader);
 
