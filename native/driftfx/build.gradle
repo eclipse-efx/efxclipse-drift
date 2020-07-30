@@ -17,6 +17,12 @@ library {
     ]
     
     source.from createCppTree(project)
+
+    privateHeaders {
+    	from file('src/main/headers')
+    	from file(getJNIPlatformIncludeDir())
+    	from file(getJNIIncludeDir())
+    }
     
     binaries.configureEach { binary ->
       def compileTask = compileTask.get()
