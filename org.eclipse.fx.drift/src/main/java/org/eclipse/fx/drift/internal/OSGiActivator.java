@@ -17,8 +17,6 @@ public class OSGiActivator implements BundleActivator {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		
-		DriftCPP.dispose();
 	}
 
 }
