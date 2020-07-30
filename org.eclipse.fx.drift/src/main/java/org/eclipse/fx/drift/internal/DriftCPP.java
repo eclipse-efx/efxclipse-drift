@@ -19,7 +19,7 @@ public final class DriftCPP {
 	}
 	
 	private static void initOnce() {
-		NativeUtil.loadLibrary(DriftCPP.class, "driftcpp");
+		NativeUtil.loadLibrary(DriftCPP.class, "driftcpp", System::loadLibrary, System::load);
 		init(classLoader == null ? DriftCPP.class.getClassLoader() : classLoader);
 	}
 	

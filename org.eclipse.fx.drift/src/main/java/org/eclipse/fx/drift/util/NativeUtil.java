@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Consumer;
 
 import org.eclipse.fx.drift.internal.Log;
 
@@ -42,11 +43,12 @@ public class NativeUtil {
 		return getOsName().toLowerCase().contains("mac");
 	}
 	
-	public static void loadLibrary(Class<?> context, String libname) {
+	public static void loadLibrary(Class<?> context, String libname, Consumer<String> loadLibrary, Consumer<String> load) {
 		if (USE_JAVA_LIBRARY_PATH || osgi) {
 			// osgi will take care of it
 			Log.info("loading " + libname + " via system call");
-			System.loadLibrary(libname);
+//			System.loadLibrary(libname);
+			loadLibrary.accept(libname);
 		}
 		else {
 			
@@ -68,7 +70,8 @@ public class NativeUtil {
 			}
 			
 			Log.info("loading " + libname + " from extracted location (" + extractPath + ")");
-			System.load(extractPath.toString());
+//			System.load(extractPath.toString());
+			load.accept(extractPath.toString());
 		}
 	}
 	

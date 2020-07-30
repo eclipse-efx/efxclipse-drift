@@ -18,6 +18,6 @@ public final class DriftFX {
 	}
 	
 	public static void initOnce() {
-		NativeUtil.loadLibrary(DriftFX.class, "driftfx");
+		NativeUtil.loadLibrary(DriftFX.class, "driftfx", System::loadLibrary, System::load);
 	}
 }
