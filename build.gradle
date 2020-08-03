@@ -321,7 +321,7 @@ task createDistribution(type: Zip) {
     from file("$buildDir/updatesite.zip")
 
     into('include') {
-        from "native/driftcpp/src/main/public"
+        from "native-driftcpp/src/main/public"
     }
 
 //    into('libs/debug') {
