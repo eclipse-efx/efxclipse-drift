@@ -1,5 +1,5 @@
 plugins {
-  id 'cpp-library'
+  id 'cpp-application'
   id 'maven-publish'
   id 'visual-studio'
   id 'xcode'
@@ -8,11 +8,11 @@ plugins {
   group = 'org.eclipse.fx.drift'
   version = Versioning.fullVersion
 
-library {
+application {
 
   baseName = 'driftcpp'
 
-    linkage =  [ Linkage.STATIC ]
+   // linkage =  [ Linkage.STATIC ]
     
     targetMachines = [
       machines.linux.x86_64,
