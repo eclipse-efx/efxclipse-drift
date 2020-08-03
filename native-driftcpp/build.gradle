@@ -2,11 +2,17 @@ plugins {
   id 'cpp-library'
   id 'maven-publish'
   id 'visual-studio'
+  id 'xcode'
 }
 
+  group = 'org.eclipse.fx.drift'
+  version = Versioning.fullVersion
 
 library {
-    linkage =  [ Linkage.SHARED ]
+
+  baseName = 'driftcpp'
+
+    linkage =  [ Linkage.STATIC ]
     
     targetMachines = [
       machines.linux.x86_64,
@@ -22,10 +28,35 @@ library {
     
     binaries.configureEach {
       def compileTask = compileTask.get()
-      //def linkTask = linkTask.get()
+//      def linkTask = linkTask.get()
       
-      addJNIIncludes(compileTask)
+//      addJNIIncludes(compileTask)
+
+      if (Os.isFamily(Os.FAMILY_MAC)) {
+//        linkTask.linkerArgs.addAll('-install_name', '@rpath/libdriftfx.dylib')
+      }
     }
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.nativeplatform.platform.OperatingSystem
+import org.gradle.internal.jvm.Jvm
+
+def getJNIPlatformDir() {
+  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    'win32'
+  } else if (Os.isFamily(Os.FAMILY_MAC)) {
+    'darwin'
+  } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+    'linux'
+  }
+}
+
+def getJNIIncludeDir() {
+        Jvm.current().javaHome.toPath().resolve('include')
+}
+def getJNIPlatformIncludeDir() {
+        getJNIIncludeDir().resolve(getJNIPlatformDir())
 }  
 
 tasks.withType(CppCompile).configureEach {
@@ -36,7 +67,7 @@ tasks.withType(CppCompile).configureEach {
 publishing {
     repositories {
         maven {
-          url = "../../native-repo"
+          url = "../native-repo"
         }
     }
 }

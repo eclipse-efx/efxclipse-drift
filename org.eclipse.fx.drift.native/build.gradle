@@ -1,15 +1,57 @@
 plugins {
   id 'cpp-library'
-  id 'xcode'
+  id 'maven-publish'
   id 'visual-studio'
+  id 'xcode'
 }
 
-allprojects {
-  group = 'org.eclipse.fx.drift'
-//  version = '1.0.0.' + getGitHash()
-  version = Versioning.fullVersion
-}
+group = 'org.eclipse.fx.drift'
+version = Versioning.fullVersion
 
+
+library {
+
+ baseName = 'driftfx'
+
+    linkage = [ Linkage.SHARED ]
+    
+    targetMachines = [
+      machines.linux.x86_64,
+      machines.windows.x86_64,
+      machines.macOS.x86_64
+    ]
+    
+    source.from createCppTree(project)
+
+    privateHeaders {
+    	from file('src/main/headers')
+    	from file(getJNIPlatformIncludeDir())
+    	from file(getJNIIncludeDir())
+
+      if (Os.isFamily(Os.FAMILY_MAC)) {
+        from file('src/main/headers-macos')
+      }
+    }
+    
+    binaries.configureEach { binary ->
+      def compileTask = compileTask.get()
+      def linkTask = linkTask.get()
+      
+      configureToolchain(toolChain)
+      configureLinker(targetMachine, linkTask)
+//      addJNIIncludes(compileTask)
+      
+      if (targetMachine.operatingSystemFamily.windows) { 
+        compileTask.macros.put("DRIFTGL_WGL", null)
+      } else if (targetMachine.operatingSystemFamily.macOs) {
+        compileTask.macros.put("DRIFTGL_CGL", null)
+        compileTask.macros.put("GL_SILENCE_DEPRECATION", null)
+      } else if (targetMachine.operatingSystemFamily.linux) {
+        compileTask.macros.put("DRIFTGL_GLX", null)
+      }  
+    }
+    
+}
 
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.nativeplatform.platform.OperatingSystem
@@ -26,33 +68,15 @@ def getJNIPlatformDir() {
 }
 
 def getJNIIncludeDir() {
-	Jvm.current().javaHome.toPath().resolve('include')
+        Jvm.current().javaHome.toPath().resolve('include')
 }
 def getJNIPlatformIncludeDir() {
-	getJNIIncludeDir().resolve(getJNIPlatformDir())
-}
-
-def addJNIIncludes(compileTask) {
-  def includeDir = Jvm.current().javaHome.toPath().resolve('include')
-  def platformIncludeDir = includeDir.resolve(getJNIPlatformDir())
-  compileTask.includes(includeDir)
-  compileTask.includes(platformIncludeDir)
-}
-
-def configureSourceTree(cppTree) {
-
-  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    println("windows")
-  } else if (Os.isFamily(Os.FAMILY_MAC)) {
-     println("mac")
-  } else if (Os.isFamily(Os.FAMILY_UNIX)) {
-     println("linux")
-  }
+        getJNIIncludeDir().resolve(getJNIPlatformDir())
 }
 
 def createCppTree(proj) {
   def tree = proj.fileTree('src')
-  if (Os.isFamily(Os.FAMILY_WINDOWS)) { 
+  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
     tree.exclude '**/macos'
     tree.exclude '**/linux'
   } else if (Os.isFamily(Os.FAMILY_MAC)) {
@@ -61,7 +85,7 @@ def createCppTree(proj) {
   } else if (Os.isFamily(Os.FAMILY_UNIX)) {
     tree.exclude '**/win32'
     tree.exclude '**/macos'
-  }  
+  }
   return tree
 }
 
@@ -83,29 +107,25 @@ def configureLinker(targetMachine, linkTask) {
   } else if (targetMachine.operatingSystemFamily.linux) {
     linkTask.linkerArgs.add('-lX11')
   } else if (targetMachine.operatingSystemFamily.macOs) {
+
+    linkTask.linkerArgs.addAll('-install_name', '@rpath/libdriftfx.dylib')
+
     linkTask.linkerArgs.addAll('-framework', 'OpenGL')
     linkTask.linkerArgs.addAll('-framework', 'Cocoa')
     linkTask.linkerArgs.addAll('-framework', 'IOSurface')
     linkTask.linkerArgs.addAll('-framework', 'CoreFoundation')
-    
+
   }
 }
 
 tasks.withType(CppCompile).configureEach {
-    // Define a compiler options
-    //compilerArgs.add '-W3'
-
-    compilerArgs.add '-std=c++11'
-
-    // Define toolchain-specific compiler options
-    compilerArgs.addAll toolChain.map { toolChain ->
-        if (toolChain in [ Gcc, Clang ]) {
-            return ['-std=c++11']
-        } else if (toolChain in VisualCpp) {
-            return []
-        }
-        return []
-    }
+  compilerArgs.add '-std=c++11'
 }
 
-  
+publishing {
+    repositories {
+        maven {
+          url = "../native-repo"
+        }
+    }
+}
