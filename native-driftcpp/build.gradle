@@ -24,7 +24,10 @@ application {
     	from file('src/main/headers')
     	from file(getJNIPlatformIncludeDir())
     	from file(getJNIIncludeDir())
+        from file('src/main/public')
     }
+    
+    
     
     binaries.configureEach {
       def compileTask = compileTask.get()
