@@ -46,13 +46,22 @@ Direct means that there is no transfer between GPU and main memory. The textures
 ```
 
 ### C++ Usage
+The cpp bindings are based on a single header file (`driftcpp.h`)  you have to include in your project.
+The initialization is done by calling `driftfx::initialize(JNIEnv* env, jobject classLoader)`. The jni env needs to be a valid jni env and the classLoader has to be the java class loader which has access to the `org.eclipse.fx.drift` package. On a plain java 8 this could be the system class loader, in an osgi environment it needs to be a classloader which has access to the package, and on java 11 .. (TBD jigsaw stuff).
 The API aims to be similar to the Java API.
 
 ```c++
-	
-	// first you get your Renderer instance in Java and pass it to C++ via JNI
+	// include the cpp bindings header
+	#include "driftcpp.h"
+
+	// first you need to initialize the cpp bindings:
+	driftfx::initialize(env, classLoader); // its important that the passed in classLoader has access to the org.eclipse.fx.drift package!
+
+	// you can also dispose the cpp bindings again by calling
+	driftfx::dispose(env);
+
 	// the entrypoint is to acquire a C++ Renderer by passing in the Java Renderer
-	
+	// this should happen on your renderer thread
 	// you may need to attach your thread to the jvm to acquire a vaild JNIEnv
 	
 	driftfx::Renderer* renderer = driftfx::initializeRenderer(env, javaRenderer);
