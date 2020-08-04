@@ -3,7 +3,6 @@ package org.eclipse.fx.drift.internal;
 import org.eclipse.fx.drift.util.NativeUtil;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.wiring.BundleWiring;
 
 public class OSGiActivator implements BundleActivator {
 
@@ -12,7 +11,7 @@ public class OSGiActivator implements BundleActivator {
 		Log.info("DriftFX OSGi Mode");
 		NativeUtil.useOsgiEnvironment();
 		
-		DriftCPP.classLoader = context.getBundle().adapt(BundleWiring.class).getClassLoader();
+		//DriftCPP.classLoader = context.getBundle().adapt(BundleWiring.class).getClassLoader();
 	}
 
 	@Override
