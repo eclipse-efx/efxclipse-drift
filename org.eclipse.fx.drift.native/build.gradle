@@ -106,6 +106,7 @@ def configureLinker(targetMachine, linkTask) {
     linkTask.linkerArgs.add("gdi32.lib")
   } else if (targetMachine.operatingSystemFamily.linux) {
     linkTask.linkerArgs.add('-lX11')
+    linkTask.linkerArgs.add('-lGLX')
   } else if (targetMachine.operatingSystemFamily.macOs) {
 
     linkTask.linkerArgs.addAll('-install_name', '@rpath/libdriftfx.dylib')
