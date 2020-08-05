@@ -316,7 +316,7 @@ task updateCompositeUpdateSite() {
 
 task createDistribution(type: Zip) {
     dependsOn updateSiteZip
-    dependsOn unzipNativeRepo
+    //dependsOn unzipNativeRepo
 
     from file("$buildDir/updatesite.zip")
 
