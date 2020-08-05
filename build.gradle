@@ -374,7 +374,7 @@ task publishGithubRelease() {
 
             def release = github.createRelease(Versioning.releaseTag, Versioning.gitSHA, "DriftFX $Versioning.version", """
             
-            ### Update Site
+            ### p2 Update Site
             https://download.eclipse.org/$UpdateSitePath
             ### Maven
             Repo: https://repo.eclipse.org/content/groups/efxclipse   
@@ -395,7 +395,7 @@ task publishGithubRelease() {
                 "driftfx-dist-${Versioning.version}.zip",
                 null)
 
-            def modify = github.modifyRelease(releaseId, Versioning.releaseTag, true)
+            def modify = github.modifyRelease(releaseId, Versioning.releaseTag, false)
             println new groovy.json.JsonBuilder(modify).toPrettyString()
 
         } else {
@@ -403,7 +403,7 @@ task publishGithubRelease() {
           def release = github.createRelease(Versioning.timestamp, Versioning.gitSHA, "DriftFX Nightly $Versioning.qualifier", """
             This is a nightly build. (The Version number 999.0.0 indicates nightly builds)
 
-            ### Update Site
+            ### p2 Update Site
             https://download.eclipse.org/$UpdateSitePath
             ### Maven
             Repo: https://repo.eclipse.org/content/groups/efxclipse 
@@ -426,7 +426,7 @@ task publishGithubRelease() {
 
             println "going to modify release..."
             
-            def modify = github.modifyRelease(releaseId, Versioning.timestamp, true)
+            def modify = github.modifyRelease(releaseId, Versioning.timestamp, false)
             println new groovy.json.JsonBuilder(modify).toPrettyString()
 
 
