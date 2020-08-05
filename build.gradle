@@ -261,11 +261,11 @@ task notifyJenkins() {
     }
 }
 
+
 ext {
     UpdateSiteReleaseBase = "efxclipse/driftfx/releases"
     UpdateSiteNightlyBase = "efxclipse/driftfx/nightly"
-
-    UpdateSitePath = Versioning.releaseMode ? "efxclipse/driftfx/$Versioning.version" : "efxclipse/driftfx/nightly/$Versioning.qualifier"
+    UpdateSitePath = Versioning.releaseMode ? "$UpdateSiteReleaseBase/$Versioning.version" : "$UpdateSiteNightlyBase/$Versioning.qualifier"
 }
 
 task deployUpdateSite() {
@@ -382,7 +382,7 @@ task publishGithubRelease() {
             Artifact Id: `org.eclipse.fx.drift`   
             Version: `$Versioning.version`   
 
-            """.stripIndent().trim(), false)
+            """.stripIndent().trim(), Versioning.isPreRelease)
 
             def releaseId = release.id
             println "Created Release $releaseId"
@@ -399,7 +399,8 @@ task publishGithubRelease() {
             println new groovy.json.JsonBuilder(modify).toPrettyString()
 
         } else {
-
+// no github release for nightly builds
+/*
           def release = github.createRelease(Versioning.timestamp, Versioning.gitSHA, "DriftFX Nightly $Versioning.qualifier", """
             This is a nightly build. (The Version number 999.0.0 indicates nightly builds)
 
@@ -429,7 +430,7 @@ task publishGithubRelease() {
             def modify = github.modifyRelease(releaseId, Versioning.timestamp, false)
             println new groovy.json.JsonBuilder(modify).toPrettyString()
 
-
+*/
         }
 
     }

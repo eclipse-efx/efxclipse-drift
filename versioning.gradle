@@ -42,7 +42,7 @@ def getReleaseTag() {
         standardOutput = stdout
     }
     def tag = stdout.toString().trim()
-    if (tag.matches('v[0-9]+\\.[0-9]+\\.[0-9]+')) {
+    if (tag.matches('v[0-9]+\\.[0-9]+\\.[0-9]+(\\.[a-z0-9]+)?')) {
         return tag
     }
     return null
@@ -75,6 +75,8 @@ def toTimestamp(instant) {
 
 def tmpReleaseTag = getReleaseTag()
 def tmpReleaseMode = tmpReleaseTag != null
+def tmpIsRelease = tmpReleaseTag != null && tmpReleaseTag.matches('v[0-9]+\\.[0-9]+\\.[0-9]+')
+def tmpIsPreRelease = tmpReleaseTag != null && tmpReleaseTag.matches('v[0-9]+\\.[0-9]+\\.[0-9]+\\.[a-z0-9]+')
 def tmpVersion = getVersion()
 def tmpTimestamp = getTimestamp()
 def tmpQualifier = getQualifier()
@@ -85,6 +87,8 @@ ext {
     Versioning = [
         releaseTag: tmpReleaseTag,
         releaseMode: tmpReleaseMode,
+	isRelease: tmpIsRelease,
+	isPreRelease: tmpIsPreRelease,
         version: tmpVersion,
         timestamp: tmpTimestamp,
         qualifier: tmpQualifier,
@@ -99,6 +103,8 @@ task showVersioning {
     println "Versioning: " //${new groovy.json.JsonBuilder(Versioning).toPrettyString()}"
     println "\tgitSHA: $Versioning.gitSHA"
     println "\treleaseMode: $Versioning.releaseMode"
+    println "\tisRelease: $Versioning.isRelease"
+    println "\tisPreRelease: $Versioning.isPreRelease"
     println "\treleaseTag: $Versioning.releaseTag"
     println "\tversion: $Versioning.version"
     println "\ttimestamp: $Versioning.timestamp"
