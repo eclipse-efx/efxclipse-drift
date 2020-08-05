@@ -16,7 +16,8 @@ Direct means that there is no transfer between GPU and main memory. The textures
 This build triggers on push to master.   
 It uses the version 999.0.0 with the git commit timestamp and the short git sha as qualifier.   
 The artifacts are published as p2 repository and as maven snapshot. Note: nexus sets its own qualifier which is always later than the git commit timestamp.
-The links to the repos can be found in the github release. Those github releases are marked as prerelease.
+The nightly p2 repos are at https://download.eclipse.org/efxclipse/driftfx/nightly/
+The maven snapshots are at https://repo.eclipse.org/content/groups/efxclipse/
 
 #### Release Builds
 
