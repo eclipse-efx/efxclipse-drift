@@ -9,6 +9,21 @@ Direct means that there is no transfer between GPU and main memory. The textures
  * Moved most of the business logic from C++ to Java
  * Added a C++ Binding to allow drift usage from C++ code
 
+### Builds
+
+#### Nightly Builds
+
+This build triggers on push to master.   
+It uses the version 999.0.0 with the git commit timestamp and the short git sha as qualifier.   
+The artifacts are published as p2 repository and as maven snapshot. Note: nexus sets its own qualifier which is always later than the git commit timestamp.
+The links to the repos can be found in the github release. Those github releases are marked as prerelease.
+
+#### Release Builds
+
+Release builds are triggered by creating a tag beginning with v followed by the version number.    
+The artifacts are also published as p2 repository and as maven releases.
+The links to the repos can be found in the corresponding github releases.
+
 ### Java Usage
 
 ```java
@@ -46,7 +61,7 @@ Direct means that there is no transfer between GPU and main memory. The textures
 ```
 
 ### C++ Usage
-The cpp bindings are based on a single header file (`driftcpp.h`)  you have to include in your project.
+The cpp bindings are based on a header file (`driftcpp.h`) and a source file (`driftcpp.cpp`)  you have to include in your project.
 The initialization is done by calling `driftfx::initialize(JNIEnv* env, jobject classLoader)`. The jni env needs to be a valid jni env and the classLoader has to be the java class loader which has access to the `org.eclipse.fx.drift` package. On a plain java 8 this could be the system class loader, in an osgi environment it needs to be a classloader which has access to the package, and on java 11 .. (TBD jigsaw stuff).
 The API aims to be similar to the Java API.
 
