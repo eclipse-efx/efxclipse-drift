@@ -2,10 +2,11 @@ package org.eclipse.fx.drift.internal.common;
 
 import org.eclipse.fx.drift.TransferType;
 import org.eclipse.fx.drift.Vec2i;
+import org.eclipse.fx.drift.util.NativeUtil;
 
 public class IOSurfaceImageData extends ImageData {
-
-	public static final TransferType TYPE = new TransferType("IOSurface", () -> true);
+	
+	public static final TransferType TYPE = new TransferType("IOSurface", () -> NativeUtil.isMacOs());
 
 	public final long ioSurfaceID;
 	

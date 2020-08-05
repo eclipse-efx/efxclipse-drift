@@ -13,7 +13,7 @@ package org.eclipse.fx.drift.impl;
 import java.util.Optional;
 
 import org.eclipse.fx.drift.BaseDriftFXSurface;
-import org.eclipse.fx.drift.internal.FPSCounter2;
+import org.eclipse.fx.drift.internal.FPSCounter;
 import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.Placement;
 import org.eclipse.fx.drift.internal.SurfaceData;
@@ -49,7 +49,7 @@ public class NGDriftFXSurface extends NGNode {
 	/** image currently in use by javafx renderer - we may not dispose it */
 	private FxImage<?> curImage;
 	
-	private FPSCounter2 fxFpsCounter = new FPSCounter2(100);
+	private FPSCounter fxFpsCounter = new FPSCounter(100);
 	
 	public void setSwapChain(FrontSwapChain swapChain) {
 		this.nextSwapChain = swapChain;
@@ -193,7 +193,7 @@ public class NGDriftFXSurface extends NGNode {
 		}
 		NGRenderUtil.drawFPSGraph(g, 0, 0, 150, 40, "JavaFX", fxFpsCounter);
 		if (swapChain != null) {
-			FPSCounter2 c = ((SimpleFrontSwapChain)swapChain).fpsCounter;
+			FPSCounter c = ((SimpleFrontSwapChain)swapChain).fpsCounter;
 			NGRenderUtil.drawFPSGraph(g, 0, 45, 150, 40, "Renderer", c);
 		}
 	}

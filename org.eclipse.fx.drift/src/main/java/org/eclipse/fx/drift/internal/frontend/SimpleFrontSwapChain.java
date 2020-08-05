@@ -8,12 +8,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import org.eclipse.fx.drift.PresentationMode;
 import org.eclipse.fx.drift.TransferType;
 import org.eclipse.fx.drift.Vec2i;
-import org.eclipse.fx.drift.internal.FPSCounter2;
+import org.eclipse.fx.drift.internal.FPSCounter;
 import org.eclipse.fx.drift.internal.common.ImageData;
 
 import com.sun.prism.ResourceFactory;
@@ -32,7 +31,7 @@ public class SimpleFrontSwapChain implements FrontSwapChain {
 	private int imageCount;
 	private PresentationMode presentationMode;
 	
-	public FPSCounter2 fpsCounter = new FPSCounter2(100);
+	public FPSCounter fpsCounter = new FPSCounter(100);
 	private boolean disposeScheduled;
 	
 	public SimpleFrontSwapChain(UUID id, List<ImageData> images, PresentationMode presentationMode, BiConsumer<UUID, ImageData> onRelease) {

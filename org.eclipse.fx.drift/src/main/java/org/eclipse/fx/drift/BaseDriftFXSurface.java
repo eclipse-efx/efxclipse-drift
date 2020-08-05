@@ -247,18 +247,13 @@ public abstract class BaseDriftFXSurface extends Node {
 	}
 	
 	
-	
-	
 	// Internal Type access
-	
-	@SuppressWarnings("restriction")
 	private static void drift_addShutdownHook(Runnable hook) {
 		com.sun.javafx.tk.Toolkit.getToolkit().addShutdownHook(hook);
 	}
 
 	// JDK-Version specific methods
 	
-	@SuppressWarnings("restriction")
 	protected com.sun.javafx.geom.BaseBounds drift_computeGeomBounds(com.sun.javafx.geom.BaseBounds bounds, com.sun.javafx.geom.transform.BaseTransform tx) {
 		com.sun.javafx.geom.BaseBounds rv = new com.sun.javafx.geom.RectBounds(0f, 0f, (float) getWidth(), (float) getHeight());
 		rv = tx.transform(rv, rv);
@@ -271,7 +266,6 @@ public abstract class BaseDriftFXSurface extends Node {
 		return (w > 0 && h > 0 && localX >= 0 && localY >= 0 && localX < w && localY < h);
 	}
 	
-	@SuppressWarnings("restriction")
 	protected com.sun.javafx.sg.prism.NGNode drift_createPeer() {
 		NGDriftFXSurface peer = new NGDriftFXSurface(this);
 		return peer;

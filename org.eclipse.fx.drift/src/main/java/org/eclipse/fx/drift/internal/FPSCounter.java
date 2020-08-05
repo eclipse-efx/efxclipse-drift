@@ -1,6 +1,6 @@
 package org.eclipse.fx.drift.internal;
 
-public class FPSCounter2 {
+public class FPSCounter {
 	
 	long thisFrameTime;
 	long frameTime;
@@ -17,7 +17,7 @@ public class FPSCounter2 {
 	public double[] fpsHistory;
 	public long[] durationHistory;
 	
-	public FPSCounter2(int historySize) {
+	public FPSCounter(int historySize) {
 		this.fpsHistory = new double[historySize];
 		this.durationHistory = new long[historySize];
 	}
@@ -34,7 +34,7 @@ public class FPSCounter2 {
 		time = getTime();
 		thisFrameTime = time - lastLoop;
 		frameTime += (thisFrameTime - frameTime) / smoothing;
-		fps = 1000 / frameTime;
+		fps = frameTime == 0 ? 0 : (1000 / frameTime);
 		duration = frameStart < lastLoop ? frameTime : time - frameStart;
 		lastLoop = time;
 	}

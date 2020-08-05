@@ -16,7 +16,11 @@ public class NativeUtil {
 	
 	private static final boolean USE_JAVA_LIBRARY_PATH = Boolean.getBoolean("driftfx.use.java.library.path");
 	
-	private static String OS = null;
+	private static String OS = System.getProperty("os.name");
+	private static boolean isWindows = getOsName().toLowerCase().contains("windows");
+	private static boolean isLinux = getOsName().toLowerCase().contains("linux");
+	private static boolean isMacOs = getOsName().toLowerCase().contains("mac") || getOsName().toLowerCase().contains("darwin");
+	
 	
 	static boolean osgi = false;
 	
@@ -25,53 +29,47 @@ public class NativeUtil {
 	}
 
 	public static String getOsName() {
-		if (OS == null) {
-			OS = System.getProperty("os.name");
-		}
 		return OS;
 	}
 	
 	public static boolean isWindows() {
-		return getOsName().toLowerCase().contains("windows");
+		return isWindows;
 	}
 
 	public static boolean isLinux() {
-		return getOsName().toLowerCase().contains("linux");
+		return isLinux;
 	}
 
 	public static boolean isMacOs() {
-		return getOsName().toLowerCase().contains("mac");
+		return isMacOs;
 	}
 	
 	public static void loadLibrary(Class<?> context, String libname, Consumer<String> loadLibrary, Consumer<String> load) {
 		if (USE_JAVA_LIBRARY_PATH || osgi) {
 			// osgi will take care of it
 			Log.info("loading " + libname + " via system call");
-//			System.loadLibrary(libname);
 			loadLibrary.accept(libname);
 		}
 		else {
-			
 			// we need to make it happen
-			
-			String filename = getFilename(libname);
-			Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
-			Path extractPath = tmpDir.resolve("driftfx").resolve(ManifestUtil.getManifestEntry(context, "Bundle-Version")).resolve(filename);
-			
-			String resourceName = "/native/" + filename;
-			URL url = context.getResource(resourceName);
-			Log.debug("Resource Lookup: name: " + resourceName + ", context: " + context + " => " + url);
-			
-			
-			try (InputStream in = context.getResourceAsStream("/native/" + filename)) {
-				extract(in, extractPath);
+			try {
+				String filename = getFilename(libname);
+				Path tmpDir = Files.createTempDirectory("driftfx");
+				Path extractPath = tmpDir.resolve(filename);
+				
+				String resourceName = "/native/" + filename;
+				URL url = context.getResource(resourceName);
+				Log.debug("Resource Lookup: name: " + resourceName + ", context: " + context + " => " + url);
+				
+				try (InputStream in = context.getResourceAsStream("/native/" + filename)) {
+					extract(in, extractPath);
+				}
+				
+				Log.info("loading " + libname + " from extracted location (" + extractPath + ")");
+				load.accept(extractPath.toString());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
-			Log.info("loading " + libname + " from extracted location (" + extractPath + ")");
-//			System.load(extractPath.toString());
-			load.accept(extractPath.toString());
 		}
 	}
 	

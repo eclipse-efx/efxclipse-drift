@@ -1,13 +1,12 @@
 package org.eclipse.fx.drift;
 
-import org.eclipse.fx.drift.internal.prism.Prism;
-
 import com.sun.javafx.geom.BaseBounds;
 import com.sun.javafx.geom.transform.BaseTransform;
 import com.sun.javafx.jmx.MXNodeAlgorithm;
 import com.sun.javafx.jmx.MXNodeAlgorithmContext;
 import com.sun.javafx.sg.prism.NGNode;
 
+@SuppressWarnings("restriction")
 public class DriftFXSurface extends BaseDriftFXSurface {
 	
 	@Override

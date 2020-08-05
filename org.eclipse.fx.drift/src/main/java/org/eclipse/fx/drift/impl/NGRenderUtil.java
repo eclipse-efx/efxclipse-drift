@@ -1,7 +1,7 @@
 package org.eclipse.fx.drift.impl;
 
 import org.eclipse.fx.drift.internal.DriftUtil;
-import org.eclipse.fx.drift.internal.FPSCounter2;
+import org.eclipse.fx.drift.internal.FPSCounter;
 
 import com.sun.javafx.font.FontStrike;
 import com.sun.javafx.font.PGFont;
@@ -19,7 +19,7 @@ import javafx.scene.text.TextAlignment;
 
 @SuppressWarnings("restriction")
 public class NGRenderUtil {
-	public static void drawFPSGraph(Graphics g, float x, float y, float width, float height, String label, FPSCounter2 c) {
+	public static void drawFPSGraph(Graphics g, float x, float y, float width, float height, String label, FPSCounter c) {
 		int count = 30;
 		Color bg = new Color(0, 0, 0, 0.5f);
 		Color fg = new Color(1, 1, 1, 1);
