@@ -43,8 +43,6 @@ namespace driftfx {
         virtual ~Swapchain() = 0;
     };
     
-    
-    
     class Renderer {
     public:
         virtual Swapchain* createSwapchain(SwapchainConfig config) = 0;
@@ -72,7 +70,6 @@ namespace driftfx {
         static TransferType* IOSurface;
         static TransferType* NVDXInterop;
     };
-    
     
     // initializes drift cpp
     // must be called before any other method

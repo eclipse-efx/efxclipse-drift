@@ -6,11 +6,17 @@
 // INTERNAL API
 namespace internal {
     
-    
     class JNI {
     public:
         static void init(JNIEnv* env, jobject classLoader);
         static void dispose(JNIEnv* env);
+        
+    private:
+        static jclass getClass(JNIEnv* env, const char* name);
+        static jmethodID getMethodID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature);
+        static jmethodID getStaticMethodID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature);
+        static jfieldID getFieldID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature);
+        static jfieldID getStaticFieldID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature);
         
     private:
         static jobject classLoader;
@@ -20,7 +26,7 @@ namespace internal {
         static jclass cClass;
         static jmethodID mClassForName;
     public:
-        static jclass getClass(JNIEnv* env, const char* name);
+        
         
         // Vec2i
     private:
@@ -150,12 +156,7 @@ namespace internal {
         TransferTypeImpl(JNIEnv* _env, jobject _javaInstance);
         ::std::string getId();
         bool isAvailable();
-
-        
-
     };
-    
-    
     
 }
 
@@ -209,15 +210,25 @@ jclass internal::JNI::getClass(JNIEnv* env, const char* name) {
     env->DeleteLocalRef(className);
     return result;
 }
-
-void dbgClass(const char* name, jclass clazz) {
-    std::cout << " * " << name << ": " << clazz << std::endl;
+jmethodID internal::JNI::getMethodID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature) {
+    auto result = env->GetMethodID(clazz, name, signature);
+    if (result == nullptr) std::cerr << "lookup " << clazzName << "#" << name << " failed! " << std::endl;
+    return result;
 }
-void dbgField(const char* name, jfieldID field) {
-    std::cout << "   - " << name << ": " << field << std::endl;
+jmethodID internal::JNI::getStaticMethodID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature) {
+    auto result = env->GetStaticMethodID(clazz, name, signature);
+    if (result == nullptr) std::cerr << "lookup " << clazzName << "#" << name << " failed! " << std::endl;
+    return result;
 }
-void dbgMethod(const char* name, jmethodID method) {
-    std::cout << "   - " << name << ": " << method << std::endl;
+jfieldID internal::JNI::getFieldID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature) {
+    auto result = env->GetFieldID(clazz, name, signature);
+    if (result == nullptr) std::cerr << "lookup " << clazzName << "#" << name << " failed! " << std::endl;
+    return result;
+}
+jfieldID internal::JNI::getStaticFieldID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature) {
+    auto result = env->GetStaticFieldID(clazz, name, signature);
+    if (result == nullptr) std::cerr << "lookup " << clazzName << "#" << name << " failed! " << std::endl;
+    return result;
 }
 
 void internal::JNI::init(JNIEnv* env, jobject _classLoader) {
@@ -225,97 +236,64 @@ void internal::JNI::init(JNIEnv* env, jobject _classLoader) {
     // Class
     cClass = env->FindClass("java/lang/Class");
     cClass = (jclass)env->NewGlobalRef(cClass);
-    mClassForName = env->GetStaticMethodID(cClass, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
-
-    dbgClass("Class", cClass);
-    dbgMethod("forName", mClassForName);
+    mClassForName = getStaticMethodID(env, "java.lang.Class", cClass, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
 
     // Vec2i
-    cVec2i = getClass(env, "org.eclipse.fx.drift.Vec2i"); //env->FindClass("org/eclipse/fx/drift/Vec2i");
+    const char* Vec2i = "org.eclipse.fx.drift.Vec2i";
+    cVec2i = getClass(env, Vec2i);
     cVec2i = (jclass)env->NewGlobalRef(cVec2i);
-    mVec2iConstructor = env->GetMethodID(cVec2i, "<init>", "(II)V");
-    fVec2iX = env->GetFieldID(cVec2i, "x", "I");
-    fVec2iY = env->GetFieldID(cVec2i, "y", "I");
-
-    dbgClass("Vec2i", cVec2i);
-    dbgMethod("Vec2i(int, int)", mVec2iConstructor);
-    dbgField("x", fVec2iX);
-    dbgField("y", fVec2iY);
+    mVec2iConstructor = getMethodID(env, Vec2i, cVec2i, "<init>", "(II)V");
+    fVec2iX = getFieldID(env, Vec2i, cVec2i, "x", "I");
+    fVec2iY = getFieldID(env, Vec2i, cVec2i, "y", "I");
 
     // SwapchainConfig
-    cSwapchainConfig = getClass(env, "org.eclipse.fx.drift.SwapchainConfig"); //env->FindClass("org/eclipse/fx/drift/SwapchainConfig");
+    const char* SwapchainConfig = "org.eclipse.fx.drift.SwapchainConfig";
+    cSwapchainConfig = getClass(env, SwapchainConfig);
     cSwapchainConfig = (jclass)env->NewGlobalRef(cSwapchainConfig);
-    mSwapchainConfigConstructor = env->GetMethodID(cSwapchainConfig, "<init>", "(Lorg/eclipse/fx/drift/Vec2i;ILorg/eclipse/fx/drift/PresentationMode;Lorg/eclipse/fx/drift/TransferType;)V");
-    fSwapchainConfigSize = env->GetFieldID(cSwapchainConfig, "size", "Lorg/eclipse/fx/drift/Vec2i;");
-    fSwapchainConfigImageCount = env->GetFieldID(cSwapchainConfig, "imageCount", "I");
-    fSwapchainConfigPresentationMode = env->GetFieldID(cSwapchainConfig, "presentationMode", "Lorg/eclipse/fx/drift/PresentationMode;");
-    fSwapchainConfigTransferType = env->GetFieldID(cSwapchainConfig, "transferType", "Lorg/eclipse/fx/drift/TransferType;");
-
-    dbgClass("SwapchainConfig", cSwapchainConfig);
-    dbgMethod("SwapchainConfig(Vec2i, int, PresentationMode, TransferType)", mSwapchainConfigConstructor);
-    dbgField("size", fSwapchainConfigSize);
-    dbgField("imageCount", fSwapchainConfigImageCount);
-    dbgField("presentationMode", fSwapchainConfigPresentationMode);
-    dbgField("transferType", fSwapchainConfigTransferType);
+    mSwapchainConfigConstructor = getMethodID(env, SwapchainConfig, cSwapchainConfig, "<init>", "(Lorg/eclipse/fx/drift/Vec2i;ILorg/eclipse/fx/drift/PresentationMode;Lorg/eclipse/fx/drift/TransferType;)V");
+    fSwapchainConfigSize = getFieldID(env, SwapchainConfig, cSwapchainConfig, "size", "Lorg/eclipse/fx/drift/Vec2i;");
+    fSwapchainConfigImageCount = getFieldID(env, SwapchainConfig, cSwapchainConfig, "imageCount", "I");
+    fSwapchainConfigPresentationMode = getFieldID(env, SwapchainConfig, cSwapchainConfig, "presentationMode", "Lorg/eclipse/fx/drift/PresentationMode;");
+    fSwapchainConfigTransferType = getFieldID(env, SwapchainConfig, cSwapchainConfig, "transferType", "Lorg/eclipse/fx/drift/TransferType;");
 
     // Swapchain
-    jclass cSwapchain = getClass(env, "org.eclipse.fx.drift.Swapchain"); //env->FindClass("org/eclipse/fx/drift/Swapchain");
-    mSwapchainAcquire = env->GetMethodID(cSwapchain, "acquire", "()Lorg/eclipse/fx/drift/RenderTarget;");
-
-    dbgClass("Swapchain", cSwapchain);
-    dbgMethod("acquire()", mSwapchainAcquire);
+    const char* Swapchain = "org.eclipse.fx.drift.Swapchain";
+    jclass cSwapchain = getClass(env, Swapchain);
+    mSwapchainAcquire = getMethodID(env, Swapchain, cSwapchain, "acquire", "()Lorg/eclipse/fx/drift/RenderTarget;");
 
     // mSwapchainTryAcquire // TODO generics!?
-    mSwapchainPresent = env->GetMethodID(cSwapchain, "present", "(Lorg/eclipse/fx/drift/RenderTarget;)V");
-    mSwapchainDispose = env->GetMethodID(cSwapchain, "dispose", "()V");
-    mSwapchainGetConfig = env->GetMethodID(cSwapchain, "getConfig", "()Lorg/eclipse/fx/drift/SwapchainConfig;");
-
-    dbgMethod("present(RenderTarget)", mSwapchainPresent);
-    dbgMethod("dispose()", mSwapchainDispose);
-    dbgMethod("getConfig()", mSwapchainGetConfig);
+    mSwapchainPresent = getMethodID(env, Swapchain, cSwapchain, "present", "(Lorg/eclipse/fx/drift/RenderTarget;)V");
+    mSwapchainDispose = getMethodID(env, Swapchain, cSwapchain, "dispose", "()V");
+    mSwapchainGetConfig = getMethodID(env, Swapchain, cSwapchain, "getConfig", "()Lorg/eclipse/fx/drift/SwapchainConfig;");
 
     // Renderer
-    jclass cRenderer = getClass(env, "org.eclipse.fx.drift.Renderer"); //env->FindClass("org/eclipse/fx/drift/Renderer");
-    mRendererGetSize = env->GetMethodID(cRenderer, "getSize", "()Lorg/eclipse/fx/drift/Vec2i;");
-    mRendererCreateSwapchain = env->GetMethodID(cRenderer, "createSwapchain", "(Lorg/eclipse/fx/drift/SwapchainConfig;)Lorg/eclipse/fx/drift/Swapchain;");
-    // GLRenderer
-    cGLRenderer = getClass(env, "org.eclipse.fx.drift.GLRenderer"); //env->FindClass("org/eclipse/fx/drift/GLRenderer");
-    cGLRenderer = (jclass)env->NewGlobalRef(cGLRenderer);
-    mGLRendererGetGLTextureId = env->GetStaticMethodID(cGLRenderer, "getGLTextureId", "(Lorg/eclipse/fx/drift/RenderTarget;)I");
+    const char* Renderer = "org.eclipse.fx.drift.Renderer";
+    jclass cRenderer = getClass(env, Renderer); //env->FindClass("org/eclipse/fx/drift/Renderer");
+    mRendererGetSize = getMethodID(env, Renderer, cRenderer, "getSize", "()Lorg/eclipse/fx/drift/Vec2i;");
+    mRendererCreateSwapchain = getMethodID(env, Renderer, cRenderer, "createSwapchain", "(Lorg/eclipse/fx/drift/SwapchainConfig;)Lorg/eclipse/fx/drift/Swapchain;");
     
-    dbgClass("Renderer", cRenderer);
-    dbgMethod("getSize()", mRendererGetSize);
-    dbgMethod("createSwapchain", mRendererCreateSwapchain);
-
-    dbgClass("GLRenderer", cGLRenderer);
-    dbgMethod("getGLTextureId()", mGLRendererGetGLTextureId);
+    // GLRenderer
+    const char* GLRenderer = "org.eclipse.fx.drift.GLRenderer";
+    cGLRenderer = getClass(env, GLRenderer);
+    cGLRenderer = (jclass)env->NewGlobalRef(cGLRenderer);
+    mGLRendererGetGLTextureId = getStaticMethodID(env, GLRenderer, cGLRenderer, "getGLTextureId", "(Lorg/eclipse/fx/drift/RenderTarget;)I");
 
     // TransferType
-
-    jclass cTransferType = getClass(env, "org.eclipse.fx.drift.TransferType");
-    fTransferTypeId = env->GetFieldID(cTransferType, "id", "Ljava/lang/String;");
-    mTransferTypeIsAvailable = env->GetMethodID(cTransferType, "isAvailable", "()Z");
-
-    dbgClass("TransferType", cTransferType);
-    dbgField("id", fTransferTypeId);
-    dbgMethod("isAvailable()", mTransferTypeIsAvailable);
+    const char* TransferType = "org.eclipse.fx.drift.TransferType";
+    jclass cTransferType = getClass(env, TransferType);
+    fTransferTypeId = getFieldID(env, TransferType, cTransferType, "id", "Ljava/lang/String;");
+    mTransferTypeIsAvailable = getMethodID(env, TransferType, cTransferType, "isAvailable", "()Z");
 
     // String
-    jclass cString = getClass(env, "java.lang.String");
-    mStringGetBytes = env->GetMethodID(cString, "getBytes", "()[B");
+    const char* String = "java.lang.String";
+    jclass cString = getClass(env, String);
+    mStringGetBytes = getMethodID(env, String, cString, "getBytes", "()[B");
 
-    dbgClass("String", cString);
-    dbgMethod("getBytes()", mStringGetBytes);
-
-    jclass cStandardTransferTypes = getClass(env, "org.eclipse.fx.drift.StandardTransferTypes"); //env->FindClass("org/eclipse/fx/drift/StandardTransferTypes");
-    jfieldID fStandardTransferTypesMainMemory = env->GetStaticFieldID(cStandardTransferTypes, "MainMemory", "Lorg/eclipse/fx/drift/TransferType;");
-    jfieldID fStandardTransferTypesIOSurface = env->GetStaticFieldID(cStandardTransferTypes, "IOSurface", "Lorg/eclipse/fx/drift/TransferType;");
-    jfieldID fStandardTransferTypesNVDXInterop = env->GetStaticFieldID(cStandardTransferTypes, "NVDXInterop", "Lorg/eclipse/fx/drift/TransferType;");
-    
-    dbgClass("StandardTransferTypes", cStandardTransferTypes);
-    dbgField("MainMemory", fStandardTransferTypesMainMemory);
-    dbgField("IOSurface", fStandardTransferTypesIOSurface);
-    dbgField("NVDXInterop", fStandardTransferTypesNVDXInterop);
+    const char* StandardTransferTypes = "org.eclipse.fx.drift.StandardTransferTypes";
+    jclass cStandardTransferTypes = getClass(env, StandardTransferTypes); //env->FindClass("org/eclipse/fx/drift/StandardTransferTypes");
+    jfieldID fStandardTransferTypesMainMemory = getStaticFieldID(env, StandardTransferTypes, cStandardTransferTypes, "MainMemory", "Lorg/eclipse/fx/drift/TransferType;");
+    jfieldID fStandardTransferTypesIOSurface = getStaticFieldID(env, StandardTransferTypes, cStandardTransferTypes, "IOSurface", "Lorg/eclipse/fx/drift/TransferType;");
+    jfieldID fStandardTransferTypesNVDXInterop = getStaticFieldID(env, StandardTransferTypes, cStandardTransferTypes, "NVDXInterop", "Lorg/eclipse/fx/drift/TransferType;");
 
     jobject mainMemory = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesMainMemory);
     jobject ioSurface = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesIOSurface);
@@ -324,16 +302,10 @@ void internal::JNI::init(JNIEnv* env, jobject _classLoader) {
     mainMemory = env->NewGlobalRef(mainMemory);
     ioSurface = env->NewGlobalRef(ioSurface);
     nvdxInterop = env->NewGlobalRef(nvdxInterop);
-
-    std::cout << " * mainMemory = " << mainMemory << std::endl;
-    std::cout << " * ioSurface = " << ioSurface << std::endl; 
-    std::cout << " * nvdxInterop = " << nvdxInterop << std::endl;
     
     driftfx::StandardTransferTypes::MainMemory = getTransferType(env, mainMemory);
     driftfx::StandardTransferTypes::IOSurface = getTransferType(env, ioSurface);
     driftfx::StandardTransferTypes::NVDXInterop = getTransferType(env, nvdxInterop);
-
-
 }
 
 void internal::JNI::dispose(JNIEnv* env) {
@@ -375,25 +347,16 @@ jobject internal::JNI::convertSwapchainConfig(JNIEnv* env, driftfx::SwapchainCon
     jint imageCount = swapchainConfig.imageCount;
     jobject presentationMode = nullptr; // TODO setup presentation mode
     TransferTypeImpl* impl = (TransferTypeImpl*) swapchainConfig.transferType;
-    std::cout << "txType: " << impl->getId() << std::endl;
     jobject transferType = impl->getJavaInstance();
-    std::cout << "C: new SwapChainConfig(" << size << ", " << imageCount << ", " << presentationMode << ", " << transferType << ")" << std::endl;
     return env->NewObject(cSwapchainConfig, mSwapchainConfigConstructor, size, imageCount, presentationMode, transferType);
 }
 
 driftfx::SwapchainConfig internal::JNI::convertSwapchainConfig(JNIEnv* env, jobject swapchainConfig) {
     driftfx::SwapchainConfig config;
-    
-    std::cout << "GetObjectField(" << swapchainConfig << ", " << fSwapchainConfigSize << ") (size)" << std::endl;
     jobject size = env->GetObjectField(swapchainConfig, fSwapchainConfigSize);
-    std::cout << " -> " << size << std::endl;
     config.size = convertVec2i(env, size);
-    std::cout << "GetIntField(" << swapchainConfig << ", " << fSwapchainConfigImageCount << ") (imageCount)" << std::endl;
     config.imageCount = env->GetIntField(swapchainConfig, fSwapchainConfigImageCount);
-    std::cout << " -> " << config.imageCount << std::endl;
-    std::cout << "GetObjectField(" << swapchainConfig << ", " << fSwapchainConfigTransferType << ") (transferType)" << std::endl;
     jobject tt = env->GetObjectField(swapchainConfig, fSwapchainConfigTransferType);
-    std::cout << " -> " << tt << std::endl;
     config.transferType = getTransferType(env, tt);
     return config;
 }
@@ -416,7 +379,6 @@ void internal::JNI::callSwapchainDispose(JNIEnv* env, jobject swapchain) {
 }
 
 jobject internal::JNI::callSwapchainGetConfig(JNIEnv* env, jobject swapchain) {
-    std::cout << "CallObjectMethod("<< swapchain << ", " << mSwapchainGetConfig << ") (getConfig())" << std::endl << std::flush;
     return env->CallObjectMethod(swapchain, mSwapchainGetConfig);
 }
 
@@ -447,12 +409,7 @@ jbyteArray internal::JNI::callStringGetBytes(JNIEnv* env, jstring str) {
 }
 
 ::std::string internal::JNI::convert(JNIEnv* env, jstring value) {
-    std::cout << "calling getBytes with " << value << std::endl;
     const auto bytes = callStringGetBytes(env, value);
-    if (env->ExceptionCheck()) {
-        env->ExceptionDescribe();
-    }
-    std::cout << "got bytes " << bytes << std::endl;
     const auto length = env->GetArrayLength(bytes);
     const auto pBytes = env->GetByteArrayElements(bytes, nullptr);
     std::string result((char*)pBytes, length);
@@ -479,19 +436,12 @@ driftfx::Vec2i internal::RendererImpl::getSize() {
 
 driftfx::Swapchain* internal::RendererImpl::createSwapchain(driftfx::SwapchainConfig config) {
     jobject javaSwapchain = internal::JNI::callRendererCreateSwapchain(env, javaInstance, internal::JNI::convertSwapchainConfig(env, config));
-    if (env->ExceptionCheck()) {
-        env->ExceptionDescribe();
-    }
-    std::cout << "Got javaSwapchain = " << javaSwapchain << std::endl << std::flush;
-
-
     return new internal::SwapchainImpl(env, javaSwapchain);
 }
 
 
 
 internal::SwapchainImpl::SwapchainImpl(JNIEnv* _env, jobject _javaInstance) {
-    std::cout << "SwapchainImpl(" << env << ", " << _javaInstance << ")" << std::endl << std::flush;
     this->env = _env;
     this->javaInstance = _javaInstance;
 
@@ -532,16 +482,8 @@ internal::RenderTargetImpl::RenderTargetImpl(JNIEnv* _env, jobject _javaInstance
 internal::TransferTypeImpl::TransferTypeImpl(JNIEnv* _env, jobject _javaInstance) {
     env = _env;
     javaInstance = _javaInstance;
-
     jstring jId = internal::JNI::getTransferTypeId(env, _javaInstance);
-    if (env->ExceptionCheck()) {
-        env->ExceptionDescribe();
-    }
-    std::cout << "got id: " << jId << std::endl << std::flush;
-
     const char* data = env->GetStringUTFChars(jId, 0);
-    std::cout << "data: " << data << std::endl;
-
     id = internal::JNI::convert(env, jId);
 }
 
@@ -573,30 +515,20 @@ driftfx::Renderer* driftfx::initializeRenderer(JNIEnv* env, jobject javaRenderer
     return new internal::RendererImpl(env, javaRenderer);
 }
 
-
-
-
 driftfx::TransferType* driftfx::StandardTransferTypes::MainMemory = nullptr;
 driftfx::TransferType* driftfx::StandardTransferTypes::IOSurface = nullptr;
 driftfx::TransferType* driftfx::StandardTransferTypes::NVDXInterop = nullptr;
 
-
 driftfx::TransferType* internal::JNI::getTransferType(JNIEnv* env, jobject transferType) {
-
     jstring jId = getTransferTypeId(env, transferType);
     std::string id = convert(env, jId);
 
-    std::cout << "looking up " << id << std::endl;
-
     auto it = transferTypes.find(id);
     if (it != transferTypes.end()) {
-        std::cout << "! found in map " << it->second << std::endl;
         return it->second;
     } else {
         auto result = new TransferTypeImpl(env, transferType);
         transferTypes.insert({ id, result });
-        std::cout << "! not found in map -> created it " << result << std::endl;
-
         return result;
     }
 }
@@ -606,9 +538,6 @@ driftfx::TransferType* driftfx::getTransferType(JNIEnv* env, jobject javaTransfe
 }
 
 void driftfx::initialize(JNIEnv* env, jobject classLoader) {
-
-    std::cout << "CHANGE 0" << std::endl;
-
     internal::JNI::init(env, classLoader);
 }
 
