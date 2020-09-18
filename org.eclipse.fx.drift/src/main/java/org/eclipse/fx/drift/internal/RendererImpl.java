@@ -15,7 +15,8 @@ import org.eclipse.fx.drift.internal.frontend.FrontendImpl;
 import org.eclipse.fx.drift.internal.transport.VMTransport;
 
 public class RendererImpl implements Renderer {
-
+	private static final DriftLogger LOGGER = DriftFX.createLogger(RendererImpl.class);
+	
 	private static Map<DriftFXSurface, Renderer> renderers = new HashMap<>();
 	
 	public static Renderer getRenderer(DriftFXSurface surface) {
@@ -53,7 +54,6 @@ public class RendererImpl implements Renderer {
 
 	@Override
 	public Swapchain createSwapchain(SwapchainConfig config) {
-		Log.info("java createSwapchain(" + config +")");
 		return backend.createSwapchain(config);
 	}
 }

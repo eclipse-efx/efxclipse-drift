@@ -24,13 +24,15 @@ import static org.eclipse.fx.drift.internal.SYS.malloc;
 import static org.eclipse.fx.drift.internal.SYS.memcpy;
 
 import org.eclipse.fx.drift.Vec2i;
-import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
 import org.eclipse.fx.drift.internal.prism.Prism;
 
 public class MainMemoryImage implements Image {
-
+	private static final DriftLogger LOGGER = DriftFX.createLogger(MainMemoryImage.class);
+	
 	public static final ImageType TYPE = new ImageType("MainMemory");
 	
 	private int number;
@@ -63,14 +65,14 @@ public class MainMemoryImage implements Image {
 		memSize = size.x * size.y * 4;
 		memPointer = malloc(memSize);
 		
-		Log.debug("*allocated " + number + " 0x" + Long.toHexString(memPointer) + "("+size.x+"x"+size.y+": " + memSize + "B)");
+		LOGGER.debug(() -> "*allocated " + number + " 0x" + Long.toHexString(memPointer) + "("+size.x+"x"+size.y+": " + memSize + "B)");
 		this.data =  new MainMemoryImageData(number, size, memPointer, memSize);
 	}
 
 	@Override
 	public void release() {
 		glDeleteTexture(glTexture);
-		Log.debug("*release " + glTexture + " 0x" + Long.toHexString(memPointer));
+		LOGGER.debug(() -> "*release " + glTexture + " 0x" + Long.toHexString(memPointer));
 		free(memPointer);
 	}
 
@@ -97,7 +99,7 @@ public class MainMemoryImage implements Image {
 		glBindTexture(GL_TEXTURE_2D, glTexture);
 		glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_INT_8_8_8_8_REV, memPointer);
 		glBindTexture(GL_TEXTURE_2D, 0);
-		Log.debug("*downloaded " + tex + " => 0x" + Long.toHexString(memPointer));
+		LOGGER.trace(() -> "*downloaded " + tex + " => 0x" + Long.toHexString(memPointer));
 	}
 	
 	private void downloadToMemoryBuf(int tex, int size, long pPixels) {

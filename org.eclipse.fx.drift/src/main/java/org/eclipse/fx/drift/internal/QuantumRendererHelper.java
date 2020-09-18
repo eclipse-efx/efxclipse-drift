@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import org.eclipse.fx.drift.internal.GPUSyncUtil.GPUSync;
 
 public class QuantumRendererHelper {
+	private static final DriftLogger LOGGER = DriftFX.createLogger(QuantumRendererHelper.class);
 	
 	public static class WithFence<T> {
 		
@@ -34,11 +35,11 @@ public class QuantumRendererHelper {
 		if (!initialized) {
 			context = syncExecute(() -> {
 				// TODO context version should be same as fx!!
-				Log.info("QuantumRendererHelper: creating shared context for " + es2ContextHandle);
+				LOGGER.info(() -> "QuantumRendererHelper: creating shared context for " + es2ContextHandle);
 				long es2Context = GL.wrapContext(es2ContextHandle);
 				long context = GL.createSharedCompatContext(es2Context);
 				boolean result = GL.makeContextCurrent(context);
-				Log.info("=> " + result);
+				LOGGER.info(() -> "=> " + result);
 				return context;
 			});
 			initialized = true;

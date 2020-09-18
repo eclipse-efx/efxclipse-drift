@@ -13,8 +13,9 @@ package org.eclipse.fx.drift.impl;
 import java.util.Optional;
 
 import org.eclipse.fx.drift.BaseDriftFXSurface;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.FPSCounter;
-import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.Placement;
 import org.eclipse.fx.drift.internal.SurfaceData;
 import org.eclipse.fx.drift.internal.frontend.FrontSwapChain;
@@ -36,7 +37,8 @@ import javafx.util.Duration;
 // Note: this implementation is against internal JavafX API
 @SuppressWarnings("restriction")
 public class NGDriftFXSurface extends NGNode {
-
+	private static final DriftLogger LOGGER = DriftFX.createLogger(NGDriftFXSurface.class);
+	
 	private static final boolean showFPS = Boolean.getBoolean("driftfx.showfps");
 	private static final boolean profile = Boolean.getBoolean("driftfx.profile");
 
@@ -254,7 +256,7 @@ public class NGDriftFXSurface extends NGNode {
 				nextSwapChain = null;
 			}
 			catch (Exception e) {
-				Log.error("ERROR during swapchain recreation");
+				LOGGER.error(() -> "ERROR during swapchain recreation", e);
 			}
 		}
 		
@@ -319,7 +321,7 @@ public class NGDriftFXSurface extends NGNode {
 	}
 	
 	public void updateSurface(SurfaceData surfaceData)  {
-		Log.debug("[J] NativeSurface updateSurface("+surfaceData+")");
+		LOGGER.debug(() -> "NativeSurface updateSurface("+surfaceData+")");
 		if (isValid(surfaceData)) {
 			this.surfaceData = surfaceData;
 		}

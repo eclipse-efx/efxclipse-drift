@@ -13,13 +13,15 @@ import java.util.stream.Collectors;
 
 import org.eclipse.fx.drift.RenderTarget;
 import org.eclipse.fx.drift.SwapchainConfig;
-import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.transport.command.DisposeSwapchainCommand;
 import org.eclipse.fx.drift.internal.transport.command.PresentCommand;
 
 public class SimpleSwapchain implements BackendSwapchain {
-
+	private static final DriftLogger LOGGER = DriftFX.createLogger(SimpleSwapchain.class);
+	
 	private final UUID id;
 	private final Backend backend;
 	private final SwapchainConfig config;
@@ -42,6 +44,7 @@ public class SimpleSwapchain implements BackendSwapchain {
 	}
 	
 	public void allocate() {
+		LOGGER.debug(() -> "Allocating Swapchain");
 		synchronized (freeImages) {
 			images = new HashSet<>();
 			imageMap = new HashMap<>();
@@ -56,7 +59,8 @@ public class SimpleSwapchain implements BackendSwapchain {
 	}
 	
 	public void dispose() {
-		long disposeTime = -System.nanoTime();
+		LOGGER.debug(() -> "Disposing Swapchain");
+		long disposeBegin = System.nanoTime();
 		backend.sendCommand(new DisposeSwapchainCommand(id));
 		while (freeImages.size() != images.size()) {
 			try {
@@ -65,8 +69,7 @@ public class SimpleSwapchain implements BackendSwapchain {
 				e.printStackTrace();
 			}
 		}
-		disposeTime += System.nanoTime();
-		Log.debug("Dispose waiting time was " + disposeTime + "ns");
+		LOGGER.debug(() -> "Dispose waiting time was " + (System.nanoTime() - disposeBegin) + "ns");
 		synchronized (freeImages) {
 			for (Image image : freeImages) {
 				image.release();
@@ -74,7 +77,7 @@ public class SimpleSwapchain implements BackendSwapchain {
 			// TODO release ohter images
 			images.removeAll(freeImages);
 			if (!images.isEmpty()) {
-				Log.error("Unreleased Swapchain images remaining: " + images);
+				LOGGER.error(() -> "Unreleased Swapchain images remaining: " + images);
 			}
 			disposed = true;
 		}
@@ -98,7 +101,7 @@ public class SimpleSwapchain implements BackendSwapchain {
 			Image image = imageMap.get(imageData);
 			if (image == null) {
 				// panic
-				Log.error("Wrong image released !!!!!");
+				LOGGER.error(() -> "Wrong image released !!!!!");
 			}
 			else {
 				freeImages.add(image);

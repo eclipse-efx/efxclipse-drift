@@ -3,13 +3,16 @@ package org.eclipse.fx.drift.internal.jni.win32;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 
 public enum HRESULT {
 	E_OUTOFMEMORY(0x8007000EL),
 	E_INVALIDARG(0x80070057L),
 	D3DERR_INVALIDCALL(((1l)<<31) | ((0x876l)<<16) | ((2156l)) ),
 	D3DERR_OUTOFVIDEOMEMORY(((1l)<<31) | ((0x876l)<<16) | ((380l)));
+	
+	private static final DriftLogger LOGGER = DriftFX.createLogger(HRESULT.class);
 	
 	public long value;
 	
@@ -23,8 +26,7 @@ public enum HRESULT {
 			return code.get();
 		}
 		else {
-			Log.error("Error code not yet supported: " + Long.toHexString(value));
-			Thread.dumpStack();
+			LOGGER.error(() -> "Error code not yet supported: " + Long.toHexString(value), new Exception());
 			return null;
 		}
 	}

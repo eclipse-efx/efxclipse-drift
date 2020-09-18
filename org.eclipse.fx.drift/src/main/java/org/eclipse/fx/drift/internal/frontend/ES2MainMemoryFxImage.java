@@ -12,11 +12,13 @@ import static org.eclipse.fx.drift.internal.GL.glIsTexture;
 import static org.eclipse.fx.drift.internal.GL.glPixelStorei;
 import static org.eclipse.fx.drift.internal.GL.glTexImage2D;
 
-import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.common.MainMemoryImageData;
 import org.eclipse.fx.drift.internal.prism.PrismES2;
 
 public class ES2MainMemoryFxImage extends AMainMemoryFxImage {
+	private static final DriftLogger LOGGER = DriftFX.createLogger(ES2MainMemoryFxImage.class);
 	
 	public ES2MainMemoryFxImage(MainMemoryImageData data) {
 		super(data);
@@ -25,9 +27,9 @@ public class ES2MainMemoryFxImage extends AMainMemoryFxImage {
 	@Override
 	protected void uploadTexture() {
 		int targetTex = PrismES2.getTextureName(getTexture());
-		Log.info("*uploadTexture 0x" + Long.toHexString(data.memPointer) + " => " + targetTex);
-		Log.info(" with Unpack.alignment = " + glGetInteger(GL_UNPACK_ALIGNMENT));
-		Log.info(" with Unpack.rowLength = " + glGetInteger(GL_UNPACK_ROW_LENGTH));
+		LOGGER.info(() -> "*uploadTexture 0x" + Long.toHexString(data.memPointer) + " => " + targetTex);
+		LOGGER.info(() -> " with Unpack.alignment = " + glGetInteger(GL_UNPACK_ALIGNMENT));
+		LOGGER.info(() -> " with Unpack.rowLength = " + glGetInteger(GL_UNPACK_ROW_LENGTH));
 		synchronized (data) {
 			uploadTexture(targetTex, data.size.x, data.size.y, data.memPointer, data.memSize);
 		}
@@ -36,9 +38,9 @@ public class ES2MainMemoryFxImage extends AMainMemoryFxImage {
 	private void uploadTexture(int targetTex, int width, int height, long pPixels, int size) {
 //		System.err.println("*uploadTexture(" + targetTex + ", " + width + ", " + height + ", " + Long.toHexString(pPixels) + ", " + size + ")");
 		if (targetTex == 0) {
-			Log.error("  !  Invalid Texture ID");
+			LOGGER.error(() -> "  !  Invalid Texture ID");
 		}
-		Log.info("isTexture(" + targetTex + "): " + glIsTexture(targetTex));
+		LOGGER.info(() -> "isTexture(" + targetTex + "): " + glIsTexture(targetTex));
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 		glBindTexture(GL_TEXTURE_2D, targetTex);

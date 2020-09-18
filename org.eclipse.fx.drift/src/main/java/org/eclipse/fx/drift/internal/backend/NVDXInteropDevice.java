@@ -4,14 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.GL;
-import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.jni.win32.NVDXInterop;
 import org.eclipse.fx.drift.internal.jni.win32.Win32;
 import org.eclipse.fx.drift.internal.jni.win32.WindowsError;
 
 public class NVDXInteropDevice {
-
+	private static final DriftLogger LOGGER = DriftFX.createLogger(NVDXInteropDevice.class);
+	
 	public final Win32.HANDLE hDevice;
 	private Win32.IDirect3DDevice9Ex dxDevice;
 	private long glContext;
@@ -45,7 +47,9 @@ public class NVDXInteropDevice {
 			}
 		
 			device.usageCount++;
-			Log.debug("" + device);
+			
+			NVDXInteropDevice fDevice = device;
+			LOGGER.debug(() -> "" + fDevice);
 			return device;
 		}
 	}

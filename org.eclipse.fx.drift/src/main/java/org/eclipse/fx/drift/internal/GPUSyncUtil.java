@@ -3,7 +3,8 @@ package org.eclipse.fx.drift.internal;
 import java.time.Duration;
 
 public class GPUSyncUtil {
-
+	private static final DriftLogger LOGGER = DriftFX.createLogger(GPUSyncUtil.class);
+	
 	public static enum WaitSyncResult {
 		AREADY_SIGNALED,
 		TIMEOUT_EXPIRED,
@@ -69,7 +70,7 @@ public class GPUSyncUtil {
 			case GL.GL_CONDITION_SATISFIED: return WaitSyncResult.CONDITION_SATISFIED;
 			case GL.GL_WAIT_FAILED: return WaitSyncResult.WAIT_FAILED;
 			}
-			Log.error("glClientWaitSync: Unexpected result!!! " + r);
+			LOGGER.error(() -> "glClientWaitSync: Unexpected result!!! " + r);
 			return WaitSyncResult.WAIT_FAILED;
 		}
 		

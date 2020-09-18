@@ -5,12 +5,13 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Consumer;
 
-import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 
 public class NativeUtil {
+	private static final DriftLogger LOGGER = DriftFX.createLogger(NativeUtil.class);
 	
 	private NativeUtil() {}
 	
@@ -47,7 +48,7 @@ public class NativeUtil {
 	public static void loadLibrary(Class<?> context, String libname, Consumer<String> loadLibrary, Consumer<String> load) {
 		if (USE_JAVA_LIBRARY_PATH || osgi) {
 			// osgi will take care of it
-			Log.info("loading " + libname + " via system call");
+			LOGGER.info(() -> "loading " + libname + " via system call");
 			loadLibrary.accept(libname);
 		}
 		else {
@@ -59,13 +60,13 @@ public class NativeUtil {
 				
 				String resourceName = "/native/" + filename;
 				URL url = context.getResource(resourceName);
-				Log.debug("Resource Lookup: name: " + resourceName + ", context: " + context + " => " + url);
+				LOGGER.debug(() -> "Resource Lookup: name: " + resourceName + ", context: " + context + " => " + url);
 				
 				try (InputStream in = context.getResourceAsStream("/native/" + filename)) {
 					extract(in, extractPath);
 				}
 				
-				Log.info("loading " + libname + " from extracted location (" + extractPath + ")");
+				LOGGER.info(() -> "loading " + libname + " from extracted location (" + extractPath + ")");
 				load.accept(extractPath.toString());
 			} catch (IOException e) {
 				e.printStackTrace();

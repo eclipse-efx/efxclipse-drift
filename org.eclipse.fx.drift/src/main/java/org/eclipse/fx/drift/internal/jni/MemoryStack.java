@@ -4,12 +4,12 @@ import java.nio.ByteBuffer;
 import java.util.Stack;
 
 import org.eclipse.fx.drift.internal.DriftFX;
-import org.eclipse.fx.drift.internal.Log;
-import org.eclipse.fx.drift.util.NativeUtil;
+import org.eclipse.fx.drift.internal.DriftLogger;
 
 
 public class MemoryStack implements IMemoryStack {
-
+	private static final DriftLogger LOGGER = DriftFX.createLogger(MemoryStack.class);
+	
 	public class StackData implements Pointer {
 		public final int offset;
 		public final int size;
@@ -131,7 +131,7 @@ public class MemoryStack implements IMemoryStack {
 	private static native void nOutputLong(long target);
 	
 	public static void output(IMemoryStack stack, Long t) {
-		Log.debug("J 0x" + java.lang.Long.toHexString(t.get()) + " (" + t.get() + ")");
+		LOGGER.debug(() -> "0x" + java.lang.Long.toHexString(t.get()) + " (" + t.get() + ")");
 		nOutputLong(t.getAddress());
 	}
 	public static void main(String[] args) {

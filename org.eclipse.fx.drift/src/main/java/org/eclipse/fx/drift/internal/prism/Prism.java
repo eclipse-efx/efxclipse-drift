@@ -5,16 +5,16 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.eclipse.fx.drift.internal.DriftFX;
-import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.Versioning;
 import org.eclipse.fx.drift.internal.jni.win32.Win32;
 import org.eclipse.fx.drift.internal.jni.win32.Win32.IDirect3DDevice9Ex;
-import org.eclipse.fx.drift.util.NativeUtil;
 
 import com.sun.prism.Texture;
 
 @SuppressWarnings("restriction")
 public class Prism {
+	private static final DriftLogger LOGGER = DriftFX.createLogger(Prism.class);
 	
 	private Prism() {}
 
@@ -53,7 +53,7 @@ public class Prism {
 	public static void initialize() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
 			IllegalAccessException, IllegalArgumentException, NoSuchFieldException {
 
-		Log.info("DriftFX " + Versioning.getVersion() + "(git sha: " + Versioning.getSha()+") initializing");
+		LOGGER.info(() -> "DriftFX " + Versioning.getVersion() + " (git sha: " + Versioning.getSha()+") initializing");
 		
 		cGraphicsPipeline = Class.forName("com.sun.prism.GraphicsPipeline");
 		mGraphicsPipelineGetDefaultResourceFactory = cGraphicsPipeline.getMethod("getDefaultResourceFactory");
@@ -69,9 +69,9 @@ public class Prism {
 			PrismD3D.initialize();
 			iD3DContext = PrismD3D.getD3DContext(iDefaultResourceFactory);
 			contextHandleD3D = PrismD3D.getContextHandle(iD3DContext);
-			Log.debug(" * D3D Context handle = " + contextHandleD3D);
+			LOGGER.debug(() -> " * D3D Context handle = " + contextHandleD3D);
 			d3dDevice = org.eclipse.fx.drift.internal.jni.win32.Prism.getPrismIDirect3DDevice9Ex(contextHandleD3D);
-			Log.debug(" * D3D Context direct3D device = " + d3dDevice);
+			LOGGER.debug(() -> " * D3D Context direct3D device = " + d3dDevice);
 			//NativeAPI.initializeD3DPipeline(contextHandleD3D);
 		} else if (isES2) {
 			PrismES2.initialize();

@@ -40,8 +40,9 @@ import static org.eclipse.fx.drift.internal.jni.macos.MacOS.IOSurfaceLookup;
 import java.nio.ByteBuffer;
 
 import org.eclipse.fx.drift.Vec2i;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.GL;
-import org.eclipse.fx.drift.internal.Log;
 import org.eclipse.fx.drift.internal.QuantumHelper;
 import org.eclipse.fx.drift.internal.common.IOSurfaceImageData;
 import org.eclipse.fx.drift.internal.jni.MemoryStack;
@@ -56,6 +57,8 @@ import com.sun.prism.ResourceFactory;
 
 @SuppressWarnings("restriction")
 public class IOSurfaceFxImage extends AFxImage<IOSurfaceImageData> {
+	private static final DriftLogger LOGGER = DriftFX.createLogger(IOSurfaceFxImage.class);
+	
 	
 	private ResourceFactory rf;
 	
@@ -149,17 +152,17 @@ public class IOSurfaceFxImage extends AFxImage<IOSurfaceImageData> {
 	}
 	
 	public static void dumpIOSurface(long ioSurfaceID, Vec2i size) {
-		Log.debug("dumpIOSurface " + ioSurfaceID);
+		LOGGER.debug(() -> "dumpIOSurface " + ioSurfaceID);
 		int tempTexture = glGenTexture();
 		CGLContextObj cglContext = CGLGetCurrentContext();
-		Log.debug("GOT CONTEXT " + cglContext);
+		LOGGER.debug(() -> "GOT CONTEXT " + cglContext);
 		IOSurfaceRef ioSurface = IOSurfaceLookup(ioSurfaceID);
-		Log.debug("GOT IOSURFACE " + ioSurface);
+		LOGGER.debug(() -> "GOT IOSURFACE " + ioSurface);
 		//System.err.println("Got cglContext=" + cglContext + " and ioSurface=" + ioSurface);
 		GL.glBindTexture(GL_TEXTURE_RECTANGLE, tempTexture);
 		CGLError success = CGLTexImageIOSurface2D(cglContext, GL_TEXTURE_RECTANGLE, GL_RGBA, size.x, size.y, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ioSurface, 0);
 		GL.glBindTexture(GL_TEXTURE_RECTANGLE, 0);
-		Log.debug("mount success_: " + success);
+		LOGGER.debug(() -> "mount success_: " + success);
 		
 		MacOS.IOSurfaceLock(ioSurface);
 		
@@ -180,7 +183,7 @@ public class IOSurfaceFxImage extends AFxImage<IOSurfaceImageData> {
 		byte g = buf.get();
 		byte b = buf.get();
 		byte a = buf.get();
-		Log.debug("First Pixel: " + r + " / " + g + " / " + b + " / " + a);
+		LOGGER.debug(() -> "First Pixel: " + r + " / " + g + " / " + b + " / " + a);
 
 		
 //		SYS.free(memPointer);
@@ -196,7 +199,7 @@ public class IOSurfaceFxImage extends AFxImage<IOSurfaceImageData> {
 	}
 	
 	public static void dumpGLTexture(int name, Vec2i size) {
-		Log.debug("dumpGLTexture " + name);
+		LOGGER.debug(() -> "dumpGLTexture " + name);
 		
 		int memSize = size.x * size.y * 4;
 		
@@ -214,7 +217,7 @@ public class IOSurfaceFxImage extends AFxImage<IOSurfaceImageData> {
 		byte g = buf.get();
 		byte b = buf.get();
 		byte a = buf.get();
-		Log.debug("First Pixel: " + r + " / " + g + " / " + b + " / " + a);
+		LOGGER.debug(() -> "First Pixel: " + r + " / " + g + " / " + b + " / " + a);
 		
 		
 	}
@@ -250,7 +253,7 @@ private static void downloadToMemorySimple(int target, int tex, long pPixels) {
 		glBindTexture(target, tex);
 		glGetTexImage(target, 0, format, GL_UNSIGNED_INT_8_8_8_8_REV, pPixels);
 		glBindTexture(target, 0);
-		Log.info("*downloaded " + tex + " => 0x" + Long.toHexString(pPixels));
+		LOGGER.info(() -> "*downloaded " + tex + " => 0x" + Long.toHexString(pPixels));
 	}
 	
 	private static void downloadToMemoryBuf(int tex, int size, long pPixels) {

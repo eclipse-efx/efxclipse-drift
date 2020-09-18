@@ -12,7 +12,8 @@ import com.sun.prism.ResourceFactory;
 
 @SuppressWarnings("restriction")
 public class QuantumHelper {
-
+	private static final DriftLogger LOGGER = DriftFX.createLogger(QuantumHelper.class);
+	
 	private static Executor executor;
 	private static long glContext;
 	
@@ -30,14 +31,14 @@ public class QuantumHelper {
 //			glContext = GL.createSharedCompatContext(wrapContext);
 			glContext = GL.createContext(wrapContext, 2, 0);
 			boolean su = GL.makeContextCurrent(glContext);
-			Log.debug("QuantumHelper#initializeContext");
-			Log.debug("prismContext = " + prismContext);
-			Log.debug("glContext = " + glContext);
-			Log.debug("makeCurrent: " + su);
+			LOGGER.debug(() -> "QuantumHelper#initializeContext");
+			LOGGER.debug(() -> "prismContext = " + prismContext);
+			LOGGER.debug(() -> "glContext = " + glContext);
+			LOGGER.debug(() -> "makeCurrent: " + su);
 			
 			long nativeHandle = GL.getNativeContextHandle(glContext);
-			Log.debug("nativeHandle = " + nativeHandle);
-			Log.debug("CGLGetCurrent = " + MacOS.CGLGetCurrentContext() ) ;
+			LOGGER.debug(() -> "nativeHandle = " + nativeHandle);
+			LOGGER.debug(() -> "CGLGetCurrent = " + MacOS.CGLGetCurrentContext() ) ;
 		}
 	}
 	

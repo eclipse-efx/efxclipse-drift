@@ -3,15 +3,21 @@ package org.eclipse.fx.drift.internal;
 import org.eclipse.fx.drift.util.NativeUtil;
 
 public final class DriftFX {
+	private static final DriftLogger LOGGER = DriftFX.createLogger(DriftFX.class);
+	
 	
 	private static boolean once = false;
 	
 	private DriftFX() {
 	}
 	
+	public static DriftLogger createLogger(Class<?> context) {
+		return new StdOutLogger(context);
+	}
+	
 	public static void require() {
 		if (!once) {
-			Log.debug("Initialize DriftFX");
+			LOGGER.debug(() -> "Initialize DriftFX");
 			initOnce();
 			once = true;
 		}
@@ -20,4 +26,6 @@ public final class DriftFX {
 	public static void initOnce() {
 		NativeUtil.loadLibrary(DriftFX.class, "driftfx", System::loadLibrary, System::load);
 	}
+	
+	
 }

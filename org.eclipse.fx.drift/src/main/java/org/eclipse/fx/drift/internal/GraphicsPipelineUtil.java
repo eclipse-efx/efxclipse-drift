@@ -20,7 +20,8 @@ import com.sun.prism.Texture;
 
 @SuppressWarnings("restriction")
 public class GraphicsPipelineUtil {
-
+	private static final DriftLogger LOGGER = DriftFX.createLogger(GraphicsPipelineUtil.class);
+	
 	
 	private static Class<?> cGraphicsPipeline;
 	private static Method mGraphicsPipelineGetDefaultResourceFactory;
@@ -238,7 +239,7 @@ public class GraphicsPipelineUtil {
 			D3D.initialize();
 			iD3DContext = D3D.getD3DContext(iDefaultResourceFactory);
 			contextHandleD3D = D3D.getContextHandle(iD3DContext);
-			Log.debug(" * D3D Context handle = " + contextHandleD3D);
+			LOGGER.debug(() -> " * D3D Context handle = " + contextHandleD3D);
 			
 //			NativeAPI.initializeD3DPipeline(contextHandleD3D);
 		}

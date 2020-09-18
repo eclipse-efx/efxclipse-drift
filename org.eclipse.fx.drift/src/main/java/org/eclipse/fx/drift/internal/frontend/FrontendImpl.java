@@ -9,7 +9,8 @@ import java.util.function.Consumer;
 import org.eclipse.fx.drift.DriftFXSurface;
 import org.eclipse.fx.drift.PresentationMode;
 import org.eclipse.fx.drift.Vec2i;
-import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.transport.Command;
 import org.eclipse.fx.drift.internal.transport.command.CreateSwapchainCommand;
@@ -18,7 +19,8 @@ import org.eclipse.fx.drift.internal.transport.command.PresentCommand;
 import org.eclipse.fx.drift.internal.transport.command.ReleaseCommand;
 
 public class FrontendImpl implements Frontend {
-
+	private static final DriftLogger LOGGER = DriftFX.createLogger(FrontendImpl.class);
+	
 	private DriftFXSurface surface;
 	
 	private FrontSwapChain swapChain;
@@ -69,7 +71,7 @@ public class FrontendImpl implements Frontend {
 //		System.err.println("Frontend received " + command);
 		
 		if (command instanceof CreateSwapchainCommand) {
-			Log.debug("Frontend received " + command);
+			LOGGER.debug(() -> "Frontend received " + command);
 			CreateSwapchainCommand cmd = (CreateSwapchainCommand) command;
 			doCreateSwapchain(cmd.getId(), cmd.getImages(), cmd.getPresentatioMode());
 		}
@@ -79,12 +81,12 @@ public class FrontendImpl implements Frontend {
 				doPresent(cmd.getImageData());
 			}
 			else {
-				Log.debug("!!! Instant release");
+				LOGGER.debug(() -> "!!! Instant release");
 				sendRelease(cmd.getSwapChainId(), cmd.getImageData());
 			}
 		}
 		else if (command instanceof DisposeSwapchainCommand) {
-			Log.debug("Frontend received " + command);
+			LOGGER.debug(() -> "Frontend received " + command);
 			DisposeSwapchainCommand cmd = (DisposeSwapchainCommand) command;
 			swapChains.get(cmd.getId()).scheduleDispose();
 		}

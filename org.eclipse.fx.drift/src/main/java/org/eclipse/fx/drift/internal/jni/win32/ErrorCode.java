@@ -3,7 +3,8 @@ package org.eclipse.fx.drift.internal.jni.win32;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 
 public enum ErrorCode {
 	ERROR_INVALID_HANDLE(0x6),
@@ -13,6 +14,8 @@ public enum ErrorCode {
 	ERROR_NOT_LOCKED(0x9E),
 	ERROR_LOCK_FAILED(0xA7),
 	ERROR_BUSY(0xAA);
+	
+	private static final DriftLogger LOGGER = DriftFX.createLogger(ErrorCode.class);
 	
 	public int value;
 	
@@ -26,8 +29,7 @@ public enum ErrorCode {
 			return code.get();
 		}
 		else {
-			Log.error("Error code not yet supported: " + Integer.toHexString(value));
-			Thread.dumpStack();
+			LOGGER.error(() -> "Error code not yet supported: " + Integer.toHexString(value), new Exception());
 			return null;
 		}
 	}

@@ -14,7 +14,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.fx.drift.impl.DriftDebug;
 import org.eclipse.fx.drift.impl.NGDriftFXSurface;
-import org.eclipse.fx.drift.internal.Log;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.ScreenObserver;
 import org.eclipse.fx.drift.internal.SurfaceData;
 import org.eclipse.fx.drift.internal.frontend.FrontSwapChain;
@@ -32,6 +33,8 @@ import javafx.scene.Node;
 //Note: this implementation is against internal JavafX API
 @SuppressWarnings({"restriction"})
 public abstract class BaseDriftFXSurface extends Node {
+	private static final DriftLogger LOGGER = DriftFX.createLogger(BaseDriftFXSurface.class);
+	
 	static {
 		try {
 			Prism.initialize();
@@ -242,7 +245,7 @@ public abstract class BaseDriftFXSurface extends Node {
 	public void setSwapChain(FrontSwapChain swapChain) {
 		DriftDebug.outputThread();
 		FrontSwapChain leftover = swapChainBuf.getAndSet(swapChain);
-		if (leftover != null) Log.info("Leftover swapchain!!! This is not good! " + leftover);
+		if (leftover != null) LOGGER.warn(() -> "Leftover swapchain!!! This is not good! " + leftover);
 		Platform.runLater(() ->  getHelper().markDirty(DirtyBits.NODE_CONTENTS));
 	}
 	
