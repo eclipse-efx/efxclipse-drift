@@ -10,45 +10,49 @@ public class StdOutLogger implements DriftLogger {
 		this.ctx = ctx;
 	}
 	
+	private String prefix(String level) {
+		return String.format("[J] [%1$5s] ", level);
+	}
+	
 	@Override
 	public void trace(Supplier<String> msg) {
 		if (isTraceEnabled()) {
-			System.out.println("[J] [TRACE] " + ctx.getSimpleName() + ": " + msg.get());
+			System.out.println(prefix("TRACE") + ctx.getSimpleName() + ": " + msg.get());
 		}
 	}
 
 	@Override
 	public void debug(Supplier<String> msg) {
 		if (isDebugEnabled()) {
-			System.out.println("[J] [DEBUG] " + ctx.getSimpleName() + ": " + msg.get());
+			System.out.println(prefix("DEBUG") + ctx.getSimpleName() + ": " + msg.get());
 		}
 	}
 
 	@Override
 	public void info(Supplier<String> msg) {
 		if (isInfoEnabled()) {
-			System.out.println("[J] [INFO ] " + ctx.getSimpleName() + ": " + msg.get());
+			System.out.println(prefix("INFO") + ctx.getSimpleName() + ": " + msg.get());
 		}
 	}
 	
 	@Override
 	public void warn(Supplier<String> msg) {
 		if (isWarnEnabled()) {
-			System.out.println("[J] [WARN ] " + ctx.getSimpleName() + ": " + msg.get());
+			System.out.println(prefix("WARN") + ctx.getSimpleName() + ": " + msg.get());
 		}
 	}
 
 	@Override
 	public void error(Supplier<String> msg) {
 		if (isErrorEnabled()) {
-			System.out.println("[J] [ERROR] " + ctx.getSimpleName() + ": " + msg.get());
+			System.out.println(prefix("ERROR") + ctx.getSimpleName() + ": " + msg.get());
 		}
 	}
 	
 	@Override
 	public void error(Supplier<String> msg, Throwable t) {
 		if (isErrorEnabled()) {
-			System.out.println("[J] [ERROR] " + ctx.getSimpleName() + ": " + msg.get());
+			System.out.println(prefix("ERROR") + ctx.getSimpleName() + ": " + msg.get());
 			t.printStackTrace(System.out);
 		}
 	}

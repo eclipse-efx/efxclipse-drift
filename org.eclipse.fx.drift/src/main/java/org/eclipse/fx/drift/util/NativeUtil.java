@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
+import org.eclipse.fx.drift.DriftFXConfig;
 import org.eclipse.fx.drift.internal.DriftFX;
 import org.eclipse.fx.drift.internal.DriftLogger;
 
@@ -14,8 +15,6 @@ public class NativeUtil {
 	private static final DriftLogger LOGGER = DriftFX.createLogger(NativeUtil.class);
 	
 	private NativeUtil() {}
-	
-	private static final boolean USE_JAVA_LIBRARY_PATH = Boolean.getBoolean("driftfx.use.java.library.path");
 	
 	private static String OS = System.getProperty("os.name");
 	private static boolean isWindows = getOsName().toLowerCase().contains("windows");
@@ -46,7 +45,7 @@ public class NativeUtil {
 	}
 	
 	public static void loadLibrary(Class<?> context, String libname, Consumer<String> loadLibrary, Consumer<String> load) {
-		if (USE_JAVA_LIBRARY_PATH || osgi) {
+		if (DriftFXConfig.isUseJavaLibraryPath() || osgi) {
 			// osgi will take care of it
 			LOGGER.info(() -> "loading " + libname + " via system call");
 			loadLibrary.accept(libname);

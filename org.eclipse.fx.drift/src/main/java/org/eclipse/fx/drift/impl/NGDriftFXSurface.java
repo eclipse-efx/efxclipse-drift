@@ -13,6 +13,7 @@ package org.eclipse.fx.drift.impl;
 import java.util.Optional;
 
 import org.eclipse.fx.drift.BaseDriftFXSurface;
+import org.eclipse.fx.drift.DriftFXConfig;
 import org.eclipse.fx.drift.internal.DriftFX;
 import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.FPSCounter;
@@ -39,9 +40,6 @@ import javafx.util.Duration;
 public class NGDriftFXSurface extends NGNode {
 	private static final DriftLogger LOGGER = DriftFX.createLogger(NGDriftFXSurface.class);
 	
-	private static final boolean showFPS = Boolean.getBoolean("driftfx.showfps");
-	private static final boolean profile = Boolean.getBoolean("driftfx.profile");
-
 	private SurfaceData surfaceData;
 	private FrontSwapChain nextSwapChain;
 	private FrontSwapChain swapChain;
@@ -256,7 +254,7 @@ public class NGDriftFXSurface extends NGNode {
 				nextSwapChain = null;
 			}
 			catch (Exception e) {
-				LOGGER.error(() -> "ERROR during swapchain recreation", e);
+				LOGGER.error(() -> "ERROR during swapchain allocation (size: " + nextSwapChain.getSize() + ")", e);
 			}
 		}
 		
@@ -314,7 +312,7 @@ public class NGDriftFXSurface extends NGNode {
 		
 		fxFpsCounter.tick();
 		
-		if (showFPS) {
+		if (DriftFXConfig.isShowFps()) {
 			drawStats(g);
 		}
 		

@@ -12,7 +12,7 @@ public final class DriftFX {
 	}
 	
 	public static DriftLogger createLogger(Class<?> context) {
-		return new StdOutLogger(context);
+		return new DefaultLogger(context);
 	}
 	
 	public static void require() {
