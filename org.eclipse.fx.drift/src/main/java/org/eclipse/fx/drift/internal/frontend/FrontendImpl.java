@@ -18,6 +18,8 @@ import org.eclipse.fx.drift.internal.transport.command.DisposeSwapchainCommand;
 import org.eclipse.fx.drift.internal.transport.command.PresentCommand;
 import org.eclipse.fx.drift.internal.transport.command.ReleaseCommand;
 
+import javafx.application.Platform;
+
 public class FrontendImpl implements Frontend {
 	private static final DriftLogger LOGGER = DriftFX.createLogger(FrontendImpl.class);
 	
@@ -50,6 +52,13 @@ public class FrontendImpl implements Frontend {
 		swapChain = new SimpleFrontSwapChain(id, images, presentationMode, this::sendRelease);
 		swapChains.put(id, swapChain);
 		surface.setSwapChain(swapChain);
+	}
+	
+	public void doDisposeSwapchain(UUID id) {
+		swapChains.get(id).scheduleDispose();
+		// notify surface so that its renderContent gets invoked by the quantum renderer
+		// the backend needs to wait until the frontend has finished disposing its part of the swap chain
+		Platform.runLater(surface::dirty);
 	}
 
 	public void doPresent(ImageData image) {
@@ -88,7 +97,7 @@ public class FrontendImpl implements Frontend {
 		else if (command instanceof DisposeSwapchainCommand) {
 			LOGGER.debug(() -> "Frontend received " + command);
 			DisposeSwapchainCommand cmd = (DisposeSwapchainCommand) command;
-			swapChains.get(cmd.getId()).scheduleDispose();
+			doDisposeSwapchain(cmd.getId());
 		}
 	}
 
