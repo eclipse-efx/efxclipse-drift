@@ -2,84 +2,73 @@ package org.eclipse.fx.drift.internal;
 
 import java.util.function.Supplier;
 
-public class StdOutLogger implements DriftLogger {
+import org.eclipse.fx.drift.DriftFXConfig;
+import org.eclipse.fx.drift.LoggingService;
+
+public class DefaultLogger implements DriftLogger {
 
 	private Class<?> ctx;
 	
-	public StdOutLogger(Class<?> ctx) {
-		this.ctx = ctx;
-	}
+	private LoggingService loggingService;
 	
-	private String prefix(String level) {
-		return String.format("[J] [%1$5s] ", level);
+	public DefaultLogger(Class<?> ctx) {
+		this.ctx = ctx;
+		loggingService = DriftFXConfig.getLoggingService();
 	}
 	
 	@Override
 	public void trace(Supplier<String> msg) {
-		if (isTraceEnabled()) {
-			System.out.println(prefix("TRACE") + ctx.getSimpleName() + ": " + msg.get());
-		}
+		loggingService.log(6, ctx, msg, null);
 	}
 
 	@Override
 	public void debug(Supplier<String> msg) {
-		if (isDebugEnabled()) {
-			System.out.println(prefix("DEBUG") + ctx.getSimpleName() + ": " + msg.get());
-		}
+		loggingService.log(5, ctx, msg, null);
 	}
 
 	@Override
 	public void info(Supplier<String> msg) {
-		if (isInfoEnabled()) {
-			System.out.println(prefix("INFO") + ctx.getSimpleName() + ": " + msg.get());
-		}
+		loggingService.log(4, ctx, msg, null);
 	}
 	
 	@Override
 	public void warn(Supplier<String> msg) {
-		if (isWarnEnabled()) {
-			System.out.println(prefix("WARN") + ctx.getSimpleName() + ": " + msg.get());
-		}
+		loggingService.log(3, ctx, msg, null);
 	}
 
 	@Override
 	public void error(Supplier<String> msg) {
-		if (isErrorEnabled()) {
-			System.out.println(prefix("ERROR") + ctx.getSimpleName() + ": " + msg.get());
-		}
+		loggingService.log(2, ctx, msg, null);
 	}
 	
 	@Override
 	public void error(Supplier<String> msg, Throwable t) {
-		if (isErrorEnabled()) {
-			System.out.println(prefix("ERROR") + ctx.getSimpleName() + ": " + msg.get());
-			t.printStackTrace(System.out);
-		}
+		loggingService.log(2, ctx, msg, null);
 	}
 
 	@Override
 	public boolean isTraceEnabled() {
-		return false;
+		return loggingService.isActive(6);
 	}
 
 	@Override
 	public boolean isDebugEnabled() {
-		return true;
+		return loggingService.isActive(5);
 	}
 
 	@Override
 	public boolean isInfoEnabled() {
-		return true;
+		return loggingService.isActive(4);
 	}
 	
 	@Override
 	public boolean isWarnEnabled() {
-		return true;
+		return loggingService.isActive(3);
 	}
 
 	@Override
 	public boolean isErrorEnabled() {
-		return true;
+		return loggingService.isActive(2);
 	}
 
 }
