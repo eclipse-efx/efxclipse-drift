@@ -330,6 +330,8 @@ task createDistribution(type: Zip) {
     dependsOn updateSiteZip
     //dependsOn unzipNativeRepo
 
+	from file('LICENSE')
+
     from file("$buildDir/updatesite.zip")
 
     into('driftcpp') {
