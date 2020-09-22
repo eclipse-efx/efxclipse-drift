@@ -461,6 +461,16 @@ publishing {
             groupId = 'org.eclipse.fx'
             artifactId = 'org.eclipse.fx.drift'
             version = "${Versioning.version}${Versioning.releaseMode ? '' : '-SNAPSHOT'}"
+            pom {
+            	name = 'DriftFX'
+            	url = 'https://github.com/eclipse-fx/efxclipse-drift'
+            	licenses {
+            		license {
+            			name = 'Eclipse Public License - v 2.0'
+            			url = 'https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt'
+            		}
+            	}
+            }       
             artifact("$buildDir/signed/org.eclipse.fx.drift.jar") {
                 extension 'jar'
             }
