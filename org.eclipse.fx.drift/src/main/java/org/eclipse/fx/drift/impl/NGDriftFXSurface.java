@@ -12,12 +12,11 @@ package org.eclipse.fx.drift.impl;
 
 import java.util.Optional;
 
-import org.eclipse.fx.drift.BaseDriftFXSurface;
 import org.eclipse.fx.drift.DriftFXConfig;
+import org.eclipse.fx.drift.Placement;
 import org.eclipse.fx.drift.internal.DriftFX;
 import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.FPSCounter;
-import org.eclipse.fx.drift.internal.Placement;
 import org.eclipse.fx.drift.internal.SurfaceData;
 import org.eclipse.fx.drift.internal.frontend.FrontSwapChain;
 import org.eclipse.fx.drift.internal.frontend.FxImage;
@@ -44,30 +43,30 @@ public class NGDriftFXSurface extends NGNode {
 	private FrontSwapChain nextSwapChain;
 	private FrontSwapChain swapChain;
 	
-	private BaseDriftFXSurface node;
-	
 	/** image currently in use by javafx renderer - we may not dispose it */
 	private FxImage<?> curImage;
 	
 	private FPSCounter fxFpsCounter = new FPSCounter(100);
+	private Timeline historyTick;
 	
 	public void setSwapChain(FrontSwapChain swapChain) {
 		this.nextSwapChain = swapChain;
 	}
 	
-	public NGDriftFXSurface(BaseDriftFXSurface node) {
-		this.node = node;
+	public NGDriftFXSurface() {
 		
-		Timeline historyTick = new Timeline(new KeyFrame(Duration.millis(100), new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent arg0) {
-				fxFpsCounter.historyTick();
-				if (swapChain != null) ((SimpleFrontSwapChain)swapChain).fpsCounter.historyTick();
-			}
-		}));
-		historyTick.setCycleCount(Timeline.INDEFINITE);
-		historyTick.play();
-			
+		if (DriftFXConfig.isShowFps()) {
+			historyTick = new Timeline(new KeyFrame(Duration.millis(100), new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent arg0) {
+					fxFpsCounter.historyTick();
+					if (swapChain != null) ((SimpleFrontSwapChain)swapChain).fpsCounter.historyTick();
+				}
+			}));
+			historyTick.setCycleCount(Timeline.INDEFINITE);
+			historyTick.play();
+		}
+		
 	}
 	
 	public void destroy() {
@@ -175,13 +174,6 @@ public class NGDriftFXSurface extends NGNode {
 		}
 	}
 	
-	private Placement toPlacement(int placement) {
-		if (placement < 0 || placement >= Placement.values().length) {
-			return Placement.CENTER;
-		}
-		return Placement.values()[placement];
-	}
-	
 	private void drawStats(Graphics g) {
 		DriftDebug.assertQuantumRenderer();
 		if (swapChain != null) {
@@ -202,33 +194,19 @@ public class NGDriftFXSurface extends NGNode {
 		float frameContainerWidth = surfaceData.width;
 		float frameContainerHeight = surfaceData.height;
 		
-		// TODO
-		//Placement placement = toPlacement(swapChain.presentationHint);
-		Placement placement = Placement.CENTER;
-		
-		float textureRatio = t.getContentWidth() / (float) t.getContentHeight();
-		float frameRatio = surfaceData.width / surfaceData.height;
-		
-		Pos framePos = new Pos(0, frameContainerWidth, 0, frameContainerHeight);
-		
-		if (Math.abs(textureRatio - frameRatio) > 0.001f) {
-			// aspect ratio is not matching, we need to do compute the position within the frame container
-			framePos = computeContain(frameContainerWidth, frameContainerHeight, t.getContentWidth(), t.getContentHeight());
-		}
-		
 		int frameTextureWidth = t.getContentWidth();
 		int frameTextureHeight = t.getContentHeight();
 		
-		float currentContainerWidth = this.surfaceData.width;
-		float currentContainerHeight = this.surfaceData.height;	
-
-		Pos pos = computePlacement(placement, currentContainerWidth, currentContainerHeight, framePos.width, framePos.height);
+		float frameTextureWidthFxSpace = frameTextureWidth / (surfaceData.userScaleX * surfaceData.renderScaleX);
+		float frameTextureHeightFxSpace = frameTextureHeight / (surfaceData.userScaleY * surfaceData.renderScaleY);
+		
+		Pos pos = computePlacement(surfaceData.placementStrategy, frameContainerWidth, frameContainerHeight, frameTextureWidthFxSpace, frameTextureHeightFxSpace);
 
 		// flip it vertically
 		g.scale(1, -1);
-		g.translate(0, -currentContainerHeight);		
+		g.translate(0, -frameContainerHeight);		
 			
-		pos.y = currentContainerHeight - pos.y - pos.height;
+		pos.y = frameContainerHeight - pos.y - pos.height;
 
 		g.drawTexture(t, pos.x, pos.y, 
 				pos.x + pos.width, pos.y + pos.height, 0, 0, frameTextureWidth, frameTextureHeight);

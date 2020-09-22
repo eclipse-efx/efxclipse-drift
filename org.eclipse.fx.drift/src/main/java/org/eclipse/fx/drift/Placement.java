@@ -8,8 +8,11 @@
  * Contributors:
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  */
-package org.eclipse.fx.drift.internal;
+package org.eclipse.fx.drift;
 
+/**
+ * Describes the placement strategy for the texture within the {@link DriftFXSurface}
+ */
 public enum Placement {
 	CENTER,
 	COVER,
@@ -22,6 +25,4 @@ public enum Placement {
 	BOTTOM_LEFT,
 	BOTTOM_CENTER,
 	BOTTOM_RIGHT
-	
-	
 }

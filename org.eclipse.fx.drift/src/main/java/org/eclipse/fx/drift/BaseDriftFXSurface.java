@@ -25,9 +25,11 @@ import com.sun.javafx.scene.DirtyBits;
 
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
 
 //Note: this implementation is against internal JavafX API
@@ -39,7 +41,7 @@ public abstract class BaseDriftFXSurface extends Node {
 		try {
 			Prism.initialize();
 		} catch (Throwable e) {
-			e.printStackTrace();
+			LOGGER.error(() -> "Error initializing Prism!", e);
 		}
 	}
 	
@@ -47,6 +49,8 @@ public abstract class BaseDriftFXSurface extends Node {
 	
 	private final ReadOnlyDoubleWrapper screenScaleFactor = new ReadOnlyDoubleWrapper(this, "screenScaleFactor", 1.0);
 	private final DoubleProperty userScaleFactor = new SimpleDoubleProperty(this, "userScaleFactor", 1.0);
+	
+	private final ObjectProperty<Placement> placementStrategy = new SimpleObjectProperty<>(this, "placementStrategy", Placement.CONTAIN);
 	
 	private ScreenObserver screenObserver;
 	
@@ -58,6 +62,7 @@ public abstract class BaseDriftFXSurface extends Node {
 		screenObserver = new ScreenObserver(this);
 		screenScaleFactor.bind(screenObserver.currentRenderScaleProperty());
 		screenScaleFactor.addListener((x, o, n) -> updateSurfaceData());
+		placementStrategy.addListener((x, o, n) -> updateSurfaceData());
 	}
 	
 	
@@ -180,7 +185,7 @@ public abstract class BaseDriftFXSurface extends Node {
 	   return new SurfaceData(
 			   (float) getWidth(), (float) getHeight(), 
 			   (float) getScreenScaleFactor(), (float) getScreenScaleFactor(), 
-			   (float) getUserScaleFactor(), (float) getUserScaleFactor(), 0);
+			   (float) getUserScaleFactor(), (float) getUserScaleFactor(), 0, getPlacementStrategy());
 	   
    }
    
@@ -270,8 +275,23 @@ public abstract class BaseDriftFXSurface extends Node {
 	}
 	
 	protected com.sun.javafx.sg.prism.NGNode drift_createPeer() {
-		NGDriftFXSurface peer = new NGDriftFXSurface(this);
+		NGDriftFXSurface peer = new NGDriftFXSurface();
 		return peer;
 	}
+
+	public final ObjectProperty<Placement> placementStrategyProperty() {
+		return this.placementStrategy;
+	}
+	
+
+	public final Placement getPlacementStrategy() {
+		return this.placementStrategyProperty().get();
+	}
+	
+
+	public final void setPlacementStrategy(final Placement placementStrategy) {
+		this.placementStrategyProperty().set(placementStrategy);
+	}
+	
 	
 }

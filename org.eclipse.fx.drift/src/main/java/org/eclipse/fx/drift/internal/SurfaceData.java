@@ -1,5 +1,7 @@
 package org.eclipse.fx.drift.internal;
 
+import org.eclipse.fx.drift.Placement;
+
 public class SurfaceData {
 	public final float width;
 	public final float height;
@@ -8,8 +10,9 @@ public class SurfaceData {
 	public final float userScaleX;
 	public final float userScaleY;
 	public final int transferMode;
+	public final Placement placementStrategy;
 	
-	public SurfaceData(float width, float height, float renderScaleX, float renderScaleY, float userScaleX, float userScaleY, int transferMode) {
+	public SurfaceData(float width, float height, float renderScaleX, float renderScaleY, float userScaleX, float userScaleY, int transferMode, Placement placementStrategy) {
 		super();
 		this.width = width;
 		this.height = height;
@@ -18,11 +21,12 @@ public class SurfaceData {
 		this.userScaleX = userScaleX;
 		this.userScaleY = userScaleY;
 		this.transferMode = transferMode;
+		this.placementStrategy = placementStrategy;
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("SurfaceData[%5.3f x %5.3f] (renderScale: %5.3f x %5.3f, userScale: %5.3f x %5.3f)", width, height, renderScaleX, renderScaleY, userScaleX, userScaleY);
+		return String.format("SurfaceData[%5.3f x %5.3f] (renderScale: %5.3f x %5.3f, userScale: %5.3f x %5.3f, placement: %s)", width, height, renderScaleX, renderScaleY, userScaleX, userScaleY, placementStrategy.toString());
 	}
 
 	@Override
@@ -30,6 +34,7 @@ public class SurfaceData {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + Float.floatToIntBits(height);
+		result = prime * result + ((placementStrategy == null) ? 0 : placementStrategy.hashCode());
 		result = prime * result + Float.floatToIntBits(renderScaleX);
 		result = prime * result + Float.floatToIntBits(renderScaleY);
 		result = prime * result + transferMode;
@@ -50,6 +55,8 @@ public class SurfaceData {
 		SurfaceData other = (SurfaceData) obj;
 		if (Float.floatToIntBits(height) != Float.floatToIntBits(other.height))
 			return false;
+		if (placementStrategy != other.placementStrategy)
+			return false;
 		if (Float.floatToIntBits(renderScaleX) != Float.floatToIntBits(other.renderScaleX))
 			return false;
 		if (Float.floatToIntBits(renderScaleY) != Float.floatToIntBits(other.renderScaleY))
@@ -64,6 +71,8 @@ public class SurfaceData {
 			return false;
 		return true;
 	}
+
+	
 
 	
 	
