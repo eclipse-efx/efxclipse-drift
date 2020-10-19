@@ -11,8 +11,6 @@
  * ******************************************************************************/
 package org.eclipse.fx.drift.impl;
 
-import java.util.Optional;
-
 import org.eclipse.fx.drift.DriftFXConfig;
 import org.eclipse.fx.drift.Placement;
 import org.eclipse.fx.drift.internal.DriftFX;
@@ -20,7 +18,6 @@ import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.FPSCounter;
 import org.eclipse.fx.drift.internal.SurfaceData;
 import org.eclipse.fx.drift.internal.frontend.FrontSwapChain;
-import org.eclipse.fx.drift.internal.frontend.FxImage;
 import org.eclipse.fx.drift.internal.frontend.SimpleFrontSwapChain;
 
 import com.sun.javafx.geom.transform.BaseTransform;
@@ -43,9 +40,6 @@ public class NGDriftFXSurface extends NGNode {
 	private SurfaceData surfaceData;
 	private FrontSwapChain nextSwapChain;
 	private FrontSwapChain swapChain;
-	
-	/** image currently in use by javafx renderer - we may not dispose it */
-	private FxImage<?> curImage;
 	
 	private FPSCounter fxFpsCounter = new FPSCounter(100);
 	private Timeline historyTick;
@@ -218,75 +212,29 @@ public class NGDriftFXSurface extends NGNode {
 		DriftDebug.assertQuantumRenderer();
 		fxFpsCounter.tickStart();
 		
+		if (swapChain != null && swapChain.isDisposed()) {
+			swapChain = null;
+		}
+		
 		if (nextSwapChain != null) {
-			try {
-				if (swapChain != null) {
-					if (curImage != null) {
-//						System.err.println("Surface -> releasing curImage because swapchain recreation");
-						swapChain.release(curImage);
-						curImage = null;
-					}
-					swapChain.release();
-				}
-				nextSwapChain.allocate(g.getResourceFactory());
-				swapChain = nextSwapChain;
-				nextSwapChain = null;
-			}
-			catch (Exception e) {
-				LOGGER.error(() -> "ERROR during swapchain allocation (size: " + nextSwapChain.getSize() + ")", e);
-			}
+			swapChain = nextSwapChain;
+			nextSwapChain = null;
 		}
 		
 		if (swapChain != null) {
-			if (swapChain.isDisposeScheduled()) {
-				if (curImage != null) {
-					swapChain.release(curImage);
-					curImage = null;
-				}
-				Optional<FxImage<?>> next = swapChain.getNext();
-				if (next.isPresent()) {
-					swapChain.release(next.get());
-				}
-				swapChain.release();
-				swapChain = null;
-			}
+			swapChain.getCurrentImage().ifPresent(image -> {
+				
+				image.update();
+				
+				BaseTransform saved = g.getTransformNoClone().copy();
+				
+				drawTexture(g, image.getTexture());
+				
+				// restore transform
+				g.setTransform(saved);
+				
+			});
 		}
-		
-		BaseTransform saved = g.getTransformNoClone().copy();
-		
-		if (swapChain != null) {
-			Optional<FxImage<?>> nextImage = swapChain.getNext();
-			if (nextImage.isPresent()) {
-				if (curImage != null) {
-//					System.err.println("Surface -> releasing curImage");
-					swapChain.release(curImage);
-				}
-				curImage = nextImage.get();
-//				System.err.println("DriftFX Surface: Showing " + curImage.getData().number + " " + curImage.getTexture().getContentWidth() + " x " + curImage.getTexture().getContentHeight());
-				
-				curImage.update();
-				
-//				QuantumRendererHelper.syncExecute(() -> {
-//					boolean isCtx = GL.isContextCurrent(QuantumRendererHelper.context);
-//					if (!isCtx) throw new RuntimeException("QuantumRendererHelper has no context!");
-//					curImage.update();
-//				});
-//				GL.glFinish();
-				
-//				GPUSync sync = QuantumRendererHelper.syncExecuteWithFence(curImage::update);
-//				WaitSyncResult r = sync.ClientWaitSync(Duration.ZERO);
-//				System.err.println("=> " + r);
-//				sync.Delete();
-				
-			}
-			
-			if (curImage != null) {
-				drawTexture(g, curImage.getTexture());
-			}
-		}
-		
-		// restore transform
-		g.setTransform(saved);
 
 		
 		fxFpsCounter.tick();

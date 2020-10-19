@@ -9,23 +9,31 @@
  * Contributors:
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  * ******************************************************************************/
-package org.eclipse.fx.drift.internal.backend;
+package org.eclipse.fx.drift.internal.transport.command;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.UUID;
 
-import org.eclipse.fx.drift.SwapchainConfig;
 import org.eclipse.fx.drift.internal.transport.Command;
 
-public interface Backend {
-
-	BackendSwapchain createSwapchain(SwapchainConfig config);
+public class SwapchainCreatedCommand implements Command {
+	public final static String NAME = "SwapchainCreated";
+	private UUID id;
 	
-	// transport api
-	void setCommandChannel(Consumer<Command> commandChannel);
-	void receiveCommand(Command command); 
-	void sendCommand(Command command);
+	public SwapchainCreatedCommand(UUID id) {
+		this.id = id;
+	}
 	
-	<C extends Command> CompletableFuture<C> waitForCommand(Class<C> type, Predicate<C> filter);
+	public UUID getId() {
+		return id;
+	}
+	
+	@Override
+	public String getName() {
+		return NAME;
+	}
+	
+	@Override
+	public String toString() {
+		return NAME + " " + id;
+	}
 }

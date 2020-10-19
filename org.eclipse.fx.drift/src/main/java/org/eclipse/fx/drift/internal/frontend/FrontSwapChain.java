@@ -13,6 +13,8 @@ package org.eclipse.fx.drift.internal.frontend;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import org.eclipse.fx.drift.TransferType;
 import org.eclipse.fx.drift.Vec2i;
@@ -22,16 +24,19 @@ import com.sun.prism.ResourceFactory;
 
 @SuppressWarnings("restriction")
 public interface FrontSwapChain {
-	Optional<FxImage<?>> getNext();
-	void release(FxImage<?> image);
+	
+	Optional<FxImage<?>> getCurrentImage();
+	
 	
 	Vec2i getSize();
 	TransferType getTransferType();
 	
 	void present(ImageData image);
-	void allocate(ResourceFactory resourceFactory) throws Exception;
-	void release();
+	
+	CompletableFuture<Void> allocate();
+	CompletableFuture<Void> dispose();
+	
 	UUID getId();
-	void scheduleDispose();
-	boolean isDisposeScheduled();
+	
+	boolean isDisposed();
 }

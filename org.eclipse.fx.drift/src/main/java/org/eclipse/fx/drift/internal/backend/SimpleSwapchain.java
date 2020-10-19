@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ import org.eclipse.fx.drift.internal.DriftLogger;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.transport.command.DisposeSwapchainCommand;
 import org.eclipse.fx.drift.internal.transport.command.PresentCommand;
+import org.eclipse.fx.drift.internal.transport.command.SwapchainDisposedCommand;
 
 public class SimpleSwapchain implements BackendSwapchain {
 	private static final DriftLogger LOGGER = DriftFX.createLogger(SimpleSwapchain.class);
@@ -71,28 +73,21 @@ public class SimpleSwapchain implements BackendSwapchain {
 	
 	public void dispose() {
 		LOGGER.debug(() -> "Disposing Swapchain");
-		long disposeBegin = System.nanoTime();
+		
+		CompletableFuture<SwapchainDisposedCommand> waitForCommand = backend.waitForCommand(SwapchainDisposedCommand.class, c -> id.equals(c.getId()));
 		backend.sendCommand(new DisposeSwapchainCommand(id));
-		while (freeImages.size() != images.size()) {
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		LOGGER.debug(() -> "Dispose waiting time was " + (System.nanoTime() - disposeBegin) + "ns");
+		waitForCommand.join();
+
 		synchronized (freeImages) {
 			for (Image image : freeImages) {
 				image.release();
 			}
-			// TODO release ohter images
 			images.removeAll(freeImages);
 			if (!images.isEmpty()) {
 				LOGGER.error(() -> "Unreleased Swapchain images remaining: " + images);
 			}
 			disposed = true;
 		}
-		
 	}
 
 	@Override
@@ -115,7 +110,11 @@ public class SimpleSwapchain implements BackendSwapchain {
 				LOGGER.error(() -> "Wrong image released !!!!!");
 			}
 			else {
-				freeImages.add(image);
+				if (freeImages.contains(image)) {
+					System.err.println("Image already free!");
+				} else {
+					freeImages.add(image);
+				}
 			}
 //		}
 	}

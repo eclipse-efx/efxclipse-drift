@@ -15,7 +15,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.eclipse.fx.drift.DriftFXSurface;
 import org.eclipse.fx.drift.PresentationMode;
@@ -28,6 +32,11 @@ import org.eclipse.fx.drift.internal.transport.command.CreateSwapchainCommand;
 import org.eclipse.fx.drift.internal.transport.command.DisposeSwapchainCommand;
 import org.eclipse.fx.drift.internal.transport.command.PresentCommand;
 import org.eclipse.fx.drift.internal.transport.command.ReleaseCommand;
+import org.eclipse.fx.drift.internal.transport.command.SwapchainCreatedCommand;
+import org.eclipse.fx.drift.internal.transport.command.SwapchainDisposedCommand;
+
+import com.sun.javafx.tk.RenderJob;
+import com.sun.javafx.tk.Toolkit;
 
 import javafx.application.Platform;
 
@@ -46,6 +55,33 @@ public class FrontendImpl implements Frontend {
 		this.surface = surface;
 	}
 	
+	public <T> CompletableFuture<T> syncCallQuantumRenderer(Supplier<T> job) {
+		Toolkit toolkit = Toolkit.getToolkit();
+		return CompletableFuture.supplyAsync(job, command ->  {
+				Future future = toolkit.addRenderJob(new RenderJob(command));
+					try {
+						future.get();
+					} catch (InterruptedException | ExecutionException e) {
+						LOGGER.error(() -> "Exception during quantum renderer job execution", e);
+					}
+			});
+	}
+	
+	public <T> CompletableFuture<T> asyncCallQuantumRenderer(Supplier<T> job) {
+		Toolkit toolkit = Toolkit.getToolkit();
+		return CompletableFuture.supplyAsync(job, (command) -> {
+			CompletableFuture.runAsync(() -> {
+					Future future = toolkit.addRenderJob(new RenderJob(command));
+					try {
+						future.get();
+					} catch (InterruptedException | ExecutionException e) {
+						LOGGER.error(() -> "Exception during quantum renderer job execution", e);
+					}
+				});
+			});
+	}
+	
+	
 	@Override
 	public Vec2i getSize() {
 		double w = surface.getWidth();
@@ -60,15 +96,16 @@ public class FrontendImpl implements Frontend {
 	}
 
 	public void doCreateSwapchain(UUID id, List<ImageData> images, PresentationMode presentationMode) {
-		swapChain = new SimpleFrontSwapChain(id, images, presentationMode, this::sendRelease);
+		swapChain = new SimpleFrontSwapChain(this, id, images, presentationMode, this::sendRelease);
 		swapChains.put(id, swapChain);
+		commandChannel.accept(new SwapchainCreatedCommand(id));
+		
 		surface.setSwapChain(swapChain);
 	}
 	
 	public void doDisposeSwapchain(UUID id) {
-		swapChains.get(id).scheduleDispose();
-		// notify surface so that its renderContent gets invoked by the quantum renderer
-		// the backend needs to wait until the frontend has finished disposing its part of the swap chain
+		FrontSwapChain toDispose = swapChains.remove(id);
+		toDispose.dispose().join();
 		Platform.runLater(surface::dirty);
 	}
 
@@ -79,6 +116,10 @@ public class FrontendImpl implements Frontend {
 	
 	private void sendRelease(UUID id, ImageData image) {
 		commandChannel.accept(new ReleaseCommand(id, image));
+	}
+	
+	void sendSwapchainDisposed(UUID id) {
+		commandChannel.accept(new SwapchainDisposedCommand(id));
 	}
 
 	@Override
