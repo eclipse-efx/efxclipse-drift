@@ -65,10 +65,11 @@ public final class DriftFXConfig {
 		
 		public final void initialize() {
 			String propValue = System.getProperty(key);
-			if (propValue != null) {
-				this.value = converter.apply(propValue);
+			T converted = convertValue(propValue, converter);
+			if (converted != null) {
+				value = converted;
 			} else {
-				this.value = defaultValue;
+				value = defaultValue;
 			}
 		}
 		
@@ -77,6 +78,18 @@ public final class DriftFXConfig {
 		}
 		public void setValue(T value) {
 			this.value = value;
+		}
+		
+		private static <T> T convertValue(String value, Function<String, T> converter) {
+			if (value == null) {
+				return null;
+			}
+			try {
+				T converted = converter.apply(value);
+				return converted;
+			} catch (RuntimeException e) {
+				return null;
+			}
 		}
 	}
 	
