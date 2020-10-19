@@ -27,8 +27,28 @@ public interface Renderer {
 	
 	/**
 	 * returns the current size of the associated driftfx surface.
+	 * <p>this is the premultiplied size for the texture (logical size * screen scale * user scale)</p>
 	 * @return the size
 	 */
 	Vec2i getSize();
+	
+	
+	/**
+	 * the current logical size of the associated driftfx surface.
+	 * @return the logical size
+	 */
+	Vec2d getLogicalSize();
+	
+	/**
+	 * the current screen scale of the associated driftfx surface as reported by javafx.
+	 * @return the screen scale.
+	 */
+	Vec2d getScreenScale();
+	
+	/**
+	 * the current user scale of the associated driftfx surface.
+	 * @return the user scale
+	 */
+	Vec2d getUserScale();
 	
 }

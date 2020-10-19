@@ -49,6 +49,16 @@ namespace internal {
         static driftfx::Vec2i convertVec2i(JNIEnv* env, jobject vec2i);
         static jobject convertVec2i(JNIEnv* env, driftfx::Vec2i vec2i);
         
+        // Vec2d
+    private:
+        static jclass cVec2d;
+        static jmethodID mVec2dConstructor;
+        static jfieldID fVec2dX;
+        static jfieldID fVec2dY;
+    public:
+        static driftfx::Vec2d convertVec2d(JNIEnv* env, jobject vec2d);
+        static jobject convertVec2d(JNIEnv* env, driftfx::Vec2d vec2d);
+
         // SwapchainConfig
     private:
         static jclass cSwapchainConfig;
@@ -76,9 +86,15 @@ namespace internal {
         // Renderer
     private:
         static jmethodID mRendererGetSize;
+        static jmethodID mRendererGetLogicalSize;
+        static jmethodID mRendererGetScreenScale;
+        static jmethodID mRendererGetUserScale;
         static jmethodID mRendererCreateSwapchain;
     public:
         static jobject callRendererGetSize(JNIEnv* env, jobject renderer);
+        static jobject callRendererGetLogicalSize(JNIEnv* env, jobject renderer);
+        static jobject callRendererGetScreenScale(JNIEnv* env, jobject renderer);
+        static jobject callRendererGetUserScale(JNIEnv* env, jobject renderer);
         static jobject callRendererCreateSwapchain(JNIEnv* env, jobject renderer, jobject swapchainConfig);
         
         // GLRenderer
@@ -132,6 +148,9 @@ namespace internal {
         driftfx::Swapchain* createSwapchain(driftfx::SwapchainConfig config);
         
         driftfx::Vec2i getSize();
+        driftfx::Vec2d getLogicalSize();
+        driftfx::Vec2d getScreenScale();
+        driftfx::Vec2d getUserScale();
         
     };
     
@@ -185,6 +204,12 @@ jmethodID internal::JNI::mVec2iConstructor;
 jfieldID internal::JNI::fVec2iX;
 jfieldID internal::JNI::fVec2iY;
 
+// Vec2d
+jclass internal::JNI::cVec2d;
+jmethodID internal::JNI::mVec2dConstructor;
+jfieldID internal::JNI::fVec2dX;
+jfieldID internal::JNI::fVec2dY;
+
 // SwapchainConfig
 jclass internal::JNI::cSwapchainConfig;
 jmethodID internal::JNI::mSwapchainConfigConstructor;
@@ -202,6 +227,9 @@ jmethodID internal::JNI::mSwapchainGetConfig;
 
 // Renderer
 jmethodID internal::JNI::mRendererGetSize;
+jmethodID internal::JNI::mRendererGetLogicalSize;
+jmethodID internal::JNI::mRendererGetScreenScale;
+jmethodID internal::JNI::mRendererGetUserScale;
 jmethodID internal::JNI::mRendererCreateSwapchain;
 
 // GLRenderer
@@ -257,6 +285,14 @@ void internal::JNI::init(JNIEnv* env, jobject _classLoader) {
     fVec2iX = getFieldID(env, Vec2i, cVec2i, "x", "I");
     fVec2iY = getFieldID(env, Vec2i, cVec2i, "y", "I");
 
+    // Vec2i
+    const char* Vec2d = "org.eclipse.fx.drift.Vec2d";
+    cVec2d = getClass(env, Vec2d);
+    cVec2d = (jclass)env->NewGlobalRef(cVec2d);
+    mVec2dConstructor = getMethodID(env, Vec2d, cVec2d, "<init>", "(DD)V");
+    fVec2dX = getFieldID(env, Vec2i, cVec2d, "x", "D");
+    fVec2dY = getFieldID(env, Vec2i, cVec2d, "y", "D");
+
     // SwapchainConfig
     const char* SwapchainConfig = "org.eclipse.fx.drift.SwapchainConfig";
     cSwapchainConfig = getClass(env, SwapchainConfig);
@@ -281,6 +317,9 @@ void internal::JNI::init(JNIEnv* env, jobject _classLoader) {
     const char* Renderer = "org.eclipse.fx.drift.Renderer";
     jclass cRenderer = getClass(env, Renderer); //env->FindClass("org/eclipse/fx/drift/Renderer");
     mRendererGetSize = getMethodID(env, Renderer, cRenderer, "getSize", "()Lorg/eclipse/fx/drift/Vec2i;");
+    mRendererGetLogicalSize = getMethodID(env, Renderer, cRenderer, "getLogicalSize", "()Lorg/eclipse/fx/drift/Vec2d;");
+    mRendererGetScreenScale = getMethodID(env, Renderer, cRenderer, "getScreenScale", "()Lorg/eclipse/fx/drift/Vec2d;");
+    mRendererGetUserScale = getMethodID(env, Renderer, cRenderer, "getUserScale", "()Lorg/eclipse/fx/drift/Vec2d;");
     mRendererCreateSwapchain = getMethodID(env, Renderer, cRenderer, "createSwapchain", "(Lorg/eclipse/fx/drift/SwapchainConfig;)Lorg/eclipse/fx/drift/Swapchain;");
     
     // GLRenderer
@@ -353,6 +392,21 @@ jobject internal::JNI::convertVec2i(JNIEnv* env, driftfx::Vec2i vec2i) {
     return env->NewObject(cVec2i, mVec2iConstructor, x, y);
 }
 
+driftfx::Vec2d internal::JNI::convertVec2d(JNIEnv* env, jobject vec2d) {
+    jdouble x = env->GetDoubleField(vec2d, fVec2dX);
+    jdouble y = env->GetDoubleField(vec2d, fVec2dY);
+    driftfx::Vec2d result;
+    result.x = x;
+    result.y = y;
+    return result;
+}
+
+jobject internal::JNI::convertVec2d(JNIEnv* env, driftfx::Vec2d vec2d) {
+    jdouble x = vec2d.x;
+    jdouble y = vec2d.y;
+    return env->NewObject(cVec2d, mVec2dConstructor, x, y);
+}
+
 jobject internal::JNI::convertSwapchainConfig(JNIEnv* env, driftfx::SwapchainConfig swapchainConfig) {
     jobject size = convertVec2i(env, swapchainConfig.size);
     jint imageCount = swapchainConfig.imageCount;
@@ -399,6 +453,19 @@ jobject internal::JNI::callRendererGetSize(JNIEnv* env, jobject renderer) {
     return env->CallObjectMethod(renderer, mRendererGetSize);
 }
 
+jobject internal::JNI::callRendererGetLogicalSize(JNIEnv* env, jobject renderer) {
+    return env->CallObjectMethod(renderer, mRendererGetLogicalSize);
+}
+
+jobject internal::JNI::callRendererGetScreenScale(JNIEnv* env, jobject renderer) {
+    return env->CallObjectMethod(renderer, mRendererGetScreenScale);
+}
+
+jobject internal::JNI::callRendererGetUserScale(JNIEnv* env, jobject renderer) {
+    return env->CallObjectMethod(renderer, mRendererGetUserScale);
+}
+
+
 jobject internal::JNI::callRendererCreateSwapchain(JNIEnv* env, jobject renderer, jobject swapchainConfig) {
     return env->CallObjectMethod(renderer, mRendererCreateSwapchain, swapchainConfig);
 }
@@ -444,6 +511,20 @@ driftfx::Vec2i internal::RendererImpl::getSize() {
     return internal::JNI::convertVec2i(env, javaSize);
 }
 
+driftfx::Vec2d internal::RendererImpl::getLogicalSize() {
+    jobject javaSize = internal::JNI::callRendererGetLogicalSize(env, javaInstance);
+    return internal::JNI::convertVec2d(env, javaSize);
+}
+
+driftfx::Vec2d internal::RendererImpl::getScreenScale() {
+    jobject javaSize = internal::JNI::callRendererGetScreenScale(env, javaInstance);
+    return internal::JNI::convertVec2d(env, javaSize);
+}
+
+driftfx::Vec2d internal::RendererImpl::getUserScale() {
+    jobject javaSize = internal::JNI::callRendererGetUserScale(env, javaInstance);
+    return internal::JNI::convertVec2d(env, javaSize);
+}
 
 driftfx::Swapchain* internal::RendererImpl::createSwapchain(driftfx::SwapchainConfig config) {
     jobject javaSwapchain = internal::JNI::callRendererCreateSwapchain(env, javaInstance, internal::JNI::convertSwapchainConfig(env, config));

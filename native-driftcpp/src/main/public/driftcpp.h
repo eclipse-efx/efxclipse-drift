@@ -27,6 +27,11 @@ namespace driftfx {
         int x;
         int y;
     };
+
+    struct Vec2d {
+        double x;
+        double y;
+    };
     
     class TransferType {
     public:
@@ -56,8 +61,33 @@ namespace driftfx {
     
     class Renderer {
     public:
+        /**
+         * creates a new Swapchain.
+         * <p>must be called from the rendering thread with a current OpenGL context</p>
+         * @return a new swapchain
+         */
         virtual Swapchain* createSwapchain(SwapchainConfig config) = 0;
+        /**
+         * returns the current size of the associated driftfx surface.
+         * <p>this is the premultiplied size for the texture (logical size * screen scale * user scale)</p>
+         * @return the size
+         */
         virtual Vec2i getSize() = 0;
+        /**
+         * the current logical size of the associated driftfx surface.
+         * @return the logical size
+         */
+        virtual Vec2d getLogicalSize() = 0;
+        /**
+         * the current screen scale of the associated driftfx surface as reported by javafx.
+         * @return the screen scale.
+         */
+        virtual Vec2d getScreenScale() = 0;
+         /**
+         * the current user scale of the associated driftfx surface.
+         * @return the user scale
+         */
+        virtual Vec2d getUserScale() = 0;
         virtual ~Renderer() = 0;
     };
     

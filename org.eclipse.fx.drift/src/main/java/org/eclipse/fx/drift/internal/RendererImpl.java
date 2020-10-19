@@ -18,6 +18,7 @@ import org.eclipse.fx.drift.DriftFXSurface;
 import org.eclipse.fx.drift.Renderer;
 import org.eclipse.fx.drift.Swapchain;
 import org.eclipse.fx.drift.SwapchainConfig;
+import org.eclipse.fx.drift.Vec2d;
 import org.eclipse.fx.drift.Vec2i;
 import org.eclipse.fx.drift.internal.backend.Backend;
 import org.eclipse.fx.drift.internal.backend.BackendImpl;
@@ -62,6 +63,25 @@ public class RendererImpl implements Renderer {
 		return new Vec2i(x, y);
 	}
 	
+	
+	@Override
+	public Vec2d getLogicalSize() {
+		double w = surface.getWidth();
+		double h = surface.getHeight();
+		return new Vec2d(w, h);
+	}
+	
+	@Override
+	public Vec2d getUserScale() {
+		double userScale = surface.getUserScaleFactor();
+		return new Vec2d(userScale, userScale);
+	}
+	
+	@Override
+	public Vec2d getScreenScale() {
+		double screenScale = surface.getScreenScaleFactor();
+		return new Vec2d(screenScale, screenScale);
+	}
 
 	@Override
 	public Swapchain createSwapchain(SwapchainConfig config) {
