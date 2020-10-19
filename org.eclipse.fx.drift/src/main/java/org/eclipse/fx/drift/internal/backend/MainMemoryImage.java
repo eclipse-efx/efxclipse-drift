@@ -61,6 +61,11 @@ public class MainMemoryImage implements Image {
 	}
 	
 	@Override
+	public String toString() {
+		return TYPE + "( " + data + " )" + hashCode();
+	}
+	
+	@Override
 	public ImageData getData() {
 		return data;
 	}

@@ -27,4 +27,8 @@ public class MainMemoryImageData extends ImageData {
 		this.memSize = memSize;
 	}
 	
+	@Override
+	public String toString() {
+		return "MainMemoryData("+number+")";
+	}
 }
