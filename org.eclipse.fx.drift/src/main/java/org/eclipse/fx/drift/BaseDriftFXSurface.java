@@ -100,62 +100,83 @@ public abstract class BaseDriftFXSurface extends Node {
 	public double minHeight(double width) {
         final double override = getMinHeight();
         if (override == Region.USE_COMPUTED_SIZE) {
-            return super.minHeight(width);
+        	return safe(computeMinHeight(width));
         } else if (override == Region.USE_PREF_SIZE) {
             return prefHeight(width);
         }
-        return Double.isNaN(override) || override < 0 ? 0 : override;
+        return safe(override);
 	}
 
 	@Override
 	public double minWidth(double height) {
         final double override = getMinWidth();
         if (override == Region.USE_COMPUTED_SIZE) {
-            return super.minWidth(height);
+        	return safe(computeMinWidth(height));
         } else if (override == Region.USE_PREF_SIZE) {
-            return prefWidth(height);
+        	return prefWidth(height);
         }
-        return Double.isNaN(override) || override < 0 ? 0 : override;
+        return safe(override);
 	}
 	
 	@Override
 	public double prefWidth(double height) {
         final double override = getPrefWidth();
         if (override == Region.USE_COMPUTED_SIZE) {
-            return super.prefWidth(height);
-        }
-        return Double.isNaN(override) || override < 0 ? 0 : override;
+            return safe(computePrefWidth(height));
+        } 
+        return safe(override);
 	}
 	
 	@Override
 	public double prefHeight(double width) {
         final double override = getPrefHeight();
         if (override == Region.USE_COMPUTED_SIZE) {
-            return super.prefHeight(width);
+        	return safe(computePrefHeight(width));
         }
-        return Double.isNaN(override) || override < 0 ? 0 : override;
+        return safe(override);
 	}
 	
 	@Override
 	public double maxWidth(double height) {
         final double override = getMaxWidth();
         if (override == Region.USE_COMPUTED_SIZE) {
-            return computeMaxWidth(height);
+           return safe(computeMaxWidth(height));
         } else if (override == Region.USE_PREF_SIZE) {
             return prefWidth(height);
-        }
-        return Double.isNaN(override) || override < 0 ? 0 : override;
+        } 
+        return safe(override);
 	}
 	
 	@Override
 	public double maxHeight(double width) {
         final double override = getMaxHeight();
         if (override == Region.USE_COMPUTED_SIZE) {
-            return computeMaxHeight(width);
+            return safe(computeMaxHeight(width));
         } else if (override == Region.USE_PREF_SIZE) {
             return prefHeight(width);
         }
-        return Double.isNaN(override) || override < 0 ? 0 : override;
+        return safe(override);
+	}
+	
+	private final double safe(double value) {
+		return Double.isNaN(value) || value < 0 ? 0 : value;
+	}
+	
+	
+	protected double computeMinWidth(double height) {
+		return 0;
+	}
+	
+	protected double computeMinHeight(double width) {
+		return 0;
+	}
+	
+	protected double computePrefWidth(double height) {
+		return getLayoutBounds().getWidth();
+	}
+	
+	protected double computePrefHeight(double width) {
+		return getLayoutBounds().getHeight();
 	}
 	
     protected double computeMaxWidth(double height) {
