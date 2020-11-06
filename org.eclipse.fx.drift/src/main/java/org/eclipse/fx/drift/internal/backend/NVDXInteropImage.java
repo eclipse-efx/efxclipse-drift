@@ -16,7 +16,6 @@ import static org.eclipse.fx.drift.internal.GL.glGenTexture;
 
 import org.eclipse.fx.drift.Vec2i;
 import org.eclipse.fx.drift.internal.GL;
-import org.eclipse.fx.drift.internal.ResourceLogger;
 import org.eclipse.fx.drift.internal.common.ImageData;
 import org.eclipse.fx.drift.internal.common.NVDXInteropImageData;
 import org.eclipse.fx.drift.internal.jni.win32.D3D9;
@@ -26,6 +25,8 @@ import org.eclipse.fx.drift.internal.jni.win32.WindowsError;
 
 public class NVDXInteropImage implements Image {
 
+	public static final Object syncedNVDXInterop = new Object();
+	
 	public static final ImageType TYPE = new ImageType("NVDXInterop");
 	
 	
@@ -63,57 +64,65 @@ public class NVDXInteropImage implements Image {
 	
 	@Override
 	public void allocate() {
-		try {
-			device = NVDXInteropDevice.openDevice(dxDevice);
-			
-			glTexture = glGenTexture();
-	
-			dxTexture = dxDevice.CreateTexture(size.x, size.y, 0, Win32.D3DUSAGE_DYNAMIC, Win32.D3DFMT_A8R8G8B8, Win32.D3DPOOL_DEFAULT);
-			
-			NVDXInterop.wglDXSetResourceShareHandleNV(dxTexture, dxTexture.shareHandle);
-			// TODO add constant: WGL_ACCESS_READ_WRITE_NV 0x0001
-			
-			hObject = NVDXInterop.wglDXRegisterObjectNV(device.hDevice, dxTexture, glTexture, GL.GL_TEXTURE_2D, 0x0001);
-			
-			this.data = new NVDXInteropImageData(number, size, dxTexture.shareHandle.address);
-		}
-		catch (WindowsError e) {
-			throw new RuntimeException(e);
+		synchronized (syncedNVDXInterop) {
+			try {
+				device = NVDXInteropDevice.openDevice(dxDevice);
+				
+				glTexture = glGenTexture();
+		
+				dxTexture = dxDevice.CreateTexture(size.x, size.y, 0, Win32.D3DUSAGE_DYNAMIC, Win32.D3DFMT_A8R8G8B8, Win32.D3DPOOL_DEFAULT);
+				
+				NVDXInterop.wglDXSetResourceShareHandleNV(dxTexture, dxTexture.shareHandle);
+				// TODO add constant: WGL_ACCESS_READ_WRITE_NV 0x0001
+				
+				hObject = NVDXInterop.wglDXRegisterObjectNV(device.hDevice, dxTexture, glTexture, GL.GL_TEXTURE_2D, 0x0001);
+				
+				this.data = new NVDXInteropImageData(number, size, dxTexture.shareHandle.address);
+			}
+			catch (WindowsError e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 	
 	@Override
 	public void release() {
-		try {
-			NVDXInterop.wglDXUnregisterObjectNV(device.hDevice, hObject);
-			
-			glDeleteTexture(glTexture);
-			dxTexture.Release();
-			
-			device.closeDevice();
-		}
-		catch (WindowsError e) {
-			throw new RuntimeException(e);
+		synchronized (syncedNVDXInterop) {
+			try {
+				NVDXInterop.wglDXUnregisterObjectNV(device.hDevice, hObject);
+				
+				glDeleteTexture(glTexture);
+				dxTexture.Release();
+				
+				device.closeDevice();
+			}
+			catch (WindowsError e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 	
 	@Override
 	public void onAcquire() {
-		try {
-			NVDXInterop.wglDXLockObjectsNV(device.hDevice, hObject);
-		}
-		catch (WindowsError e) {
-			throw new RuntimeException(e);
+		synchronized (syncedNVDXInterop) {
+			try {
+				NVDXInterop.wglDXLockObjectsNV(device.hDevice, hObject);
+			}
+			catch (WindowsError e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 	
 	@Override
 	public void onPresent() {
-		try {
-			NVDXInterop.wglDXUnlockObjectsNV(device.hDevice, hObject);
-		}
-		catch (WindowsError e) {
-			throw new RuntimeException(e);
+		synchronized (syncedNVDXInterop) {
+			try {
+				NVDXInterop.wglDXUnlockObjectsNV(device.hDevice, hObject);
+			}
+			catch (WindowsError e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 	
