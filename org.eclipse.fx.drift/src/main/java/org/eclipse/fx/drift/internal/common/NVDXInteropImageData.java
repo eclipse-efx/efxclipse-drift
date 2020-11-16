@@ -13,11 +13,25 @@ package org.eclipse.fx.drift.internal.common;
 
 import org.eclipse.fx.drift.TransferType;
 import org.eclipse.fx.drift.Vec2i;
+import org.eclipse.fx.drift.internal.DriftFX;
+import org.eclipse.fx.drift.internal.DriftLogger;
+import org.eclipse.fx.drift.internal.jni.win32.NVDXInterop;
 import org.eclipse.fx.drift.internal.prism.Prism;
 
 public class NVDXInteropImageData extends ImageData {
-
-	public static final TransferType TYPE = new TransferType("NVDXInterop", Prism::isD3D);
+	
+	private static final DriftLogger LOGGER = DriftFX.createLogger(NVDXInteropImageData.class);
+	
+	private static Boolean dxInteropAvailable = null;
+	private static boolean isDXInteropAvailable() {
+		if (dxInteropAvailable == null) {
+			dxInteropAvailable = NVDXInterop.isAvailable();
+			LOGGER.info(() -> "NVDXInterop available: " + dxInteropAvailable);
+		}
+		return dxInteropAvailable != null && dxInteropAvailable;
+	}
+	
+	public static final TransferType TYPE = new TransferType("NVDXInterop", () -> Prism.isD3D() && isDXInteropAvailable());
 
 	public final long dxShareHandle;
 	

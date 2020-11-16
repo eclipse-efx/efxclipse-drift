@@ -141,6 +141,12 @@ PFNWGLDXOBJECTACCESSNV pfnWglDXObjectAccessNV;
 PFNWGLDXLOCKOBJECTSNV pfnWglDXLockObjectsNV;
 PFNWGLDXUNLOCKOBJECTSNV pfnWglDXUnlockObjectsNV;
 PFNWGLDXSETRESOURCESHAREHANDLENV pfnWglDXSetResourceShareHandleNV;
+
+bool isDXInteropAvailable() {
+	// simple test if function pointer is resolved
+	return pfnWglDXOpenDeviceNV != nullptr;
+}
+
 HANDLE wglDXOpenDeviceNV(void* dxDevice) {
 	return pfnWglDXOpenDeviceNV(dxDevice);
 }

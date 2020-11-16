@@ -23,7 +23,7 @@ public final class GL {
 		}
 	}
 	
-	
+	public static void require() {}
 	
 	public static final int GL_TEXTURE_2D = 0x0DE1;
 	public static final int GL_TEXTURE_RECTANGLE = 0x84F5;

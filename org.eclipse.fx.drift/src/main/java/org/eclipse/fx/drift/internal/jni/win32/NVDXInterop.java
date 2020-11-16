@@ -13,6 +13,7 @@ package org.eclipse.fx.drift.internal.jni.win32;
 
 import org.eclipse.fx.drift.internal.DriftFX;
 import org.eclipse.fx.drift.internal.DriftLogger;
+import org.eclipse.fx.drift.internal.GL;
 
 public class NVDXInterop {
 	private static final DriftLogger LOGGER = DriftFX.createLogger(NVDXInterop.class);
@@ -20,6 +21,10 @@ public class NVDXInterop {
 	public final static int WGL_ACCESS_READ_ONLY_NV = 0x0000;
 	public final static int WGL_ACCESS_READ_WRITE_NV = 0x0001;
 	public final static int WGL_ACCESS_WRITE_DISCARD_NV = 0x0002;
+	
+	static {
+		GL.require();
+	}
 	
 	public static Win32.HANDLE wglDXOpenDeviceNV(Win32.IDirect3DDevice9Ex dxDevice) throws WindowsError {
 		long result = nWglDXOpenDeviceNV(dxDevice.address);
@@ -40,6 +45,10 @@ public class NVDXInterop {
 	}
 	private native static boolean nWglDXCloseDeviceNV(long hDevice);
 	
+	public static boolean isAvailable() {
+		return nIsAvailable();
+	}
+	private native static boolean nIsAvailable();
 	
 	public static boolean wglDXSetResourceShareHandleNV(Win32.IDirect3DResource9 dxResource, Win32.HANDLE shareHandle) throws WindowsError {
 		boolean result = nWglDXSetResourceShareHandleNV(dxResource.address, shareHandle.address);

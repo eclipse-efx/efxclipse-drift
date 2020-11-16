@@ -20,6 +20,12 @@
 
 using namespace driftgl;
 
+
+extern "C" JNIEXPORT jboolean JNICALL Java_org_eclipse_fx_drift_internal_jni_win32_NVDXInterop_nIsAvailable(JNIEnv *env, jclass cls) {
+	return (jboolean)isDXInteropAvailable();
+}
+
+
 extern "C" JNIEXPORT jlong JNICALL Java_org_eclipse_fx_drift_internal_jni_win32_NVDXInterop_nWglDXOpenDeviceNV(JNIEnv *env, jclass cls,
 	jlong _dxDevice) {
         void* dxDevice = (void*) _dxDevice;

@@ -44,6 +44,8 @@ namespace driftgl {
 	BOOL wglChoosePixelFormatARB(HDC hDC, const int *piAttribList);
 
 
+	bool isDXInteropAvailable();
+
 	DRIFTGL_EXPORT HANDLE wglDXOpenDeviceNV(void* dxDevice);
 	DRIFTGL_EXPORT bool wglDXCloseDeviceNV(HANDLE hDevice);
 	DRIFTGL_EXPORT HANDLE wglDXRegisterObjectNV(HANDLE hDevice, void* dxObject, GLuint name, GLenum type, GLenum access);
