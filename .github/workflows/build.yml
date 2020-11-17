@@ -42,14 +42,14 @@ jobs:
         java-version: 1.8
         java-package: jdk+fx
     - name: Store Java 1.8 Home
-      run: echo ::set-env name=JAVA_HOME_8::$JAVA_HOME
+      run: echo "JAVA_HOME_8=${JAVA_HOME}" >> $GITHUB_ENV
     - name: Setup Java 11
       uses: actions/setup-java@v1
       with:
         java-version: 11
         java-package: jdk
     - name: Store Java 11 Home
-      run: echo ::set-env name=JAVA_HOME_11::$JAVA_HOME
+      run: echo "JAVA_HOME_11=${JAVA_HOME}" >> $GITHUB_ENV
     - name: Download natives
       uses: actions/download-artifact@v1
       with:
