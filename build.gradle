@@ -59,6 +59,13 @@ subprojects {
 
 }
 
+def isUseSignedArtifacts() {
+    project.hasProperty("useSignedArtifacts")
+}
+def getMultireleaseJarPath() {
+    isUseSignedArtifacts() ? "$buildDir/signed/org.eclipse.fx.drift.jar" : "$buildDir/libs/org.eclipse.fx.drift.jar"
+}
+
 def getJava8() {
 	"${System.getenv('JAVA_HOME_8')}/bin/javac"
 }
@@ -227,7 +234,7 @@ platform {
     useFeatureHashQualifiers = false
     //generatePlatformFeature = false
 
-    bundle file("$buildDir/signed/org.eclipse.fx.drift.jar")
+    bundle file(getMultireleaseJarPath()) 
     
 /*    bundle file("$buildDir/downloaded/org.eclipse.fx.drift.jar"), {
         bnd {
@@ -473,7 +480,7 @@ publishing {
             		}
             	}
             }       
-            artifact("$buildDir/signed/org.eclipse.fx.drift.jar") {
+            artifact(getMultireleaseJarPath()) {
                 extension 'jar'
             }
         }
