@@ -48,6 +48,8 @@ task showInfo {
         println " -> ${toTimestamp(getGitTimestamp())}"
     }
 }
+showInfo.group = "DriftFX"
+showInfo.description = "Outputs the version information used for building"
 
 allprojects {
     repositories {
@@ -77,14 +79,6 @@ def getJava11() {
 
 subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
 
-task showIt() {
-    println "Showing It"
-    println Versioning.releaseTag
-    doLast {
-        println Versioning
-    }
-}
-
 task copyNatives(type: Copy) {
 
     // driftfx
@@ -112,7 +106,8 @@ task copyNatives(type: Copy) {
     }
     
 }
-
+copyNatives.group = "DriftFX"
+copyNatives.description = "Copies the available natives from ./native-repo to ./org.eclipse.fx.drift/src/main/resources/native/"
 
 
 task buildMultireleaseJar(type: Jar, dependsOn: [
@@ -159,6 +154,8 @@ task buildMultireleaseJar(type: Jar, dependsOn: [
         println "${version}"
     }
 }
+buildMultireleaseJar.group = "DriftFX"
+buildMultireleaseJar.description = "builds the Multi-Release JAR of DriftFX. This is the main artifact."
 
 task downloadGithubArtifact {
     outputs.files(
@@ -175,6 +172,8 @@ task downloadGithubArtifact {
         github.downloadArtifact(artifactNativeRepo.archive_download_url, "$buildDir/downloaded/native-repo.zip")
     }
 }
+downloadGithubArtifact.group = "DriftFX"
+downloadGithubArtifact.description = "downloads the github pipeline artificats for a specific GITHUB_RUN_ID (set in env)"
 
 task askGithub {
     doLast {
@@ -185,6 +184,8 @@ task askGithub {
         println groovy.json.JsonOutput.toJson(runArtifacts)
     }
 }
+askGithub.group = "DriftFX"
+askGithub.description = "outputs information to a specific github run using the GITHUB_RUN_ID (set in env)"
 
 task unzipGithubArtifact(type: Copy) {
     dependsOn downloadGithubArtifact
@@ -192,9 +193,10 @@ task unzipGithubArtifact(type: Copy) {
         zipTree("$buildDir/downloaded/github-artifacts.zip")
     }
     into "$buildDir/unsigned"
-
-
 }
+unzipGithubArtifact.group = "DriftFX"
+unzipGithubArtifact.description = "unzips the downloaded github artifacts"
+
 task unzipNativeRepo(type: Copy) {
     dependsOn downloadGithubArtifact
     inputs.files("$buildDir/downloaded/native-repo.zip")
@@ -203,6 +205,8 @@ task unzipNativeRepo(type: Copy) {
     }
     into "$buildDir/native-repo"
 }
+unzipNativeRepo.group = "DriftFX"
+unzipNativeRepo.description = "unzips native-repo"
 
 task signJarFiles() {
     dependsOn unzipGithubArtifact
@@ -218,6 +222,8 @@ task signJarFiles() {
         println "${new File(targetFile)}"
     }
 }
+signJarFiles.group = "DriftFX"
+signJarFiles.description = "signs the Jar using the eclipse jar signing service"
 
 platform {
 
@@ -250,13 +256,6 @@ platform {
 */
 }
 
-task ghCreateRelease() {
-    dependsOn updateSiteZip
-    doLast {
-
-    }
-}
-
 ext.github = new GithubAPI(githubOrga, githubRepo, System.getenv('GITHUB_ACCESS_TOKEN'))
 
 import okhttp3.*
@@ -279,6 +278,8 @@ task notifyJenkins() {
         println "triggered jenkins build"
     }
 }
+notifyJenkins.group = "DriftFX"
+notifyJenkins.description = "Notifies the eclipse build system of a successful github run"
 
 
 ext {
@@ -313,6 +314,8 @@ task deployUpdateSite() {
         println stdout.toString().trim()
     }
 }
+deployUpdateSite.group = "DriftFX"
+deployUpdateSite.description = "Deploys the update site to download.eclipse.org."
 
 
 /*
@@ -388,6 +391,9 @@ task createDistribution(type: Zip) {
     archiveVersion = Versioning.fullVersion
 
 }
+createDistribution.group = "DriftFX"
+createDistribution.description = "Creates the dist.zip to be attached to a github release."
+
 
 task publishGithubRelease() {
     doLast {
@@ -456,6 +462,8 @@ task publishGithubRelease() {
 
     }
 }
+publishGithubRelease.group = "DriftFX"
+publishGithubRelease.description = "Publishes a release to github. Only works in releaseMode (The checked out state is on a release tag)"
 
 task undoRelease() {
     doLast {
@@ -463,6 +471,8 @@ task undoRelease() {
          println new groovy.json.JsonBuilder(modify).toPrettyString()
     }
 }
+undoRelease.group = "DriftFX"
+undoRelease.description = "Revokes a github release by settings its draft flag to true. The release is specified by setting RELID in env."
 
 publishing {
     publications {
