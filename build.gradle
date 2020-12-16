@@ -248,7 +248,12 @@ unzipNativeRepo.group = "DriftFX"
 unzipNativeRepo.description = "unzips native-repo"
 
 task signJarFiles() {
+	group "DriftFX"
+	description "signs the Jar using the eclipse jar signing service"
     dependsOn unzipGithubArtifact
+    
+    outputs.dir("$buildDir/signed").withPropertyName("outputDir")
+    
     doLast {
     	
         def sourceFile = "$buildDir/unsigned/org.eclipse.fx.drift.jar"
@@ -262,12 +267,10 @@ task signJarFiles() {
         
         copy {
         	from "$buildDir/libs/org.eclipse.fx.drift-sources.jar"
-        	to "$buildDir/signed/org.eclipse.fx.drift-sources.jar"
+        	into "$buildDir/signed/"
         }
     }
 }
-signJarFiles.group = "DriftFX"
-signJarFiles.description = "signs the Jar using the eclipse jar signing service"
 
 platform {
     featureId = 'org.eclipse.fx.drift.feature'
