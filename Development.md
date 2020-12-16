@@ -2,7 +2,7 @@
 
 ## Build system
 
-The project uses gradle to build the native and the java code. Java 11 is required for gradle to run (there is at lease one gradle plugin which depends on Java 11). For the native build gradle uses the locally installed native toolchains.
+The project uses gradle to build the native and the java code. Java 11 is required for gradle to run (there is at least one gradle plugin which depends on Java 11). For the native build gradle uses the locally installed native toolchains.
 
 ### Environment
 
