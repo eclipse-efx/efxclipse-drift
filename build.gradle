@@ -260,13 +260,10 @@ task signJarFiles() {
             standardOutput = stdout
         }
         
-        if (file("$buildDir/libs/org.eclipse.fx.drift-sources.jar").exists()) {
-	        copy {
-	        	from "$buildDir/libs/org.eclipse.fx.drift-sources.jar"
-	        	to "$buildDir/signed/org.eclipse.fx.drift-sources.jar"
-	        }
+        copy {
+        	from "$buildDir/libs/org.eclipse.fx.drift-sources.jar"
+        	to "$buildDir/signed/org.eclipse.fx.drift-sources.jar"
         }
-        println "${new File(targetFile)}"
     }
 }
 signJarFiles.group = "DriftFX"
