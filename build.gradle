@@ -265,7 +265,6 @@ signJarFiles.group = "DriftFX"
 signJarFiles.description = "signs the Jar using the eclipse jar signing service"
 
 platform {
-
     featureId = 'org.eclipse.fx.drift.feature'
     featureName = 'DriftFX'
     featureVersion = Versioning.bundleVersion
