@@ -9,23 +9,27 @@ Direct means that there is no transfer between GPU and main memory. The textures
  * Moved most of the business logic from C++ to Java
  * Added a C++ Binding to allow drift usage from C++ code
 
-### Builds
+### Automated Builds
 
 #### Nightly Builds
 
 This build triggers on push to master.   
 It uses the version 999.0.0 with the git commit timestamp and the short git sha as qualifier.   
-The artifacts are published as p2 repository and as maven snapshot. Note: nexus sets its own qualifier which is always later than the git commit timestamp.
-The nightly p2 repos are at https://download.eclipse.org/efxclipse/driftfx/nightly/
-The maven snapshots are at https://repo.eclipse.org/content/groups/efxclipse/
+The artifacts are published as p2 repository and as maven snapshot. Note: nexus sets its own qualifier which is always later than the git commit timestamp.    
+The nightly p2 repos are at [https://download.eclipse.org/efxclipse/driftfx/nightly/](https://download.eclipse.org/efxclipse/driftfx/nightly/)    
+The maven snapshots are at [https://repo.eclipse.org/content/groups/efxclipse/](https://repo.eclipse.org/content/groups/efxclipse/)    
 
 #### Release Builds
 
 Release builds are triggered by creating a tag beginning with v followed by the version number.    
-The artifacts are also published as p2 repository and as maven releases.
-The links to the repos can be found in the corresponding github releases.
+The artifacts are also published as p2 repository and as maven releases.   
+A github release is created for each release build. See [Releases](/eclipse-efx/efxclipse-drift/releases). It always contains a link to the corresponding p2 repository and details about the maven repository.    
+The release p2 repos are at [https://download.eclipse.org/efxclipse/driftfx/releases/](https://download.eclipse.org/efxclipse/driftfx/releases/)    
+The maven releases are at [https://repo.eclipse.org/content/groups/efxclipse/](https://repo.eclipse.org/content/groups/efxclipse/)    
 
-### Java Usage
+### Usage
+
+#### Java
 
 ```java
 	// you acquire the Renderer api by calling getRenderer on your surface
@@ -61,7 +65,7 @@ The links to the repos can be found in the corresponding github releases.
 
 ```
 
-### C++ Usage
+#### C++
 The cpp bindings are based on a header file (`driftcpp.h`) and a source file (`driftcpp.cpp`)  you have to include in your project.
 The initialization is done by calling `driftfx::initialize(JNIEnv* env, jobject classLoader)`. The jni env needs to be a valid jni env and the classLoader has to be the java class loader which has access to the `org.eclipse.fx.drift` package. On a plain java 8 this could be the system class loader, in an osgi environment it needs to be a classloader which has access to the package, and on java 11 .. (TBD jigsaw stuff).
 The API aims to be similar to the Java API.
@@ -113,9 +117,9 @@ The API aims to be similar to the Java API.
 ```
 
 
-### TransferModes
+### Transfer Types
 
-The different ways to transfer the texture to JavaFX are now implemented as `TransferMode`s.    
+The different ways to transfer the texture to JavaFX are implemented as `TransferType`s.    
        
  * **MainMemory**: *(available in Windows, Linux and MacOS)*    
    downloads the texture to main memory and uploads it again to the javafx texture.     
@@ -123,10 +127,10 @@ The different ways to transfer the texture to JavaFX are now implemented as `Tra
  * **IOSurface**: *(available in MacOS)*    
    shares the texture on the graphics card via the IOSurface system.    
     
-    
  * **NVDXInterop**: *(available in Windows)*    
    shares the texture via the NV_DX_Interop extension with DirectX and via a direct x shared resource with javafx.
 
+The transfer type needs to be specified at swapchain creation. See [Usage](#usage) for examples.
 
 ### Requirements
 
@@ -137,6 +141,10 @@ The different ways to transfer the texture to JavaFX are now implemented as `Tra
  
 ### Known issues
  * Intel HD Graphics 4000 (10.18.10.5059): **NV_DX_interop** has issues if new IDirect3D9Texture's get the same address as already disposed ones.
- * Windows 7 / nvidia: the nvidia driver deadlocks - this seems related to the NV_DX_interop calls (there is a `-Ddriftfx.winfallback=true` option which moves the pixel data on windows through main memory between opengl and directx)
  * Linux / intel: Drift does not work - it fails with i965: Failed to submit batchbuffer: No such file or directory
  
+ 
+### Development
+
+See [Development Setup](Development.md)
+
