@@ -250,6 +250,7 @@ unzipNativeRepo.description = "unzips native-repo"
 task signJarFiles() {
     dependsOn unzipGithubArtifact
     doLast {
+    	
         def sourceFile = "$buildDir/unsigned/org.eclipse.fx.drift.jar"
         def targetFile = "$buildDir/signed/org.eclipse.fx.drift.jar"
         mkdir "$buildDir/signed"
@@ -257,6 +258,13 @@ task signJarFiles() {
         exec {
             commandLine 'curl', '-sS', '-o', targetFile, '-F', "file=@$sourceFile", 'http://build.eclipse.org:31338/sign'
             standardOutput = stdout
+        }
+        
+        if (file("$buildDir/unsigned/org.eclipse.fx.drift-sources.jar").exists()) {
+	        copy {
+	        	from "$buildDir/unsigned/org.eclipse.fx.drift-sources.jar"
+	        	to "$buildDir/signed/org.eclipse.fx.drift-sources.jar"
+	        }
         }
         println "${new File(targetFile)}"
     }
