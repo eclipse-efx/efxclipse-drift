@@ -150,12 +150,51 @@ task buildMultireleaseJar(type: Jar, dependsOn: [
                 'Drift-SHA': "$Versioning.gitSHA"
         )
     }
-    doLast {
-        println "${version}"
-    }
 }
 buildMultireleaseJar.group = "DriftFX"
 buildMultireleaseJar.description = "builds the Multi-Release JAR of DriftFX. This is the main artifact."
+
+task buildMultireleaseSourcesJar(type: Jar) {
+	archiveBaseName = 'org.eclipse.fx.drift'
+	archiveVersion = ''
+	archiveClassifier = 'sources'
+	
+	from( project(':org.eclipse.fx.drift').sourceSets.main.allSource ) {
+		exclude 'native'
+        exclude 'org/eclipse/fx/drift/DriftFXSurface.java'
+        exclude 'org/eclipse/fx/drift/internal/DriftUtil.java'
+	}
+	
+	from project(':org.eclipse.fx.drift.java8').sourceSets.main.allSource
+	
+	into('META-INF/versions/11') {
+		from project(':org.eclipse.fx.drift.java11').sourceSets.main.allSource
+	}
+	
+	manifest {
+		attributes(
+                "Manifest-Version": "1.0",
+                "Eclipse-SourceBundle": "org.eclipse.fx.drift;version=\"${Versioning.bundleVersion}\"",
+                'Bundle-ManifestVersion': '2',
+                'Bundle-SymbolicName': 'org.eclipse.fx.drift',
+                'Bundle-Version': "${Versioning.bundleVersion}",
+                'Bundle-License': 'https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt',
+                "Multi-Release": true,
+                'Export-Package': "org.eclipse.fx.drift;version=\"${Versioning.version}\",org.eclipse.fx.drift.impl;version=\"${Versioning.version}\",org.eclipse.fx.drift.util;version=\"${Versioning.version}\"",
+                'Import-Package': "org.osgi.framework,org.osgi.framework.wiring",
+                'Private-Package': 'org.eclipse.fx.drift.internal',
+                'Bundle-ActivationPolicy': 'lazy',
+                'Bundle-Activator': 'org.eclipse.fx.drift.internal.OSGiActivator',
+                'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64',
+                'Drift-Version': "$Versioning.version",
+                'Drift-Qualifier': "$Versioning.qualifier",
+                'Drift-Timestamp': "$Versioning.timestamp",
+                'Drift-SHA': "$Versioning.gitSHA"
+		)
+	}
+}
+buildMultireleaseSourcesJar.group = "DriftFX"
+buildMultireleaseSourcesJar.description = "builds the Sources JAR"
 
 task downloadGithubArtifact {
     outputs.files(
@@ -235,12 +274,13 @@ platform {
     categoryId = 'org.eclipse.fx.drift'
     categoryName = 'e(fx)clipse Drift'
 
-    fetchSources = false
+    fetchSources = true
     useBndHashQualifiers = false
     useFeatureHashQualifiers = false
     //generatePlatformFeature = false
 
     bundle file(getMultireleaseJarPath()) 
+    //bundle buildMultireleaseSourcesJar.outputs.files
     
 /*    bundle file("$buildDir/downloaded/org.eclipse.fx.drift.jar"), {
         bnd {
@@ -480,6 +520,7 @@ publishing {
             groupId = 'org.eclipse.fx'
             artifactId = 'org.eclipse.fx.drift'
             version = "${Versioning.version}${Versioning.releaseMode ? '' : '-SNAPSHOT'}"
+            
             pom {
             	name = 'DriftFX'
             	url = 'https://github.com/eclipse-fx/efxclipse-drift'
@@ -493,6 +534,7 @@ publishing {
             artifact(getMultireleaseJarPath()) {
                 extension 'jar'
             }
+            artifact buildMultireleaseSourcesJar
         }
     }
     repositories {
@@ -504,6 +546,11 @@ publishing {
                 password = "${System.getenv('GITHUB_ACCESS_TOKEN')}"
             }
         }
+
+		maven {
+			name = "MavenInProject"
+			url = "./maven-repo"
+		}
 
         if (project.hasProperty('eclipseRepoUsername')) {
             maven {
