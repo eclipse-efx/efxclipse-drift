@@ -2,7 +2,7 @@
 
 ## Build system
 
-The project uses gradle to build the native and the java code. 
+The project uses gradle to build the native and the java code. Java 11 is required for gradle to run (there is at lease one gradle plugin which depends on Java 11). For the native build gradle uses the locally installed native toolchains.
 
 ### Environment
 
@@ -20,9 +20,9 @@ The following environment variables need to be set:
 
 #### native code toolchains
 
-### Windows
+##### Windows
 
- * Java 11
+ * Java 11 
  * Visual Studio 2019 with the nativedesktop workload 
 
 Setup example using chocolatey on Windows 10
@@ -33,7 +33,7 @@ choco install visualstudio2019community --norestart
 choco install visualstudio2019-workload-nativedesktop --norestart
 ```
 
-### Linux
+##### Linux
 
  * Java 11
  * g++
@@ -47,7 +47,7 @@ apt-get install g++
 apt-get install mesa-common-dev
 ```
 
-### MacOS
+##### MacOS
 
  * Java 11
  * Xcode
@@ -85,10 +85,9 @@ Recommended Plugins
  * Buildship
  * JDT
  
-Setup both the Java 8 and the Java 11 SDKs as Installed JREs in Eclipse. Navigate to `Preferences -> Java -> Installed JREs` and add them. Also make sure that that the Execution Environments are setup correctly. JavaSE-1.8 needs to point to your Java 8 SDK and JavaSE-11 needs to point to your Java 11 SDK.    
+Configure both the Java 8 and the Java 11 SDKs as Installed JREs in Eclipse. To do so navigate to `Preferences -> Java -> Installed JREs` and add them. Also make sure that that the Execution Environments are setup correctly. JavaSE-1.8 needs to point to your Java 8 SDK and JavaSE-11 needs to point to your Java 11 SDK.    
 This step is required since we create a multirelease jar and in eclipse each project may only have one SDK.
  
-
 Now you can import the projects into Eclipse. Use the Import Gradle project wizard from Buildship.
 
 You should get the following projects:
@@ -102,7 +101,7 @@ You should get the following projects:
  
 ### Building
 
-#### JNI
+##### JNI
 
 The native part of drift resides in `org.eclipse.fx.drift.native`. To build it execute
 
@@ -113,7 +112,7 @@ The native part of drift resides in `org.eclipse.fx.drift.native`. To build it e
 This builds and publishes the native libs of your platform into `./native-repo`. The `copyNatives` tasks copies them over to `org.eclipse.fx.drift/src/main/resources/native`
 
 
-#### Java
+##### Java
 
 To build the drift multirelease jar execute
 
