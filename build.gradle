@@ -260,9 +260,9 @@ task signJarFiles() {
             standardOutput = stdout
         }
         
-        if (file("$buildDir/unsigned/org.eclipse.fx.drift-sources.jar").exists()) {
+        if (file("$buildDir/libs/org.eclipse.fx.drift-sources.jar").exists()) {
 	        copy {
-	        	from "$buildDir/unsigned/org.eclipse.fx.drift-sources.jar"
+	        	from "$buildDir/libs/org.eclipse.fx.drift-sources.jar"
 	        	to "$buildDir/signed/org.eclipse.fx.drift-sources.jar"
 	        }
         }
