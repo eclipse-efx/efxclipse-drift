@@ -28,6 +28,7 @@ public class NVDXInteropDevice {
 	public final Win32.HANDLE hDevice;
 	private Win32.IDirect3DDevice9Ex dxDevice;
 	private long glContext;
+	private long threadId;
 	
 	private NVDXInteropDevice(Win32.HANDLE hDevice) {
 		this.hDevice = hDevice;
@@ -35,7 +36,7 @@ public class NVDXInteropDevice {
 	
 	@Override
 	public String toString() {
-		return "NVDXInteropDevice " + hDevice + " / " + dxDevice + " / " + glContext;
+		return "NVDXInteropDevice " + hDevice + " / " + dxDevice + " / " + glContext + " / " + threadId;
 	}
 	
 	private int usageCount = 0;
@@ -44,9 +45,13 @@ public class NVDXInteropDevice {
 	
 	public static NVDXInteropDevice openDevice(Win32.IDirect3DDevice9Ex dxDevice) throws WindowsError {
 		synchronized (devices) {
+			long threadId = Thread.currentThread().getId();
 			long glContext = GL.getCurrentContext();
 			NVDXInteropDevice device = null;
-			Optional<NVDXInteropDevice> existing = devices.stream().filter(dev -> dev.glContext == glContext && dev.dxDevice.address == dxDevice.address).findFirst();
+			Optional<NVDXInteropDevice> existing = devices.stream().filter(dev -> 
+				dev.glContext == glContext && 
+				dev.dxDevice.address == dxDevice.address &&
+				dev.threadId == threadId).findFirst();
 			if (existing.isPresent()) {
 				device = existing.get();
 			}
@@ -54,6 +59,7 @@ public class NVDXInteropDevice {
 				device = new NVDXInteropDevice(NVDXInterop.wglDXOpenDeviceNV(dxDevice));
 				device.glContext = glContext;
 				device.dxDevice = dxDevice;
+				device.threadId = threadId;
 				devices.add(device);
 			}
 		
@@ -69,7 +75,6 @@ public class NVDXInteropDevice {
 	public void closeDevice() throws WindowsError {
 		synchronized (devices) {
 			usageCount--;
-			
 			if (usageCount == 0) {
 				NVDXInterop.wglDXCloseDeviceNV(hDevice);
 				devices.remove(this);
