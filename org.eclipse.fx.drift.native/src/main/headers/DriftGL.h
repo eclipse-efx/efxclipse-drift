@@ -35,6 +35,9 @@ namespace driftgl {
 	DRIFTGL_EXPORT void* GetNativeContextHandle(Context* context);
 
 	DRIFTGL_EXPORT Context* GetCurrentContext();
+
+	DRIFTGL_EXPORT const char* GetLastDriftGLError();
+	DRIFTGL_EXPORT void SetLastDriftGLError(const char* errorMsg);
 }
 
 

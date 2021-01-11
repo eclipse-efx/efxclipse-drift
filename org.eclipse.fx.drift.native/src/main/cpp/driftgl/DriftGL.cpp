@@ -10,4 +10,17 @@
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  * ******************************************************************************/
 
+#include <DriftGL.h>
 
+namespace driftgl {
+
+	const char* lastError;
+
+}
+
+const char* driftgl::GetLastDriftGLError() {
+	return lastError;
+}
+void driftgl::SetLastDriftGLError(const char* errorMsg) {
+	lastError = errorMsg;
+}

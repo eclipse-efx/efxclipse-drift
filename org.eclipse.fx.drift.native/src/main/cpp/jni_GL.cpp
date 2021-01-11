@@ -262,3 +262,13 @@ extern "C" JNIEXPORT void JNICALL Java_org_eclipse_fx_drift_internal_GL_glWaitSy
 	glWaitSync(fence, 0, GL_TIMEOUT_IGNORED);
 }
 
+extern "C" JNIEXPORT jstring JNICALL Java_org_eclipse_fx_drift_internal_GL_getLastDriftGLError(JNIEnv * env, jclass cls) {
+
+	const char* lastError = driftgl::GetLastDriftGLError();
+
+	if (lastError == NULL) {
+		return 0;
+	}
+
+	return env->NewStringUTF(lastError);
+}

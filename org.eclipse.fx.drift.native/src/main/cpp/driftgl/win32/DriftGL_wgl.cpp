@@ -46,6 +46,11 @@ namespace driftgl {
 	std::mutex knownContextsMutex;
 	std::map<HGLRC, Context*> knownContexts;
 
+	void logError(std::string message) {
+		// TODO send message to java based logger
+		std::cerr << "[C] " << message << std::endl;
+	}
+
 	void registerContext(HGLRC hglrc, Context* context) {
 		knownContextsMutex.lock();
 		knownContexts[hglrc] = context;
@@ -107,7 +112,8 @@ HWND CreateDriftGLWindow(HINSTANCE hInstance) {
 		hInstance, NULL);           // instance, param
 }
 
-void SetupPixelFormat(HDC hDC) {
+bool SetupPixelFormat(HDC hDC) {
+	bool success = false;
 	int pixel_format_attribs[] = {
 	WGL_SUPPORT_OPENGL_ARB,     GL_TRUE,
 	WGL_ACCELERATION_ARB,       WGL_FULL_ACCELERATION_ARB,
@@ -116,12 +122,24 @@ void SetupPixelFormat(HDC hDC) {
 
 	int pixel_format;
 	UINT num_formats;
-	wglChoosePixelFormatARB(hDC, pixel_format_attribs, 0, 1, &pixel_format, &num_formats);
+	if (!wglChoosePixelFormatARB(hDC, pixel_format_attribs, 0, 1, &pixel_format, &num_formats)) {
+		return false;
+	}
 
 	PIXELFORMATDESCRIPTOR pfd;
-	DescribePixelFormat(hDC, pixel_format, sizeof(pfd), &pfd);
-	BOOL result = SetPixelFormat(hDC, pixel_format, &pfd);
-	//std::cout << "SetPixelFormat: " << result << std::endl;
+	int index = DescribePixelFormat(hDC, pixel_format, sizeof(pfd), &pfd);
+	if (index > 0) {
+		if (SetPixelFormat(hDC, pixel_format, &pfd)) {
+			success = true;
+		}
+		else {
+			//SetPixelFormat() failed.
+		}
+	}
+	else {
+		//DescribePixelFormat() failed.
+	}
+	return success;
 }
 
 typedef HANDLE (* PFNWGLDXOPENDEVICENV) (void* dxDevice);
@@ -171,6 +189,39 @@ bool wglDXUnlockObjectsNV(HANDLE hDevice, GLint count, HANDLE* hObjects) {
 bool wglDXSetResourceShareHandleNV(void* dxObject, HANDLE shareHandle) {
 	return pfnWglDXSetResourceShareHandleNV(dxObject, shareHandle);
 }
+typedef GLubyte* (*PFNGLGETSTRING) (GLenum name);
+void showContextInfo(std::string name, PFNGLGETSTRING glGetString) {
+	std::cout << "[C] OpenGL Context information \"" << name << "\"" << std::endl;
+	std::cout << "[C]   Version: " << glGetString(GL_VERSION) << std::endl;
+	std::cout << "[C]   Vendor: " << glGetString(GL_VENDOR) << std::endl;
+	std::cout << "[C]   Renderer: " << glGetString(GL_RENDERER) << std::endl;
+}
+
+PROC doGetProcAddress(LPCSTR name) {
+	PROC proc = wglGetProcAddress(name);
+	//std::cout << " * " << name << ": " << proc << std::endl;
+	if (proc == 0) {
+		DWORD errWgl = GetLastError();
+		// fallback for old functions on m$
+		HMODULE hModuleGL = GetModuleHandle("opengl32");
+		proc = GetProcAddress(hModuleGL, name);
+		if (proc == 0) {
+			DWORD errWin = GetLastError();
+			//std::cout << " ! Could not acquire " << name << " (Error: " << errWgl << " / " << errWin << ")" << std::endl;
+		}
+	}
+	return proc;
+}
+
+
+
+void debugCurrentContext(std::string name) {
+	PFNGLGETSTRING glGetString = (PFNGLGETSTRING)doGetProcAddress("glGetString");
+	showContextInfo(name, glGetString);
+}
+
+bool successContextCreationPointers = false;
+bool successGLPointers = false;
 
 
 void doInitializeContextCreationPointers(HINSTANCE hInstance) {
@@ -197,102 +248,127 @@ void doInitializeContextCreationPointers(HINSTANCE hInstance) {
 		0, 0, 0
 	};
 	int pf = ChoosePixelFormat(hDC, &pfd);
-	SetPixelFormat(hDC, pf, &pfd);
+	if (pf != 0) {
+		if (SetPixelFormat(hDC, pf, &pfd) == true) {
+			HGLRC dummyContext = wglCreateContext(hDC);
+			if (dummyContext != 0) {
+				if (wglMakeCurrent(hDC, dummyContext) == true) {
+					
+					debugCurrentContext("Dummy Context");
 
-	HGLRC dummyContext = wglCreateContext(hDC);
-	BOOL c = wglMakeCurrent(hDC, dummyContext);
-	if (!c) {
-		// big error
+					// get the pointers
+					pfnWglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
+					pfnWglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+
+					if (pfnWglChoosePixelFormatARB != 0 && pfnWglCreateContextAttribsARB != 0) {
+						successContextCreationPointers = true;
+					}
+					else {
+						SetLastDriftGLError("failed to get proc address of 'wglChoosePixelFormatARB' and 'wglCreateContextAttribsARB' from the dummy context.");
+					}
+
+					wglMakeCurrent(NULL, NULL);
+				}
+				else {
+					SetLastDriftGLError("failed to make the dummy opengl context current.");
+				}
+				wglDeleteContext(dummyContext);
+			}
+			else {
+				SetLastDriftGLError("failed to create a dummy opengl context.");
+			}
+		}
+		else {
+			SetLastDriftGLError("failed to set the pixel format during dummy context creation.");
+		}
 	}
-	pfnWglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
-	pfnWglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
-
-	wglMakeCurrent(NULL, NULL);
-	wglDeleteContext(dummyContext);
+	else {
+		SetLastDriftGLError("failed to choose the pixel format during dummy context creation.");
+	}
 	ReleaseDC(window, hDC);
 	DestroyWindow(window);
 }
 
-void InitializeContextCreationPointers(HINSTANCE hInstance) {
+bool InitializeContextCreationPointers(HINSTANCE hInstance) {
 
 	if (pfnWglChoosePixelFormatARB == 0) {
 
 		// we do this on a different thread to prevent changes to the calling thread's current gl context
 		std::thread initPointers(doInitializeContextCreationPointers, hInstance);
 		initPointers.join();
-
 	}
 
+	return successContextCreationPointers;
 }
 
 
 void doInitializeGLPointers(HINSTANCE hInstance) {
 	HWND window = CreateDriftGLWindow(hInstance);
 	HDC hDC = GetDC(window);
-
-	//std::cout << "SetupPixelForm from Initialize" << std::endl;
-	SetupPixelFormat(hDC);
-	int attribList[] = {
-			WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-			WGL_CONTEXT_MINOR_VERSION_ARB, 5,
-			WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+	if (SetupPixelFormat(hDC) == true) {
+		int attribList[] = {
+		WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+		WGL_CONTEXT_MINOR_VERSION_ARB, 5,
+		WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 		0,
-	};
-	HGLRC realContext = wglCreateContextAttribsARB(hDC, NULL, attribList);
+		};
+		HGLRC realContext = wglCreateContextAttribsARB(hDC, NULL, attribList);
+		if (realContext != 0) {
+			if (wglMakeCurrent(hDC, realContext) == true) {
 
-	wglMakeCurrent(hDC, realContext);
+				debugCurrentContext("Function Pointer Resolving Context");
 
-	PROC getString = wglGetProcAddress("glGetString");
-	procs::Initialize([](const char* name) {
-		PROC proc = wglGetProcAddress(name);
-		//std::cout << " * " << name << ": " << proc << std::endl;
-		if (proc == 0) {
-			DWORD errWgl = GetLastError();
-			// fallback for old functions on m$
-			HMODULE hModuleGL = GetModuleHandle("opengl32");
-			proc = GetProcAddress(hModuleGL, name);
-			if (proc == 0) {
-				DWORD errWin = GetLastError();
-				//std::cout << " ! Could not acquire " << name << " (Error: " << errWgl << " / " << errWin << ")" << std::endl;
+				// init GL pointers
+				procs::Initialize([](const char* name) { return (void*)doGetProcAddress(name); });
+
+				// init NV_DX_interop pointers
+				pfnWglDXOpenDeviceNV = (PFNWGLDXOPENDEVICENV)wglGetProcAddress("wglDXOpenDeviceNV");
+				pfnWglDXCloseDeviceNV = (PFNWGLDXCLOSEDEVICENV)wglGetProcAddress("wglDXCloseDeviceNV");
+				pfnWglDXRegisterObjectNV = (PFNWGLDXREGISTEROBJECTNV)wglGetProcAddress("wglDXRegisterObjectNV");
+				pfnWglDXUnregisterObjectNV = (PFNWGLDXUNREGISTEROBJECTNV)wglGetProcAddress("wglDXUnregisterObjectNV");
+				pfnWglDXObjectAccessNV = (PFNWGLDXOBJECTACCESSNV)wglGetProcAddress("wglDXObjectAccessNV");
+				pfnWglDXLockObjectsNV = (PFNWGLDXLOCKOBJECTSNV)wglGetProcAddress("wglDXLockObjectsNV");
+				pfnWglDXUnlockObjectsNV = (PFNWGLDXUNLOCKOBJECTSNV)wglGetProcAddress("wglDXUnlockObjectsNV");
+				pfnWglDXSetResourceShareHandleNV = (PFNWGLDXSETRESOURCESHAREHANDLENV)wglGetProcAddress("wglDXSetResourceShareHandleNV");
+
+				successGLPointers = true;
+
+				wglMakeCurrent(NULL, NULL);
 			}
+			else {
+				SetLastDriftGLError("failed to make the function pointer resolving context current.");
+			}
+			wglDeleteContext(realContext);
 		}
-		return (void*)proc;
-		});
-
-	pfnWglDXOpenDeviceNV = (PFNWGLDXOPENDEVICENV)wglGetProcAddress("wglDXOpenDeviceNV");
-	pfnWglDXCloseDeviceNV = (PFNWGLDXCLOSEDEVICENV)wglGetProcAddress("wglDXCloseDeviceNV");
-	pfnWglDXRegisterObjectNV = (PFNWGLDXREGISTEROBJECTNV)wglGetProcAddress("wglDXRegisterObjectNV");
-	pfnWglDXUnregisterObjectNV = (PFNWGLDXUNREGISTEROBJECTNV)wglGetProcAddress("wglDXUnregisterObjectNV");
-	pfnWglDXObjectAccessNV = (PFNWGLDXOBJECTACCESSNV)wglGetProcAddress("wglDXObjectAccessNV");
-	pfnWglDXLockObjectsNV = (PFNWGLDXLOCKOBJECTSNV)wglGetProcAddress("wglDXLockObjectsNV");
-	pfnWglDXUnlockObjectsNV = (PFNWGLDXUNLOCKOBJECTSNV)wglGetProcAddress("wglDXUnlockObjectsNV");
-	pfnWglDXSetResourceShareHandleNV = (PFNWGLDXSETRESOURCESHAREHANDLENV)wglGetProcAddress("wglDXSetResourceShareHandleNV");
-
-	//std::cout << "Initialze OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
-	wglMakeCurrent(NULL, NULL);
-	//wglDeleteContext(dummyContext);
-	wglDeleteContext(realContext);
+		else {
+			SetLastDriftGLError("failed to create the function pointer resolving context.");
+		}
+	}
+	else {
+		SetLastDriftGLError("failed to setup the pixel format during function pointer resolving context creation.");
+	}
 	ReleaseDC(window, hDC);
 	DestroyWindow(window);
 }
 
-void InitializeGLPointers(HINSTANCE hInstance) {
+bool InitializeGLPointers(HINSTANCE hInstance) {
 
 	// we do this on a different thread to prevent changes to the calling thread's current gl context
 	std::thread initPointers(doInitializeGLPointers, hInstance);
 	initPointers.join();
 
+	return successGLPointers;
 }
 
 
 bool Initialize() {
 	HINSTANCE hInstance = NULL;
 
-	InitializeContextCreationPointers(hInstance);
+	if (!InitializeContextCreationPointers(hInstance)) {
+		return false;
+	}
 
-	InitializeGLPointers(hInstance);
-
-	return true;
+	return InitializeGLPointers(hInstance);
 }
 
 bool Destroy() {

@@ -19,7 +19,8 @@ public final class GL {
 		DriftFX.require();
 		if (!initialize()) {
 			// TODO throw exception in native code ?
-			throw new RuntimeException("Error during DriftGL initialization");
+			String error = getLastDriftGLError();
+			throw new RuntimeException("Error during DriftGL initialization: " + error);
 		}
 	}
 	
@@ -137,5 +138,6 @@ public final class GL {
 	public static native int glGetInteger(int pname);
 	public static native float glGetFloat(int pname);
 	
+	public static native String getLastDriftGLError();
 	
 }
