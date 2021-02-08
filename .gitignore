@@ -2,4 +2,15 @@ build
 .gradle
 native-repo
 maven-repo
-/.vs/
+
+# ignore vs files
+**/*.sln
+**/.vs/
+**/*.vcxproj
+**/*.vcxproj.filters
+**/*.vcxproj.user
+
+# ignore eclipse files
+**/.project
+**/.classpath
+**/.settings
