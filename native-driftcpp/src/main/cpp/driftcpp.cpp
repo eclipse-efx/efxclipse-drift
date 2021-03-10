@@ -1,11 +1,11 @@
 /* ******************************************************************************
  * Copyright (c) 2019, 2020 BestSolution.at and others.
- * All rights reserved. This program and the accompanying materials 
- * are made available under the terms of the Eclipse Public License 2.0 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
  * ******************************************************************************/
@@ -16,29 +16,29 @@
 
 // INTERNAL API
 namespace internal {
-    
+
     class JNI {
     public:
         static void init(JNIEnv* env, jobject classLoader);
         static void dispose(JNIEnv* env);
-        
+
     private:
         static jclass getClass(JNIEnv* env, const char* name);
         static jmethodID getMethodID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature);
         static jmethodID getStaticMethodID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature);
         static jfieldID getFieldID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature);
         static jfieldID getStaticFieldID(JNIEnv* env, const char* clazzName, jclass clazz, const char* name, const char* signature);
-        
+
     private:
         static jobject classLoader;
-        
+
         // Class
     private:
         static jclass cClass;
         static jmethodID mClassForName;
     public:
-        
-        
+
+
         // Vec2i
     private:
         static jclass cVec2i;
@@ -48,7 +48,7 @@ namespace internal {
     public:
         static driftfx::Vec2i convertVec2i(JNIEnv* env, jobject vec2i);
         static jobject convertVec2i(JNIEnv* env, driftfx::Vec2i vec2i);
-        
+
         // Vec2d
     private:
         static jclass cVec2d;
@@ -96,7 +96,7 @@ namespace internal {
         static jobject callRendererGetScreenScale(JNIEnv* env, jobject renderer);
         static jobject callRendererGetUserScale(JNIEnv* env, jobject renderer);
         static jobject callRendererCreateSwapchain(JNIEnv* env, jobject renderer, jobject swapchainConfig);
-        
+
         // GLRenderer
     private:
         static jclass cGLRenderer;
@@ -127,9 +127,9 @@ namespace internal {
     public:
         static driftfx::TransferType* getTransferType(JNIEnv* env, jobject transferType);
     };
-    
 
-    
+
+
     class JNIObject {
     protected:
         JNIEnv* env;
@@ -138,48 +138,48 @@ namespace internal {
         jobject getJavaInstance();
         JNIEnv* getJavaEnv();
     };
-    
-    
+
+
     class RendererImpl : public driftfx::Renderer, public JNIObject {
-        
+
     public:
         RendererImpl(JNIEnv* _env, jobject _javaInstance);
-        
+
         driftfx::Swapchain* createSwapchain(driftfx::SwapchainConfig config);
-        
+
         driftfx::Vec2i getSize();
         driftfx::Vec2d getLogicalSize();
         driftfx::Vec2d getScreenScale();
         driftfx::Vec2d getUserScale();
-        
+
     };
-    
+
     class SwapchainImpl : public driftfx::Swapchain, public JNIObject {
-        
+
     private:
         driftfx::SwapchainConfig config;
 
     public:
         SwapchainImpl(JNIEnv* _env, jobject _javaInstance);
-        
+
         driftfx::SwapchainConfig getConfig();
         driftfx::RenderTarget* acquire();
         driftfx::RenderTarget* tryAcquire();
         void present(driftfx::RenderTarget* image);
-        
+
         ~SwapchainImpl();
-        
+
     };
-    
+
     class RenderTargetImpl : public driftfx::RenderTarget, public JNIObject {
-        
+
     public:
         RenderTargetImpl(JNIEnv* _env, jobject _javaInstance);
-        
+
     };
-    
+
     class TransferTypeImpl : public driftfx::TransferType, public JNIObject {
-        
+
     private:
         ::std::string id;
     public:
@@ -187,7 +187,7 @@ namespace internal {
         ::std::string getId();
         bool isAvailable();
     };
-    
+
 }
 
 std::map<std::string, driftfx::TransferType*> internal::JNI::transferTypes;
@@ -321,7 +321,7 @@ void internal::JNI::init(JNIEnv* env, jobject _classLoader) {
     mRendererGetScreenScale = getMethodID(env, Renderer, cRenderer, "getScreenScale", "()Lorg/eclipse/fx/drift/Vec2d;");
     mRendererGetUserScale = getMethodID(env, Renderer, cRenderer, "getUserScale", "()Lorg/eclipse/fx/drift/Vec2d;");
     mRendererCreateSwapchain = getMethodID(env, Renderer, cRenderer, "createSwapchain", "(Lorg/eclipse/fx/drift/SwapchainConfig;)Lorg/eclipse/fx/drift/Swapchain;");
-    
+
     // GLRenderer
     const char* GLRenderer = "org.eclipse.fx.drift.GLRenderer";
     cGLRenderer = getClass(env, GLRenderer);
@@ -348,11 +348,11 @@ void internal::JNI::init(JNIEnv* env, jobject _classLoader) {
     jobject mainMemory = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesMainMemory);
     jobject ioSurface = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesIOSurface);
     jobject nvdxInterop = env->GetStaticObjectField(cStandardTransferTypes, fStandardTransferTypesNVDXInterop);
-    
+
     mainMemory = env->NewGlobalRef(mainMemory);
     ioSurface = env->NewGlobalRef(ioSurface);
     nvdxInterop = env->NewGlobalRef(nvdxInterop);
-    
+
     driftfx::StandardTransferTypes::MainMemory = getTransferType(env, mainMemory);
     driftfx::StandardTransferTypes::IOSurface = getTransferType(env, ioSurface);
     driftfx::StandardTransferTypes::NVDXInterop = getTransferType(env, nvdxInterop);
@@ -360,10 +360,10 @@ void internal::JNI::init(JNIEnv* env, jobject _classLoader) {
 
 void internal::JNI::dispose(JNIEnv* env) {
     env->DeleteGlobalRef(classLoader);
-    
+
     // Class
     env->DeleteGlobalRef(cClass);
-    
+
     // Vec2i
     env->DeleteGlobalRef(cVec2i);
     // SwapchainConfig
@@ -513,17 +513,23 @@ driftfx::Vec2i internal::RendererImpl::getSize() {
 
 driftfx::Vec2d internal::RendererImpl::getLogicalSize() {
     jobject javaSize = internal::JNI::callRendererGetLogicalSize(env, javaInstance);
-    return internal::JNI::convertVec2d(env, javaSize);
+    auto size2d = internal::JNI::convertVec2d(env, javaSize);
+    env->DeleteLocalRef(javaSize);
+    return size2d;
 }
 
 driftfx::Vec2d internal::RendererImpl::getScreenScale() {
     jobject javaSize = internal::JNI::callRendererGetScreenScale(env, javaInstance);
-    return internal::JNI::convertVec2d(env, javaSize);
+    auto size2d = internal::JNI::convertVec2d(env, javaSize);
+    env->DeleteLocalRef(javaSize);
+    return size2d;
 }
 
 driftfx::Vec2d internal::RendererImpl::getUserScale() {
     jobject javaSize = internal::JNI::callRendererGetUserScale(env, javaInstance);
-    return internal::JNI::convertVec2d(env, javaSize);
+    auto size2d = internal::JNI::convertVec2d(env, javaSize);
+    env->DeleteLocalRef(javaSize);
+    return size2d;
 }
 
 driftfx::Swapchain* internal::RendererImpl::createSwapchain(driftfx::SwapchainConfig config) {
@@ -596,9 +602,9 @@ JNIEnv* internal::JNIObject::getJavaEnv() {
 
 
 GLuint driftfx::GLRenderer::getGLTextureId(driftfx::RenderTarget* renderTarget) {
-    
+
     internal::RenderTargetImpl* targetImpl = (internal::RenderTargetImpl*) renderTarget;
-    
+
     return (GLuint) internal::JNI::callGLRendererGetGLTextureId(targetImpl->getJavaEnv(), targetImpl->getJavaInstance());
 }
 
