@@ -30,7 +30,9 @@ library {
       machines.linux.x86_64,
       machines.windows.x86_64,
       machines.macOS.x86_64,
-      machines.macOS.architecture("arm64")
+      machines.macOS.architecture("arm64"),
+      machines.macOS.architecture("aarch64"),
+      machines.macOS.architecture("arm-v8")
     ]
     
     source.from createCppTree(project)
