@@ -46,8 +46,14 @@ library {
     }
     
     binaries.configureEach { binary ->
+      println("configure Binary " + binary)
       def compileTask = compileTask.get()
       def linkTask = linkTask.get()
+
+      println(" * compileTask: " + compileTask);
+      println(" * linkTask: " + linkTask);
+
+      println(" * toolChain: " + toolChain);
       
       configureToolchain(toolChain)
       configureLinker(targetMachine, linkTask)
@@ -103,10 +109,14 @@ def createCppTree(proj) {
 
 def configureToolchain(toolChain) {
   if (toolChain in [VisualCpp]) {
-    println("configuring visual studio")
+    println("configuring visual studio" + toolChain)
   }
   if (toolChain in [Gcc]) {
-    println("configuring gcc")
+    println("configuring gcc" + toolChain)
+  }
+  if (toolChain in [Clang]) {
+    println("configuring clang " + toolChain)
+
   }
 }
 
@@ -133,6 +143,14 @@ def configureLinker(targetMachine, linkTask) {
 
 tasks.withType(CppCompile).configureEach {
   compilerArgs.add '-std=c++11'
+
+doFirst {
+  println("configure CompileTask " + it)
+  println(".targetPlatform: " + it.targetPlatform.get())
+  println(".toolChain: " + it.toolChain.get())
+  println(".compilerArgs: " + it.compilerArgs.get())
+}
+
 }
 
 publishing {
