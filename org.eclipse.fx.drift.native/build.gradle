@@ -30,9 +30,9 @@ library {
       machines.linux.x86_64,
       machines.windows.x86_64,
       machines.macOS.x86_64,
-      machines.macOS.architecture("arm64"),
-      machines.macOS.architecture("aarch64"),
-      machines.macOS.architecture("arm-v8")
+      // machines.macOS.architecture("arm64"),
+      // machines.macOS.architecture("aarch64"),
+      // machines.macOS.architecture("arm-v8")
     ]
     
     source.from createCppTree(project)
@@ -52,12 +52,13 @@ library {
       def compileTask = compileTask.get()
       def linkTask = linkTask.get()
 
+
       println(" * compileTask: " + compileTask);
       println(" * linkTask: " + linkTask);
 
       println(" * toolChain: " + toolChain);
       
-      configureToolchain(toolChain)
+      configureToolchain(toolChain, compileTask, linkTask)
       configureLinker(targetMachine, linkTask)
 //      addJNIIncludes(compileTask)
       
@@ -109,16 +110,18 @@ def createCppTree(proj) {
   return tree
 }
 
-def configureToolchain(toolChain) {
-  if (toolChain in [VisualCpp]) {
+def configureToolchain(toolChain, compileTask, linkTask) {
+  if (toolChain in VisualCpp) {
     println("configuring visual studio" + toolChain)
   }
-  if (toolChain in [Gcc]) {
+  if (toolChain in Gcc) {
     println("configuring gcc" + toolChain)
   }
-  if (toolChain in [Clang]) {
+  if (toolChain in Clang) {
     println("configuring clang " + toolChain)
 
+    compileTask.compilerArgs.addAll("-arch", "arm64")
+    linkTask.linkerArgs.addAll("-arch", "arm64")
   }
 }
 

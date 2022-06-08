@@ -23,7 +23,7 @@ jobs:
       with:
         distribution: 'zulu'
         java-version: 11
-        architecture: arm64
+        #architecture: arm64
     - uses: actions/checkout@v2
     - name: Hello clang
       shell: bash
