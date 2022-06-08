@@ -121,7 +121,10 @@ def configureToolchain(toolChain, compileTask, linkTask) {
     println("configuring clang " + toolChain)
 
     compileTask.compilerArgs.addAll("-arch", "arm64")
+    compileTask.compilerArgs.addAll("-arch", "x86_64")
+    
     linkTask.linkerArgs.addAll("-arch", "arm64")
+    linkTask.compilerArgs.addAll("-arch", "x86_64")
   }
 }
 
