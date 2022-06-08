@@ -122,9 +122,9 @@ def configureToolchain(toolChain, compileTask, linkTask) {
 
     compileTask.compilerArgs.addAll("-arch", "arm64")
     compileTask.compilerArgs.addAll("-arch", "x86_64")
-    
+
     linkTask.linkerArgs.addAll("-arch", "arm64")
-    linkTask.compilerArgs.addAll("-arch", "x86_64")
+    linkTask.linkerArgs.addAll("-arch", "x86_64")
   }
 }
 
