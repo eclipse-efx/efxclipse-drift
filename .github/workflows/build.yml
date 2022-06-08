@@ -26,6 +26,9 @@ jobs:
     - name: Hello clang
       shell: bash
       run: clang -v
+    - name: Hello clang2
+      shell: bash
+      run: clang-11 -print-targets
     - uses: eskatos/gradle-command-action@v1
       with:
         arguments: -i :org.eclipse.fx.drift.native:publish
