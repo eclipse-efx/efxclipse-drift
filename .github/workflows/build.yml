@@ -23,6 +23,9 @@ jobs:
       with:
         java-version: 11
     - uses: actions/checkout@v2
+    - name: Hello clang
+      shell: bash
+      run: clang -v
     - uses: eskatos/gradle-command-action@v1
       with:
         arguments: -i :org.eclipse.fx.drift.native:publish
