@@ -28,7 +28,7 @@ jobs:
       run: clang -v
     - uses: eskatos/gradle-command-action@v1
       with:
-        arguments: -i :org.eclipse.fx.drift.native:publish
+        arguments: --debug -i :org.eclipse.fx.drift.native:publish
     - uses: actions/upload-artifact@v1
       with:
         name: native-repo
