@@ -27,7 +27,7 @@ model {
     toolChains {
         clang(Clang) {
             eachPlatform {
-                ccCompiler.withArguments { args ->
+                cCompiler.withArguments { args ->
                     if (isForceAarch64) {
                       println("forcing aarch64")
                       args << "-arch"
