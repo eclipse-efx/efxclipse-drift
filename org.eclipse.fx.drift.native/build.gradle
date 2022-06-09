@@ -28,7 +28,7 @@ model {
         clang(Clang) {
             eachPlatform {
                 cppCompiler.withArguments { args ->
-                    if (isForceAarch64) {
+                    if (isForceAarch64()) {
                       println("forcing aarch64")
                       args << "-arch"
                       args << "arm64"
@@ -36,7 +36,7 @@ model {
                     }
                 }
                 linker.withArguments { args ->
-                    if (isForceAarch64) {
+                    if (isForceAarch64()) {
                       println("forcing aarch64")
                       args << "-arch"
                       args << "arm64"
