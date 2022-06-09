@@ -11,7 +11,7 @@ jobs:
   build-natives:
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, linux-latest]
+        os: [macos-latest, windows-2019, linux-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Install Libraries
