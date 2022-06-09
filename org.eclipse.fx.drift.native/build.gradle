@@ -25,6 +25,12 @@ def isForceAarch64() {
 
 model {
     toolChains {
+        visualStudio(VisualCpp) {
+
+        }
+        gcc(Gcc) {
+          
+        }
         clang(Clang) {
             eachPlatform {
                 cppCompiler.withArguments { args ->
