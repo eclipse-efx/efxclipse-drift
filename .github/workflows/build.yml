@@ -34,8 +34,8 @@ jobs:
         mv ./native-repo/org/eclipse/fx/drift/driftfx ./native-repo/org/eclipse/fx/drift/driftfx_aarch64
         mv ./native-repo/org/eclipse/fx/drift/driftfx_debug_macos ./native-repo/org/eclipse/fx/drift/driftfx_debug_macos_aarch64
         mv ./native-repo/org/eclipse/fx/drift/driftfx_release_macos ./native-repo/org/eclipse/fx/drift/driftfx_release_macos_aarch64
-      with:
     - uses: eskatos/gradle-command-action@v1
+      with:
         arguments: -i :org.eclipse.fx.drift.native:publish
     - uses: actions/upload-artifact@v1
       with:
