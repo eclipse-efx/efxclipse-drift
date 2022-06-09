@@ -823,7 +823,7 @@ namespace driftgl {
 	DRIFTGL_EXPORT extern unsigned int GL_TIMEOUT_EXPIRED;
 	DRIFTGL_EXPORT extern unsigned int GL_CONDITION_SATISFIED;
 	DRIFTGL_EXPORT extern unsigned int GL_WAIT_FAILED;
-	DRIFTGL_EXPORT extern unsigned int GL_TIMEOUT_IGNORED;
+	DRIFTGL_EXPORT extern unsigned long long GL_TIMEOUT_IGNORED;
 	DRIFTGL_EXPORT extern unsigned int GL_SYNC_FLUSH_COMMANDS_BIT;
 	DRIFTGL_EXPORT extern unsigned int GL_SAMPLE_POSITION;
 	DRIFTGL_EXPORT extern unsigned int GL_SAMPLE_MASK;

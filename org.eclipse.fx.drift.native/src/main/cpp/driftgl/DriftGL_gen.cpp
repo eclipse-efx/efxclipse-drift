@@ -793,7 +793,7 @@
 		unsigned int GL_TIMEOUT_EXPIRED = 0x911B;
 		unsigned int GL_CONDITION_SATISFIED = 0x911C;
 		unsigned int GL_WAIT_FAILED = 0x911D;
-		unsigned int GL_TIMEOUT_IGNORED = 0xFFFFFFFFFFFFFFFF;
+		unsigned long long GL_TIMEOUT_IGNORED = 0xFFFFFFFFFFFFFFFF;
 		unsigned int GL_SYNC_FLUSH_COMMANDS_BIT = 0x00000001;
 		unsigned int GL_SAMPLE_POSITION = 0x8E50;
 		unsigned int GL_SAMPLE_MASK = 0x8E51;
