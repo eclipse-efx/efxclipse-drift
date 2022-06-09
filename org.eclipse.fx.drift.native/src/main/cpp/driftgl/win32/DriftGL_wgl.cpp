@@ -115,7 +115,7 @@ HWND CreateDriftGLWindow(HINSTANCE hInstance) {
 bool SetupPixelFormat(HDC hDC) {
 	bool success = false;
 	int pixel_format_attribs[] = {
-	WGL_SUPPORT_OPENGL_ARB,     GL_TRUE,
+	WGL_SUPPORT_OPENGL_ARB,     (int) GL_TRUE,
 	WGL_ACCELERATION_ARB,       WGL_FULL_ACCELERATION_ARB,
 	0
 	};
@@ -249,10 +249,10 @@ void doInitializeContextCreationPointers(HINSTANCE hInstance) {
 	};
 	int pf = ChoosePixelFormat(hDC, &pfd);
 	if (pf != 0) {
-		if (SetPixelFormat(hDC, pf, &pfd) == true) {
+		if (SetPixelFormat(hDC, pf, &pfd) == TRUE) {
 			HGLRC dummyContext = wglCreateContext(hDC);
 			if (dummyContext != 0) {
-				if (wglMakeCurrent(hDC, dummyContext) == true) {
+				if (wglMakeCurrent(hDC, dummyContext) == TRUE) {
 					
 					debugCurrentContext("Dummy Context");
 
@@ -314,7 +314,7 @@ void doInitializeGLPointers(HINSTANCE hInstance) {
 		};
 		HGLRC realContext = wglCreateContextAttribsARB(hDC, NULL, attribList);
 		if (realContext != 0) {
-			if (wglMakeCurrent(hDC, realContext) == true) {
+			if (wglMakeCurrent(hDC, realContext) == TRUE) {
 
 				debugCurrentContext("Function Pointer Resolving Context");
 
