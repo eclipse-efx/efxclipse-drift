@@ -11,7 +11,7 @@ jobs:
   build-natives:
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-latest, windows-latest, linux-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Install Libraries
@@ -19,25 +19,32 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
       if: runner.os == 'Linux'
-    - uses: actions/setup-java@v2
+    - name: Setup Java
+      uses: actions/setup-java@v2
       with:
         distribution: 'zulu'
         java-version: 11
         #architecture: arm64
-    - uses: actions/checkout@v2
-    - uses: eskatos/gradle-command-action@v1
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+    - name: Build aarch64
+      if: matrix.os == 'macis-latest'
+      uses: eskatos/gradle-command-action@v1
       with:
         arguments: -i :org.eclipse.fx.drift.native:publish -Pforce-aarch64
-    - name: move binaries
+    - name: Move aarch64 binaries
+      if: matrix.os == 'macis-latest'
       shell: bash
       run: |
         mv ./native-repo/org/eclipse/fx/drift/driftfx ./native-repo/org/eclipse/fx/drift/driftfx_aarch64
         mv ./native-repo/org/eclipse/fx/drift/driftfx_debug_macos ./native-repo/org/eclipse/fx/drift/driftfx_debug_macos_aarch64
         mv ./native-repo/org/eclipse/fx/drift/driftfx_release_macos ./native-repo/org/eclipse/fx/drift/driftfx_release_macos_aarch64
-    - uses: eskatos/gradle-command-action@v1
+    - name: Build
+      uses: eskatos/gradle-command-action@v1
       with:
         arguments: -i :org.eclipse.fx.drift.native:publish
-    - uses: actions/upload-artifact@v1
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1
       with:
         name: native-repo
         path: native-repo
