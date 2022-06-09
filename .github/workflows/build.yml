@@ -28,12 +28,12 @@ jobs:
     - name: Checkout Repo
       uses: actions/checkout@v2
     - name: Build aarch64
-      if: matrix.os == 'macis-latest'
+      if: matrix.os == 'macos-latest'
       uses: eskatos/gradle-command-action@v1
       with:
         arguments: -i :org.eclipse.fx.drift.native:publish -Pforce-aarch64
     - name: Move aarch64 binaries
-      if: matrix.os == 'macis-latest'
+      if: matrix.os == 'macos-latest'
       shell: bash
       run: |
         mv ./native-repo/org/eclipse/fx/drift/driftfx ./native-repo/org/eclipse/fx/drift/driftfx_aarch64
