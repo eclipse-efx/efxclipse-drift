@@ -25,15 +25,18 @@ jobs:
         java-version: 11
         #architecture: arm64
     - uses: actions/checkout@v2
-    - name: Hello clang
-      shell: bash
-      run: |
-        clang -arch arm64 -v || true
-        clang -arch aarch64 -v || true
-        clang -arch arm-v7 -v || true
     - uses: eskatos/gradle-command-action@v1
       with:
-        arguments: --debug -i :org.eclipse.fx.drift.native:publish
+        arguments: -i :org.eclipse.fx.drift.native:publish -Pforce-aarch64
+    - uses: eskatos/gradle-command-action@v1
+    - name: move binaries
+      shell: bash
+      run: |
+        mv ./native-repo/org/eclipse/fx/drift/driftfx ./native-repo/org/eclipse/fx/drift/driftfx_aarch64
+        mv ./native-repo/org/eclipse/fx/drift/driftfx_debug_macos ./native-repo/org/eclipse/fx/drift/driftfx_debug_macos_aarch64
+        mv ./native-repo/org/eclipse/fx/drift/driftfx_release_macos ./native-repo/org/eclipse/fx/drift/driftfx_release_macos_aarch64
+      with:
+        arguments: -i :org.eclipse.fx.drift.native:publish
     - uses: actions/upload-artifact@v1
       with:
         name: native-repo

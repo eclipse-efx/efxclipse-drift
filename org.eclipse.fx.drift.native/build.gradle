@@ -19,6 +19,37 @@ plugins {
 group = 'org.eclipse.fx.drift'
 version = Versioning.fullVersion
 
+def isForceAarch64() {
+  project.hasProperty("force-aarch64")
+}
+
+model {
+    toolChains {
+        clang(Clang) {
+            eachPlatform {
+                ccCompiler.withArguments { args ->
+                    if (isForceAarch64) {
+                      println("forcing aarch64")
+                      args << "-arch"
+                      args << "arm64"
+                      println(" => compiler args: " + args)
+                    }
+                }
+                linker.withArguments { args ->
+                    if (isForceAarch64) {
+                      println("forcing aarch64")
+                      args << "-arch"
+                      args << "arm64"
+                      println(" => linker args: " + args)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
 library {
 
  baseName = 'driftfx'
@@ -29,7 +60,6 @@ library {
       machines.linux.x86_64,
       machines.windows.x86_64,
       machines.macOS.x86_64,
-      machines.macOS.architecture("aarch64"),
     ]
     
     source.from createCppTree(project)
@@ -48,12 +78,6 @@ library {
       println("configure Binary " + binary)
       def compileTask = compileTask.get()
       def linkTask = linkTask.get()
-
-
-      println(" * compileTask: " + compileTask);
-      println(" * linkTask: " + linkTask);
-
-      println(" * toolChain: " + toolChain);
       
       configureToolchain(toolChain, compileTask, linkTask)
       configureLinker(targetMachine, linkTask)
@@ -116,23 +140,6 @@ def configureToolchain(toolChain, compileTask, linkTask) {
   }
   if (toolChain in Clang) {
     println("configuring clang " + toolChain)
-
-    //if (toolChain.targetPlatform)
-    compileTask.compilerArgs.addAll("-arch", "arm64")
-    compileTask.compilerArgs.addAll("-arch", "x86_64")
-
-    linkTask.linkerArgs.addAll("-arch", "arm64")
-    linkTask.linkerArgs.addAll("-arch", "x86_64")
-  }
-  def arch = compileTask.targetPlatform.get().architecture.name
-  def os = compileTask.targetPlatform.get().operatingSystem.name
-
-  println("tp: " + os + " / " + arch)
-
-  if (arch == "aarch64") {
-    // fix clang args
-    compileTask.compilerArgs.addAll("-arch", "arm64")
-    linkTask.linkerArgs.addAll("-arch", "arm64")
   }
 }
 
