@@ -149,7 +149,7 @@ task buildMultireleaseJar(type: Jar, dependsOn: [
                 'Private-Package': 'org.eclipse.fx.drift.internal',
                 'Bundle-ActivationPolicy': 'lazy',
                 'Bundle-Activator': 'org.eclipse.fx.drift.internal.OSGiActivator',
-                'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64',
+                'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64,native/libdriftfx_aarch64.dylib;osname=MacOSX;processor=aarch64',
                 'Drift-Version': "$Versioning.version",
                 'Drift-Qualifier': "$Versioning.qualifier",
                 'Drift-Timestamp': "$Versioning.timestamp",

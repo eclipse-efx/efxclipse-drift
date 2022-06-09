@@ -28,6 +28,7 @@ public class NativeUtil {
 	private NativeUtil() {}
 	
 	private static String OS = System.getProperty("os.name");
+  private static String arch = System.getProperty("os.arch");
 	private static boolean isWindows = getOsName().toLowerCase().contains("windows");
 	private static boolean isLinux = getOsName().toLowerCase().contains("linux");
 	private static boolean isMacOs = getOsName().toLowerCase().contains("mac") || getOsName().toLowerCase().contains("darwin");
@@ -42,6 +43,10 @@ public class NativeUtil {
 	public static String getOsName() {
 		return OS;
 	}
+
+  public static String getOsArch() {
+    return arch;
+  }
 	
 	public static boolean isWindows() {
 		return isWindows;
@@ -103,7 +108,7 @@ public class NativeUtil {
 			return "lib" + libname + ".so";
 		}
 		if (isMacOs()) {
-			return "lib" + libname + ".dylib";
+			return "lib" + libname + ("aarch64".equals(getOsArch() ? "_aarch64" : ""))".dylib";
 		}
 		throw new RuntimeException("os not supported: " + getOsName());
 	}
