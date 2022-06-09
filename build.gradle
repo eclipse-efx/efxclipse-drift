@@ -86,6 +86,12 @@ task copyNatives(type: Copy) {
     from "native-repo/org/eclipse/fx/drift/driftfx_release_linux/$Versioning.fullVersion/driftfx_release_linux-${Versioning.fullVersion}.so"
     from "native-repo/org/eclipse/fx/drift/driftfx_release_macos/$Versioning.fullVersion/driftfx_release_macos-${Versioning.fullVersion}.dylib"
     
+    from("native-repo/org/eclipse/fx/drift/driftfx_release_macos_aarch64/$Versioning.fullVersion/driftfx_release_macos-${Versioning.fullVersion}.dylib") {
+      rename { fileName ->
+        fileName.replaceAll("driftfx_release_macos-.*[.]dylib", "libdriftfx_aarch64.dylib")
+      }
+    }
+    
     // driftcpp
 //    from "native-repo/org/eclipse/fx/drift/driftcpp_release_windows/$Versioning.fullVersion/driftcpp_release_windows-${Versioning.fullVersion}.dll"
 //    from "native-repo/org/eclipse/fx/drift/driftcpp_release_linux/$Versioning.fullVersion/driftcpp_release_linux-${Versioning.fullVersion}.so"
