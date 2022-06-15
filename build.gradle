@@ -79,41 +79,37 @@ def getJava11() {
 
 subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
 
-task copyNatives(type: Copy) {
-
-    // driftfx
-    from "native-repo/org/eclipse/fx/drift/driftfx_release_windows/$Versioning.fullVersion/driftfx_release_windows-${Versioning.fullVersion}.dll"
-    from "native-repo/org/eclipse/fx/drift/driftfx_release_linux/$Versioning.fullVersion/driftfx_release_linux-${Versioning.fullVersion}.so"
-    from "native-repo/org/eclipse/fx/drift/driftfx_release_macos/$Versioning.fullVersion/driftfx_release_macos-${Versioning.fullVersion}.dylib"
-    
-    from("native-repo/org/eclipse/fx/drift/driftfx_release_macos_aarch64/$Versioning.fullVersion/driftfx_release_macos-${Versioning.fullVersion}.dylib") {
-      rename { fileName ->
-        fileName.replaceAll("driftfx_release_macos-.*[.]dylib", "libdriftfx_aarch64.dylib")
-      }
-    }
-    
-    // driftcpp
-//    from "native-repo/org/eclipse/fx/drift/driftcpp_release_windows/$Versioning.fullVersion/driftcpp_release_windows-${Versioning.fullVersion}.dll"
-//    from "native-repo/org/eclipse/fx/drift/driftcpp_release_linux/$Versioning.fullVersion/driftcpp_release_linux-${Versioning.fullVersion}.so"
-//    from "native-repo/org/eclipse/fx/drift/driftcpp_release_macos/$Versioning.fullVersion/driftcpp_release_macos-${Versioning.fullVersion}.dylib"
-    
-
-    into 'org.eclipse.fx.drift/src/main/resources/native'
-
-    rename { fileName ->
-        fileName
-            .replaceAll("driftfx_release_windows-.*[.]dll", "driftfx.dll")
-            .replaceAll("driftfx_release_linux-.*[.]so", "libdriftfx.so")
-            .replaceAll("driftfx_release_macos-.*[.]dylib", "libdriftfx.dylib")
-
-//            .replaceAll("driftcpp_release_windows-.*[.]dll", "driftcpp.dll")
-//            .replaceAll("driftcpp_release_linux-.*[.]so", "libdriftcpp.so")
-//            .replaceAll("driftcpp_release_macos-.*[.]dylib", "libdriftcpp.dylib")
-    }
-    
+task copyNativesMacosAarch64(type: Copy) {
+  from "native-repo/org/eclipse/fx/drift/driftfx_release_macos_aarch64/$Versioning.fullVersion/driftfx_release_macos-${Versioning.fullVersion}.dylib"
+  into 'org.eclipse.fx.drift/src/main/resources/native'
+  rename { fileName -> fileName.replaceAll("driftfx_release_macos-.*[.]dylib", "libdriftfx_aarch64.dylib") }
 }
-copyNatives.group = "DriftFX"
-copyNatives.description = "Copies the available natives from ./native-repo to ./org.eclipse.fx.drift/src/main/resources/native/"
+task copyNativesMacos(type: Copy) {
+  from "native-repo/org/eclipse/fx/drift/driftfx_release_macos/$Versioning.fullVersion/driftfx_release_macos-${Versioning.fullVersion}.dylib"
+  into 'org.eclipse.fx.drift/src/main/resources/native'
+  rename { fileName -> fileName.replaceAll("driftfx_release_macos-.*[.]dylib", "libdriftfx.dylib") }
+}
+task copyNativesWindows(type: Copy) {
+  from "native-repo/org/eclipse/fx/drift/driftfx_release_windows/$Versioning.fullVersion/driftfx_release_windows-${Versioning.fullVersion}.dll"
+  into 'org.eclipse.fx.drift/src/main/resources/native'
+  rename { fileName -> fileName.replaceAll("driftfx_release_windows-.*[.]dll", "driftfx.dll") }
+}
+task copyNativesLinux(type: Copy) {
+  from "native-repo/org/eclipse/fx/drift/driftfx_release_linux/$Versioning.fullVersion/driftfx_release_linux-${Versioning.fullVersion}.so"
+  into 'org.eclipse.fx.drift/src/main/resources/native'
+  rename { fileName -> fileName.replaceAll("driftfx_release_linux-.*[.]so", "libdriftfx.so") }
+}
+
+task copyNatives {
+  group = "DriftFX"
+  description = "Copies the available natives from ./native-repo to ./org.eclipse.fx.drift/src/main/resources/native/"
+  dependsOn = [
+    copyNativesMacosAarch64,
+    copyNativesMacos,
+    copyNativesWindows,
+    copyNativesLinux
+  ]
+}
 
 
 task buildMultireleaseJar(type: Jar, dependsOn: [
