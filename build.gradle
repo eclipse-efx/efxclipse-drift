@@ -275,6 +275,9 @@ task signJarFiles() {
 }
 
 platform {
+ 
+  eclipseMirror = 'http://philippkatz.de/eclipse-p2-minimal.tar.gz'
+
     featureId = 'org.eclipse.fx.drift.feature'
     featureName = 'DriftFX'
     featureVersion = Versioning.bundleVersion
