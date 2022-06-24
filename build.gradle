@@ -310,8 +310,135 @@ ext.github = new GithubAPI(githubOrga, githubRepo, System.getenv('GITHUB_ACCESS_
 import okhttp3.*
 ext.client = new OkHttpClient()
 
+abstract class ExecuteRemoteJenkins extends DefaultTask {
 
-task notifyJenkins() {
+  @Internal
+  def client = new OkHttpClient()
+
+  @Input
+  abstract Property<String> getJobUrl()
+
+  @Input
+  abstract MapProperty<String, String> getBuildParameters()
+
+  @TaskAction
+  def execute() {
+    def queueUri = triggerBuild()
+    println "Job queued."
+
+    def jobUri
+    while (true) {
+      Thread.sleep(5000L)
+      try {
+        def queueData = queryQueue(queueUri)
+
+        if (queueData.why) {
+          println "Jenkings Queue: $queueData.why"
+        } 
+
+        if (queueData.executable) {
+          jobUri = queueData.executable.url
+          break
+        }
+
+      } catch (java.net.SocketTimeoutException e) {
+        println "Jenkins Queue: $e.message"
+      }
+
+    }
+    println "Job started."
+
+    def info
+
+  	while (true) {
+      Thread.sleep(5000L)
+      try {
+        info = queryBuildInfo(jobUri);
+        println "Jenkins Build: $info.duration / $info.estimatedDuration ( duration / est. duration )"
+        if (info.building == false) {
+          break;
+        }
+      } catch (java.net.SocketTimeoutException e) {
+        println "Jenkins Build: $e.message"
+      }
+    }
+
+    println "Jenkins Job $info.id finished; result=$info.result"
+
+    assert info.result == "SUCCESS"
+  }
+
+  def computeTriggerUrl() {
+    def toParams = {
+      it.collect { "$it.key=$it.value" } join "&"
+    }
+    return jobUrl.get() + "/buildWithParameters?" + toParams(buildParameters.get())
+  }
+
+  def queryQueue(uri) {
+    def req = new Request.Builder().url(uri + "api/json?now=${System.currentTimeMillis()}").build()
+    def res = client.newCall(req).execute()
+    assert res.code == 200
+    return new groovy.json.JsonSlurper().parseText(res.body.string())
+  }
+
+  def queryBuildInfo(jobUri) {
+    def req = new Request.Builder().url(jobUri + "api/json?now=${System.currentTimeMillis()}").build()
+    def res = client.newCall(req).execute()
+    assert res.code == 200
+    return new groovy.json.JsonSlurper().parseText(res.body.string());
+  }
+
+  def triggerBuild() {
+    def req = new Request.Builder().url(computeTriggerUrl()).build()
+    def res = client.newCall(req).execute()
+    assert res.code == 201
+    def result = res.header("location")
+    res.close()
+    return result
+  }
+
+}
+
+task testIt(type: ExecuteRemoteJenkins) {
+  def jenkinsToken = System.getenv("JENKINS_ACCESS_TOKEN")
+  def runId = System.getenv('GITHUB_RUN_ID')
+  def githubToken = System.getenv('GH_ACCESS_TOKEN')
+  def githubRef = System.getenv('GITHUB_REF')
+
+  if (jenkinsToken == null) jenkinsToken = 'asdf'
+  if (runId == null) runId = 'b'
+  if (githubToken == null) githubToken = 'c'
+  if (githubRef == null) githubRef = 'd'
+
+  jobUrl = "https://ci.eclipse.org/efxclipse/job/test_gradle"
+  buildParameters = [
+    token: jenkinsToken,
+    GITHUB_RUN_ID: runId,
+    GITHUB_ACCESS_TOKEN:  githubToken,
+    GIT_SHA: Versioning.gitSHA,
+    GITHUB_REF: githubRef
+  ]
+
+}
+
+task notifyJenkins(type: ExecuteRemoteJenkins) {
+  def jenkinsToken = System.getenv("JENKINS_ACCESS_TOKEN")
+  def runId = System.getenv('GITHUB_RUN_ID')
+  def githubToken = System.getenv('GITHUB_TOKEN')
+  def githubRef = System.getenv('GITHUB_REF')
+
+  jobUrl = "https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build"
+  buildParameters = [
+    token: jenkinsToken,
+    GITHUB_RUN_ID: runId,
+    GITHUB_ACCESS_TOKEN:  githubToken,
+    GIT_SHA: Versioning.gitSHA,
+    GITHUB_REF: githubRef
+  ]
+}
+
+task notifyJenkins2() {
     doLast {
         def jenkinsToken = System.getenv("JENKINS_ACCESS_TOKEN")
         def runId = System.getenv('GITHUB_RUN_ID')
