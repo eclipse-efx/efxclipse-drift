@@ -203,7 +203,7 @@ task downloadGithubArtifact {
         "$buildDir/downloaded/github-artifacts.zip",
         "$buildDir/downloaded/native-repo.zip")
     doLast {
-        def runId = System.getenv('BUILD_RUN_ID') // GITHUB_RUN_ID we use here the env var from the previous workflow
+        def runId = System.getenv('GITHUB_RUN_ID')
         def runArtifacts = github.getArtifacts(runId)
 
         def artifactUnsigned = runArtifacts.artifacts.find { it.name == 'artifact-unsigned' }
@@ -424,7 +424,7 @@ task testIt(type: ExecuteRemoteJenkins) {
 
 task notifyJenkins(type: ExecuteRemoteJenkins) {
   def jenkinsToken = System.getenv("JENKINS_ACCESS_TOKEN")
-  def runId = System.getenv('GITHUB_RUN_ID')
+  def runId = System.getenv('BUILD_RUN_ID')
   def githubToken = System.getenv('GITHUB_TOKEN')
   def githubRef = System.getenv('GITHUB_REF')
 
