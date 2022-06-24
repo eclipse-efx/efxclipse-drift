@@ -80,10 +80,4 @@ jobs:
       with:
         name: artifact-unsigned
         path: build/libs/org.eclipse.fx.drift.jar
-    - uses: eskatos/gradle-command-action@v1
-      with:
-        arguments: notifyJenkins
-      env:
-        GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        JENKINS_ACCESS_TOKEN: ${{ secrets.JENKINS_ACCESS_TOKEN }}
+
