@@ -79,11 +79,6 @@ def getJava11() {
 
 subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
 
-task copyNativesMacosAarch64(type: Copy) {
-  from "native-repo/org/eclipse/fx/drift/driftfx_release_macos_aarch64/$Versioning.fullVersion/driftfx_release_macos-${Versioning.fullVersion}.dylib"
-  into 'org.eclipse.fx.drift/src/main/resources/native'
-  rename { fileName -> fileName.replaceAll("driftfx_release_macos-.*[.]dylib", "libdriftfx_aarch64.dylib") }
-}
 task copyNativesMacos(type: Copy) {
   from "native-repo/org/eclipse/fx/drift/driftfx_release_macos/$Versioning.fullVersion/driftfx_release_macos-${Versioning.fullVersion}.dylib"
   into 'org.eclipse.fx.drift/src/main/resources/native'
@@ -104,7 +99,6 @@ task copyNatives {
   group = "DriftFX"
   description = "Copies the available natives from ./native-repo to ./org.eclipse.fx.drift/src/main/resources/native/"
   dependsOn = [
-    copyNativesMacosAarch64,
     copyNativesMacos,
     copyNativesWindows,
     copyNativesLinux
@@ -145,7 +139,7 @@ task buildMultireleaseJar(type: Jar, dependsOn: [
                 'Private-Package': 'org.eclipse.fx.drift.internal',
                 'Bundle-ActivationPolicy': 'lazy',
                 'Bundle-Activator': 'org.eclipse.fx.drift.internal.OSGiActivator',
-                'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64,native/libdriftfx_aarch64.dylib;osname=MacOSX;processor=aarch64',
+                'Bundle-NativeCode': 'native/driftfx.dll;osname=Win32;processor=x86-64,native/libdriftfx.so;osname=Linux;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=x86-64,native/libdriftfx.dylib;osname=MacOSX;processor=aarch64',
                 'Drift-Version': "$Versioning.version",
                 'Drift-Qualifier': "$Versioning.qualifier",
                 'Drift-Timestamp': "$Versioning.timestamp",

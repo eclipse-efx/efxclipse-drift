@@ -108,7 +108,7 @@ public class NativeUtil {
 			return "lib" + libname + ".so";
 		}
 		if (isMacOs()) {
-			return "lib" + libname + ("aarch64".equals(getOsArch()) ? "_aarch64" : "") + ".dylib";
+			return "lib" + libname + ".dylib";
 		}
 		throw new RuntimeException("os not supported: " + getOsName());
 	}

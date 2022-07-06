@@ -19,42 +19,28 @@ plugins {
 group = 'org.eclipse.fx.drift'
 version = Versioning.fullVersion
 
-def isForceAarch64() {
-  project.hasProperty("force-aarch64")
-}
-
 model {
-    toolChains {
-        visualStudio(VisualCpp) {
-
+  toolChains {
+    visualStudio(VisualCpp) {}
+    gcc(Gcc) {}
+    clang(Clang) {
+      eachPlatform {
+        cppCompiler.withArguments { args ->
+          args << '-arch'
+          args << 'x86_64'
+          args << '-arch'
+          args << 'arm64'
         }
-        gcc(Gcc) {
-
+        linker.withArguments { args ->
+          args << '-arch'
+          args << 'x86_64'
+          args << '-arch'
+          args << 'arm64'
         }
-        clang(Clang) {
-            eachPlatform {
-                cppCompiler.withArguments { args ->
-                    if (isForceAarch64()) {
-                      println("forcing aarch64")
-                      args << "-arch"
-                      args << "arm64"
-                      println(" => compiler args: " + args)
-                    }
-                }
-                linker.withArguments { args ->
-                    if (isForceAarch64()) {
-                      println("forcing aarch64")
-                      args << "-arch"
-                      args << "arm64"
-                      println(" => linker args: " + args)
-                    }
-                }
-            }
-        }
+      }
     }
+  }
 }
-
-
 
 library {
 
