@@ -22,7 +22,7 @@ jobs:
     - uses: gradle/gradle-build-action@v2
       with:
         gradle-version: 7.4
-    - run: ./gradlew notifyJenkins
+    - run: gradle notifyJenkins
       env:
         BUILD_RUN_ID: ${{ github.event.workflow_run.id }}
         GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
