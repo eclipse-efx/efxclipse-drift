@@ -20,19 +20,18 @@ jobs:
         sudo apt-get install -y mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev
       if: runner.os == 'Linux'
     - name: Setup Java
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: 'zulu'
         java-version: 11
-        #architecture: arm64
-    - name: Checkout Repo
-      uses: actions/checkout@v2
-    - name: Build
-      uses: eskatos/gradle-command-action@v1
+    - uses: actions/checkout@v3
+    - uses: gradle/gradle-build-action@v2
       with:
-        arguments: -i :org.eclipse.fx.drift.native:publish
+        gradle-version: 7.4
+    - name: Build
+      run: ./gradlew -i :org.eclipse.fx.drift.native:publish
     - name: Upload artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v3
       with:
         name: native-repo
         path: native-repo
@@ -41,30 +40,33 @@ jobs:
     needs: build-natives
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
+    - uses: actions/checkout@v3
+    - id: setup-java-8
+      uses: actions/setup-java@v3
       with:
+        distribution: 'zulu'
         java-version: 1.8
         java-package: jdk+fx
-    - name: Store Java 1.8 Home
-      run: echo "JAVA_HOME_8=${JAVA_HOME}" >> $GITHUB_ENV
-    - name: Setup Java 11
-      uses: actions/setup-java@v1
+    - id: setup-java-11
+      uses: actions/setup-java@v3
       with:
+        distribution: 'zulu'
         java-version: 11
         java-package: jdk
-    - name: Store Java 11 Home
-      run: echo "JAVA_HOME_11=${JAVA_HOME}" >> $GITHUB_ENV
     - name: Download natives
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v3
       with:
         name: native-repo
         path: native-repo
-    - uses: eskatos/gradle-command-action@v1
+    - uses: gradle/gradle-build-action@v2
       with:
-        arguments: -i buildMultireleaseJar
-    - uses: actions/upload-artifact@v1
+        gradle-version: 7.4
+    - name: Build Jar
+      run: ./gradlew -i buildMultireleaseJar
+      env:
+        JAVA_HOME_8: ${{ steps.setup-java-8.outputs.path }}
+        JAVA_HOME_11: ${{ steps.setup-java-11.outputs.path }}
+    - uses: actions/upload-artifact@v3
       with:
         name: artifact-unsigned
         path: build/libs/org.eclipse.fx.drift.jar
