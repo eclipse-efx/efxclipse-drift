@@ -23,6 +23,7 @@ jobs:
         gradle-version: 7.4
     - run: gradle notifyJenkins
       env:
+        GITHUB_REF_NAME: ${{ github.event.workflow_run.head_branch }}
         BUILD_RUN_ID: ${{ github.event.workflow_run.id }}
         GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
