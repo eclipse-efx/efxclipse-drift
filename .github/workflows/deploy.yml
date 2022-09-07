@@ -4,10 +4,6 @@ on:
     workflows: ["DriftFX Build"]
     types:
       - completed
-    branches:
-      - master
-    tags:
-      - 'v*'
 
 jobs:
   notifyJenkins:
