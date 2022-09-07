@@ -11,7 +11,7 @@
  * ******************************************************************************/
 
 def getGitHash() {
-  if (System.getenv("CI")) {
+  if (System.getenv("GITHUB_SHA")) {
     System.getenv("GITHUB_SHA")
   } else {
     getLocalGitHash()
