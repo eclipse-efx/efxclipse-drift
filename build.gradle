@@ -424,7 +424,7 @@ task notifyJenkins(type: ExecuteRemoteJenkins) {
   def runId = System.getenv('BUILD_RUN_ID')
   def githubToken = System.getenv('GITHUB_TOKEN')
   def githubRef = System.getenv('GITHUB_REF')
-  def githubRefName = System.getenv('GITHUB_REF_NAME')
+  def headBranch = System.getenv('HEAD_BRANCH')
 
   jobUrl = "https://ci.eclipse.org/efxclipse/job/efxclipse_drift_build"
   buildParameters = [
@@ -433,7 +433,7 @@ task notifyJenkins(type: ExecuteRemoteJenkins) {
     GITHUB_ACCESS_TOKEN:  githubToken,
     GIT_SHA: Versioning.gitSHA,
     GITHUB_REF: githubRef,
-    GITHUB_REF_NAME: githubRefName
+    GITHUB_REF_NAME: headBranch
   ]
 }
 
