@@ -53,7 +53,7 @@ jobs:
         java-version: 11
         java-package: jdk
     - name: Download natives
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
       with:
         name: native-repo
         path: native-repo
