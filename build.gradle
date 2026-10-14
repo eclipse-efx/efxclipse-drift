@@ -268,40 +268,6 @@ task signJarFiles() {
     }
 }
 
-platform {
- 
-  eclipseMirror = 'http://philippkatz.de/eclipse-p2-minimal.tar.gz'
-
-    featureId = 'org.eclipse.fx.drift.feature'
-    featureName = 'DriftFX'
-    featureVersion = Versioning.bundleVersion
-    featureProvider = "BestSolution"
-
-    categoryId = 'org.eclipse.fx.drift'
-    categoryName = 'e(fx)clipse Drift'
-
-    fetchSources = true
-    useBndHashQualifiers = false
-    useFeatureHashQualifiers = false
-    //generatePlatformFeature = false
-
-    bundle file(getMultireleaseJarPath()) 
-    //bundle buildMultireleaseSourcesJar.outputs.files
-    
-/*    bundle file("$buildDir/downloaded/org.eclipse.fx.drift.jar"), {
-        bnd {
-            version = '2.5.0'
-            symbolicName = 'the.super.drift'
-        }
-    }*/
-
-/*
-    feature (id: 'org.eclipse.fx.drift.feature', name: 'DriftFX Runtime', version: '') {
-        plugin file("$buildDir/downloaded/org.eclipse.fx.drift.jar")
-    }
-*/
-}
-
 ext.github = new GithubAPI(githubOrga, githubRepo, System.getenv('GITHUB_ACCESS_TOKEN'))
 
 import okhttp3.*
