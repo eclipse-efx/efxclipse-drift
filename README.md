@@ -1,3 +1,7 @@
+# Project archived
+
+We stopped developing DriftFX - feel free to fork and move on yourself
+
 # DriftFX - The Direct Rendering Infrastructure for JavaFX
 
 DriftFX allows you to render any OpenGL content directly into JavaFX nodes.  
